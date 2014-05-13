@@ -1,0 +1,21 @@
+{
+  "modelId": "76421053747822592",
+  "name": "Test name",
+  "files": { 
+    "intersections1" : {
+      "filename": "intersections.csv",
+      "mimePart": "intersections",
+      "fileType": "intersections"
+    },
+    "lid_labels" : {
+      "filename": "lid_labels.csv",
+      "mimePart": "lid_labels",
+      "fileType": "lid_labels"
+    },
+    "lids" : {
+      "filename": "lids.csv",
+      "mimePart": "lids",
+      "fileType": "lids"
+      }
+  }
+}

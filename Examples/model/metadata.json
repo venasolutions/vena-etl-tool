@@ -1,0 +1,11 @@
+{
+  "modelId": "76127000815468544",
+  "name": "Create a new Model",
+  "files": { 
+    "model" : {
+      "filename": "model.csv",
+      "mimePart": "model",
+      "fileType": "hierarchy"
+    }
+  }
+}

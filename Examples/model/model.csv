@@ -1,0 +1,18 @@
+_Dimension Name,_Child Name,_Child Alias,_Parent Name,_Operator
+Time,Year,Year,,+
+Time,H1,Half Year 1,Year,+
+Time,All Quarters,All Quarters,Year,+
+Time,Q1,Quarter 1,All Quarters,+
+Time,Q2,Quarter 2,All Quarters,+
+Time,Jan,January,Q1,+
+Time,Feb,February,Q1 ,+
+Time,Mar,March,Q1 ,+
+Time,Apr,April,Q2,+
+Time,May,May,Q2,+
+Time,Jun,June,Q2,+
+Time,Jan,January,H1,+
+Time,Feb,February,H1,+
+Time,Mar,March,H1,+
+Time,Apr,April,H1,+
+Time,May,May,H1,+
+Time,Jun,June,H1,+
