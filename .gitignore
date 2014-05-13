@@ -1,0 +1,62 @@
+## Maven
+target/
+dependency-reduced-pom.xml
+ 
+## Java Binaries 
+*.jar
+*.war
+*.class
+ 
+ 
+## Eclipse
+ 
+.project
+.classpath
+.settings/
+.metadata
+bin/
+*.tmp
+*.bak
+*.swp
+local.properties
+.loadpath
+org.eclipse.*.prefs
+
+# External tool builders
+.externalToolBuilders/
+ 
+ 
+# PDT-specific
+.buildpath
+
+
+mt-server/mt-service/logs/
+vena-server.log
+
+## OS Specific files
+
+
+# Windows
+Thumbs.db 
+Desktop.ini
+
+
+# OSX
+.DS_Store
+.svn
+ 
+# thumbnails
+._*
+ 
+# files that might appear on external disk
+.Spotlight-V100
+.Trashes
+derby.log
+mt-parent/mt-api/pom.xml.versionsBackup
+mt-parent/mt-build/pom.xml.versionsBackup
+mt-parent/mt-service/pom.xml.versionsBackup
+mt-parent/mt-venascript/pom.xml.versionsBackup
+mt-parent/pom.xml.versionsBackup
+mt-parent/mt-service/lucene/indexes/
+mt-parent/.idea/*
+mt-parent/lucene/indexes/*
