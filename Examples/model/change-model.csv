@@ -1,0 +1,4 @@
+_Dimension Name,_Child Name,_Child Alias,_Parent Name,_Operator,_Cmd
+Time,Jan,January,H1,+,-
+Time,Jan,January,Q1,+,-
+Time,Jan,January,Year,+,+

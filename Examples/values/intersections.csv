@@ -1,6 +1,7 @@
-Hawkesbury,Squirrel,78,ihs
-Hawkesbury,Coyote,66,ihc
-Hawkesbury,Racoon,43,ihr
+_dim1_member,_dim2_member,_value,_etl_id
+Ottawa,Squirrel,78,ihs
+Ottawa,Coyote,66,ihc
+Ottawa,Racoon,43,ihr
 Toronto,Squirrel,36,its
 Toronto,Coyote,12,itc
 Toronto,Racoon,61,itr

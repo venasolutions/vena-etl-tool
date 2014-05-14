@@ -89,14 +89,22 @@ public class Main {
 			
 			ClientResponse response = webResource.type(MediaType.MULTIPART_FORM_DATA_TYPE).post(ClientResponse.class, form);
 
-			if (response.getStatus() != 200) {
-				throw new RuntimeException("Failed : HTTP error code : "+ response.getStatus());
+			switch( response.getStatus()) {
+			
+			case 200:
+				ETLJob output = response.getEntity(ETLJob.class);
+
+				System.out.println("Job submitted. Your ETL Job Id is "+output.getId());
+				
+				break;
+			case 401:
+				System.err.println("Access denied.  Check your credentials and try again.");
+				System.exit(2);
+				break;
+			default:
+				System.err.println("Error"+response);
+				System.exit(3);
 			}
-
-			ETLJob output = response.getEntity(ETLJob.class);
-
-			System.out.println("Output from Server .... \n");
-			System.out.println(output);
 
 		} catch (Exception e) {
 
@@ -220,6 +228,13 @@ public class Main {
 	        // parse the command line arguments
 	        commandLine = parser.parse( options, args );
 	        
+			if(commandLine.hasOption("help") || args.length == 0) {
+				
+				helpFormatter.printHelp(EXAMPLE_COMMANDLINE, options);
+				
+				System.exit(0);
+			}
+	        
 	        String port = commandLine.getOptionValue("port");
 
 	        if( port != null)
@@ -336,12 +351,7 @@ public class Main {
 	        System.exit(1);
 	    }
 	
-		if(commandLine.hasOption("help") || args.length == 0) {
-			
-			helpFormatter.printHelp(EXAMPLE_COMMANDLINE, options);
-			
-			System.exit(0);
-		}
+
 		
 		//Needed to silence a compiler error.  Unreachable, actually.
 		return null;
