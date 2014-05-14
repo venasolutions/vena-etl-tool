@@ -16,7 +16,6 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.vena.api.customer.datamodel.Model;
 import org.vena.api.etl.ETLFile;
 import org.vena.api.etl.ETLFile.Type;
 import org.vena.api.etl.ETLJob;
@@ -124,6 +123,15 @@ public class Main {
 			.create();
 		
 		options.addOption(helpOption);
+		
+		Option statusOption =  OptionBuilder
+				.withLongOpt( "status")
+				.withDescription("Request status for the specified etlJob.  Example: --status=79026536904130560." )
+				.isRequired(false)
+				.hasArg()
+				.create();
+			
+		options.addOption(statusOption);
 		
 		Option apiUserOption = 
 				OptionBuilder
@@ -234,6 +242,8 @@ public class Main {
 				
 				System.exit(0);
 			}
+			
+			
 	        
 	        String port = commandLine.getOptionValue("port");
 
@@ -288,6 +298,15 @@ public class Main {
 	        	
 	        	etlClient.login();
 	        }
+	        
+	        if(commandLine.hasOption("status") || args.length == 0) {
+				
+				String jobIdStr=commandLine.getOptionValue("status");
+				
+				ETLJob etlJob = etlClient.requestJobStatus(jobIdStr);
+				
+				System.exit(0);
+			}
 	        
 	        /* Process model parameters. Create a new model if necessary. */
 	        if( modelIdStr != null) { 

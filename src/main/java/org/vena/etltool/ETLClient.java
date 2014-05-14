@@ -4,6 +4,7 @@ import javax.ws.rs.core.MediaType;
 
 import org.vena.api.customer.authentication.LoginResult;
 import org.vena.api.customer.datamodel.Model;
+import org.vena.api.etl.ETLJob;
 import org.vena.etltool.entities.CreateModelRequestDTO;
 import org.vena.etltool.entities.CreateModelResponseDTO;
 import org.vena.id.Id;
@@ -77,5 +78,27 @@ public class ETLClient {
 		
 		return result;
 
+	}
+	
+	public ETLJob requestJobStatus(String idString)
+	{
+		Client client = Client.create();
+
+		client.addFilter(new HTTPBasicAuthFilter(apiUser, apiKey));
+
+		WebResource webResource = client.resource("http://"+host+":"+port+"/api/etl/jobs/"+idString);
+
+		webResource.accept("application/json");
+
+
+		ClientResponse response = webResource.get(ClientResponse.class);
+
+		if (response.getStatus() != 200) {
+			throw new RuntimeException("Unable to get job status. : "+ response.getStatus());
+		}
+
+		ETLJob result = response.getEntity(ETLJob.class);
+
+		return result;
 	}
 }
