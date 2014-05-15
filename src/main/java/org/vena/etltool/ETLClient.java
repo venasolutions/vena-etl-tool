@@ -23,6 +23,7 @@ public class ETLClient {
 	public String password;
 	public boolean needsLogin = false;
 	public Id modelId;
+	public String protocol = "http";
 
 	public ETLClient() {
 	}
@@ -33,7 +34,7 @@ public class ETLClient {
 
 		client.addFilter(new HTTPBasicAuthFilter(username, password));
 
-		WebResource webResource = client.resource("http://"+host+":"+port+"/login");
+		WebResource webResource = client.resource(protocol+"://"+host+":"+port+"/login");
 
 		webResource.accept("application/json");
 
@@ -57,7 +58,7 @@ public class ETLClient {
 
 		client.addFilter(new HTTPBasicAuthFilter(apiUser, apiKey));
 
-		WebResource webResource = client.resource("http://"+host+":"+port+"/api/models");
+		WebResource webResource = client.resource(protocol+"://"+host+":"+port+"/api/models");
 
 		webResource.accept("application/json");
 
@@ -86,7 +87,7 @@ public class ETLClient {
 
 		client.addFilter(new HTTPBasicAuthFilter(apiUser, apiKey));
 
-		WebResource webResource = client.resource("http://"+host+":"+port+"/api/etl/jobs/"+idString);
+		WebResource webResource = client.resource(protocol+"://"+host+":"+port+"/api/etl/jobs/"+idString);
 
 		webResource.accept("application/json");
 

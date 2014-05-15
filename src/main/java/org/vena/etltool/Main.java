@@ -62,7 +62,7 @@ public class Main {
 
 			client.addFilter(new HTTPBasicAuthFilter(etlClient.apiUser, etlClient.apiKey));
 
-			WebResource webResource = client.resource("http://"+etlClient.host+":"+etlClient.port+"/api/etl/upload");
+			WebResource webResource = client.resource(etlClient.protocol+"://"+etlClient.host+":"+etlClient.port+"/api/etl/upload");
 
 			webResource.accept("application/json");
 
@@ -132,6 +132,15 @@ public class Main {
 				.create();
 			
 		options.addOption(statusOption);
+		
+		Option sslOption = 
+				OptionBuilder
+				.withLongOpt("ssl")
+				.isRequired(false)
+				.withDescription("Use ssl to connect to the server.")
+				.create();
+		
+		options.addOption(sslOption);
 		
 		Option apiUserOption = 
 				OptionBuilder
@@ -254,8 +263,13 @@ public class Main {
 	        
 	        String hostname = commandLine.getOptionValue("host");
 	        
-	        if( hostname != null)
+	        if( hostname != null) {
 	        	etlClient.host=hostname;
+	        }
+	        
+	        if( commandLine.hasOption("ssl") ) { 
+	        	etlClient.protocol = "https";
+	        }
 	        
 	        String apiUser =  commandLine.getOptionValue("apiUser");
 	        
