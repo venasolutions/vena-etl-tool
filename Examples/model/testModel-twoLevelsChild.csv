@@ -1,0 +1,8 @@
+_Dimension Name,_Child Name,_Child Alias,_Parent Name,_Operator
+Region,AllDistricts,All Districts,,+
+Region,District101,District 101,AllDistricts,+
+Region,TO,Toronto,District 101,+
+Departments,AllDepartments,,,+
+Departments,Kit&Bath,Kitchen and Bath,AllDepartments,+
+Year,AllYears,All years,,+
+Accounts,AllAccounts,All Accounts,,+

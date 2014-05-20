@@ -1,0 +1,4 @@
+_Dimension Name,_Child Name,_Child Alias,_Parent Name,_Operator,_to_delete
+Product,All Product,,,+,
+Product,Product1,,All Product,+,
+Product,No Product,,All Product,+,
