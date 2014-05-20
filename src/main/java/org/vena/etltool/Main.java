@@ -349,7 +349,7 @@ public class Main {
 	        	String[] optionFields = etlFileOption.split(";");
 	        	
 	        	if( optionFields.length != 2) {
-	        		System.err.println( "Error: The option you \""+etlFileOption+"\" you entered is invalid.  Please specify the filename followed by the file type. Example: -F intersections.csv;intersections");
+	        		System.err.println( "Error: The option  \""+etlFileOption+"\" you entered is invalid.  Please specify the filename followed by the file type. Example: -F intersections.csv;intersections");
 			        
 			        System.exit(1);
 	        	}
@@ -367,7 +367,7 @@ public class Main {
 	        		etlFiles.add(etlFile);
 	        	}
 	        	catch(IllegalArgumentException e) {
-	        		System.err.println( "Error: The option you \""+etlFileOption+"\" you entered is invalid.  The ETL file type \""+fileTypeStr+"\" does not exist. The supported filetypes are ["+ETLFile.SUPPORTED_FILETYPES_LIST+"]");
+	        		System.err.println( "Error: The option \""+etlFileOption+"\" you entered is invalid.  The ETL file type \""+fileTypeStr+"\" does not exist. The supported filetypes are ["+ETLFile.SUPPORTED_FILETYPES_LIST+"]");
 			        
 			        System.exit(1);
 	        	}
