@@ -43,6 +43,8 @@ public class Main {
 	 * @param args
 	 */
 	public static void main(String[] args) {
+		System.getProperties().setProperty("datacenterId", "1");
+		
 		ETLClient etlClient = new ETLClient();
 
 		ETLMetadata metadata = parseCmdlineArgs(args, etlClient);
