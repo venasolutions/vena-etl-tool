@@ -45,13 +45,7 @@ public class Main {
 	public static void main(String[] args) {
 		ETLClient etlClient = new ETLClient();
 
-		List<ETLFile> etlFiles = parseCmdlineArgs(args, etlClient);
-
-		ETLMetadata metadata = new ETLMetadata();
-		
-		metadata.addFiles(etlFiles);
-
-		metadata.setModelId(etlClient.modelId);
+		ETLMetadata metadata = parseCmdlineArgs(args, etlClient);
 
 		try {
 
@@ -113,7 +107,7 @@ public class Main {
 	}
 
 	@SuppressWarnings("static-access")
-	private  static List<ETLFile> parseCmdlineArgs(String[] args, ETLClient etlClient) {
+	private  static ETLMetadata parseCmdlineArgs(String[] args, ETLClient etlClient) {
 		Options options  = new Options();
 		
 		Option helpOption =  OptionBuilder
@@ -230,10 +224,19 @@ public class Main {
 				.withLongOpt("file")
 				.isRequired(false)
 				.hasArg()
-				.withDescription("An ETL file to add to the ETL job. -F<filename>;<filetype ["+ETLFile.SUPPORTED_FILETYPES_LIST+"]>. Example: -F intersections.csv;intersections")
+				.withDescription("An ETL file to add to the ETL job. -F<filename>;<filetype ["+ETLFile.SUPPORTED_FILETYPES_LIST+"]>;<tableName>. <tableName> is only required if <filetype> is user_defined. Example: -F intersections.csv;intersections")
 				.create('F');
 		
 		options.addOption(fileOption);
+
+		Option stageOption = 
+				OptionBuilder
+				.withLongOpt("stage")
+				.isRequired(false)
+				.withDescription("Load the files into the SQL staging area on the DB server.")
+				.create();
+		
+		options.addOption(stageOption);
 		
 		
 		HelpFormatter helpFormatter = new HelpFormatter();
@@ -348,7 +351,7 @@ public class Main {
 	        	
 	        	String[] optionFields = etlFileOption.split(";");
 	        	
-	        	if( optionFields.length != 2) {
+	        	if( optionFields.length < 2) {
 	        		System.err.println( "Error: The option  \""+etlFileOption+"\" you entered is invalid.  Please specify the filename followed by the file type. Example: -F intersections.csv;intersections");
 			        
 			        System.exit(1);
@@ -360,9 +363,18 @@ public class Main {
 	        	
 	        	String fileTypeStr = optionFields[1];
 	        	
+	        	String tableName = (optionFields.length > 2) ? optionFields[2] : null;
+	        	
 				try {
 	        		fileType = ETLFile.Type.valueOf(fileTypeStr);
 	        		etlFile.setFileType(fileType);
+	        		etlFile.setTableName(tableName);
+	        		
+	        		if (fileType == ETLFile.Type.user_defined &&  tableName == null) {
+		        		System.err.println( "Error: The option  \""+etlFileOption+"\" you entered is invalid.  A table name is required for this type.  Please specify the filename followed by the file type and table name. Example: -F arbitrary.csv;user_defined;mytable");
+				        
+				        System.exit(1);
+	        		}
 	        		
 	        		etlFiles.add(etlFile);
 	        	}
@@ -374,7 +386,15 @@ public class Main {
 	
 	        }
 	        
-	        return etlFiles;
+			ETLMetadata metadata = new ETLMetadata();
+			metadata.addFiles(etlFiles);
+			metadata.setModelId(etlClient.modelId);
+	        
+	        if (commandLine.hasOption("stage")) {
+	        	metadata.setStagingRequired(true);
+	        }
+
+			return metadata;
 	    }
 	    catch( ParseException exp ) {
 	        System.err.println( "Error: " + exp.getMessage() );
