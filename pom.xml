@@ -9,6 +9,7 @@
 	<name>Vena command line ETL tool.</name>
 
 	<properties>
+	    <artifactory.host>build.venasolutions.com</artifactory.host>
 		<maven.compiler.source>1.7</maven.compiler.source>
 		<maven.compiler.target>1.7</maven.compiler.target>
 		<jackson.version>2.1.4</jackson.version>
@@ -133,5 +134,38 @@
 			</plugin>
 		</plugins>
 	</build>
+	<!-- Route all requests through Vena's maven cache. -->
+	<repositories>
+		<repository>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+			<id>central</id>
+			<name>libs-release</name>
+			<url>http://${artifactory.host}:8081/artifactory/libs-release</url>
+		</repository>
+		<repository>
+			<snapshots />
+			<id>snapshots</id>
+			<name>libs-snapshot</name>
+			<url>http://${artifactory.host}:8081/artifactory/libs-snapshot</url>
+		</repository>
+	</repositories>
+	<pluginRepositories>
+		<pluginRepository>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+			<id>central</id>
+			<name>plugins-release</name>
+			<url>http://${artifactory.host}:8081/artifactory/plugins-release</url>
+		</pluginRepository>
+		<pluginRepository>
+			<snapshots />
+			<id>snapshots</id>
+			<name>plugins-snapshot</name>
+			<url>http://${artifactory.host}:8081/artifactory/plugins-snapshot</url>
+		</pluginRepository>
+	</pluginRepositories>
 </project>
 
