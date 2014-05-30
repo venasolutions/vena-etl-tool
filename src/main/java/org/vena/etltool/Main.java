@@ -124,9 +124,8 @@ public class Main {
 		
 		Option statusOption =  OptionBuilder
 				.withLongOpt( "status")
-				.withDescription("Request status for the specified etlJob.  Example: --status=79026536904130560." )
+				.withDescription("Request status for the specified etlJob.  Requires --job <id> option." )
 				.isRequired(false)
-				.hasArg()
 				.create();
 			
 		options.addOption(statusOption);
@@ -266,7 +265,7 @@ public class Main {
 				.withLongOpt("job")
 				.isRequired(false)
 				.hasArg()
-				.withDescription("Specify a job ID (for certain operations).")
+				.withDescription("Specify a job ID (for certain operations). Example: --job=79026536904130560")
 				.create();
 		
 		options.addOption(jobOption);
@@ -352,9 +351,12 @@ public class Main {
 	        
 	        if(commandLine.hasOption("status") || args.length == 0) {
 				
-				String jobIdStr=commandLine.getOptionValue("status");
-				
-				ETLJob etlJob = etlClient.requestJobStatus(jobIdStr);
+	        	if (jobId == null) {
+					System.err.println( "Error: You must specify --job=<job Id>.");
+					System.exit(1);
+	        	}
+
+				etlClient.requestJobStatus(jobId);
 				
 				System.exit(0);
 			}
