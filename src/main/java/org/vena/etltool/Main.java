@@ -2,6 +2,7 @@ package org.vena.etltool;
 
 import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
@@ -41,8 +42,9 @@ public class Main {
 	
 	/**
 	 * @param args
+	 * @throws UnsupportedEncodingException 
 	 */
-	public static void main(String[] args) {
+	public static void main(String[] args) throws UnsupportedEncodingException {
 		System.getProperties().setProperty("datacenterId", "1");
 		
 		ETLClient etlClient = new ETLClient();
@@ -109,7 +111,7 @@ public class Main {
 	}
 
 	@SuppressWarnings("static-access")
-	private  static ETLMetadata parseCmdlineArgs(String[] args, ETLClient etlClient) {
+	private  static ETLMetadata parseCmdlineArgs(String[] args, ETLClient etlClient) throws UnsupportedEncodingException {
 		Options options  = new Options();
 		
 		Option helpOption =  OptionBuilder
@@ -122,9 +124,8 @@ public class Main {
 		
 		Option statusOption =  OptionBuilder
 				.withLongOpt( "status")
-				.withDescription("Request status for the specified etlJob.  Example: --status=79026536904130560." )
+				.withDescription("Request status for the specified etlJob.  Requires --job <id> option." )
 				.isRequired(false)
-				.hasArg()
 				.create();
 			
 		options.addOption(statusOption);
@@ -240,6 +241,34 @@ public class Main {
 		
 		options.addOption(stageOption);
 		
+		Option transformCompleteOption = 
+				OptionBuilder
+				.withLongOpt("transformComplete")
+				.isRequired(false)
+				.withDescription("Signal to the server to start loading from the SQL staging area. Requires --job <id> option.")
+				.create();
+		
+		options.addOption(transformCompleteOption);
+		
+		Option setErrorOption = 
+				OptionBuilder
+				.withLongOpt("setError")
+				.isRequired(false)
+				.hasOptionalArg()
+				.withDescription("Set the job status to error with optional error message. Requires --job <id> option.")
+				.create();
+		
+		options.addOption(setErrorOption);
+		
+		Option jobOption = 
+				OptionBuilder
+				.withLongOpt("job")
+				.isRequired(false)
+				.hasArg()
+				.withDescription("Specify a job ID (for certain operations). Example: --job=79026536904130560")
+				.create();
+		
+		options.addOption(jobOption);
 		
 		HelpFormatter helpFormatter = new HelpFormatter();
 		
@@ -292,6 +321,8 @@ public class Main {
 	        
 	        etlClient.password = password;
 	        
+	        String jobId =  commandLine.getOptionValue("job");
+
 	        /* Cross validation for the authentication options. */
 	        if( apiKey == null && username == null) {
 	        	System.err.println( "Error: You must specify either --username/--password options  or --apiUser/--apiKey to authenticate with the server.");
@@ -320,12 +351,38 @@ public class Main {
 	        
 	        if(commandLine.hasOption("status") || args.length == 0) {
 				
-				String jobIdStr=commandLine.getOptionValue("status");
-				
-				ETLJob etlJob = etlClient.requestJobStatus(jobIdStr);
+	        	if (jobId == null) {
+					System.err.println( "Error: You must specify --job=<job Id>.");
+					System.exit(1);
+	        	}
+
+				etlClient.requestJobStatus(jobId);
 				
 				System.exit(0);
 			}
+	        
+	        if (commandLine.hasOption("transformComplete")) {
+
+	        	if (jobId == null) {
+					System.err.println( "Error: You must specify --job=<job Id>.");
+					System.exit(1);
+	        	}
+
+				etlClient.sendTransformComplete(jobId);
+				System.exit(0);
+	        }
+	        
+	        if (commandLine.hasOption("setError")) {
+
+	        	if (jobId == null) {
+					System.err.println( "Error: You must specify --job=<job Id>.");
+					System.exit(1);
+	        	}
+
+				etlClient.setJobError(jobId, commandLine.getOptionValue("setError"));
+				System.exit(0);
+	        }
+	        
 	        
 	        /* Process model parameters. Create a new model if necessary. */
 	        if( modelIdStr != null) { 
@@ -341,7 +398,6 @@ public class Main {
 		        
 		        System.exit(1);
 	        }
-	        
 	        
 	        
 			String[] etlFileOptionValues = commandLine.getOptionValues("file");

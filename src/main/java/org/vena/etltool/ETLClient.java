@@ -1,9 +1,11 @@
 package org.vena.etltool;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+
 import javax.ws.rs.core.MediaType;
 
 import org.vena.api.customer.authentication.LoginResult;
-import org.vena.api.customer.datamodel.Model;
 import org.vena.api.etl.ETLJob;
 import org.vena.etltool.entities.CreateModelRequestDTO;
 import org.vena.etltool.entities.CreateModelResponseDTO;
@@ -96,6 +98,51 @@ public class ETLClient {
 
 		if (response.getStatus() != 200) {
 			throw new RuntimeException("Unable to get job status. : "+ response.getStatus());
+		}
+
+		ETLJob result = response.getEntity(ETLJob.class);
+
+		return result;
+	}
+
+	public ETLJob setJobError(String idString, String errMsg) throws UnsupportedEncodingException
+	{
+		Client client = Client.create();
+
+		client.addFilter(new HTTPBasicAuthFilter(apiUser, apiKey));
+
+		WebResource webResource = client.resource(protocol+"://"+host+":"+port+"/api/etl/jobs/"+idString + "/setError" + 
+		(errMsg == null ? "" : "?message=" + URLEncoder.encode(errMsg, "UTF-8")));
+
+		webResource.accept("application/json");
+
+
+		ClientResponse response = webResource.get(ClientResponse.class);
+
+		if (response.getStatus() != 200) {
+			throw new RuntimeException("Unable to set job error. : "+ response.getStatus());
+		}
+
+		ETLJob result = response.getEntity(ETLJob.class);
+
+		return result;
+	}
+
+	public ETLJob sendTransformComplete(String idString)
+	{
+		Client client = Client.create();
+
+		client.addFilter(new HTTPBasicAuthFilter(apiUser, apiKey));
+
+		WebResource webResource = client.resource(protocol+"://"+host+":"+port+"/api/etl/jobs/"+idString + "/transformComplete");
+
+		webResource.accept("application/json");
+
+
+		ClientResponse response = webResource.get(ClientResponse.class);
+
+		if (response.getStatus() != 200) {
+			throw new RuntimeException("Unable to send transform complete. : "+ response.getStatus());
 		}
 
 		ETLJob result = response.getEntity(ETLJob.class);
