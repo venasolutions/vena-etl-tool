@@ -26,6 +26,7 @@ public class ETLClient {
 	public boolean needsLogin = false;
 	public Id modelId;
 	public String protocol = "http";
+	public boolean validationRequested = false;
 
 	public ETLClient() {
 	}

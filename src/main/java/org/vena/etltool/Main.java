@@ -60,8 +60,16 @@ public class Main {
 
 			client.addFilter(new HTTPBasicAuthFilter(etlClient.apiUser, etlClient.apiKey));
 
-			WebResource webResource = client.resource(etlClient.protocol+"://"+etlClient.host+":"+etlClient.port+"/api/etl/upload");
-
+			String uploadPath = "/api/etl/upload";
+			String validationPath = "/api/etl/validate";
+			
+			WebResource webResource;
+			
+			if( !etlClient.validationRequested )
+				webResource = client.resource(etlClient.protocol+"://"+etlClient.host+":"+etlClient.port+uploadPath);
+			else
+				webResource = client.resource(etlClient.protocol+"://"+etlClient.host+":"+etlClient.port+validationPath);
+			
 			webResource.accept("application/json");
 
 			FormDataMultiPart form = new FormDataMultiPart();
@@ -270,6 +278,15 @@ public class Main {
 		
 		options.addOption(jobOption);
 		
+		Option validateOption = 
+				OptionBuilder
+				.withLongOpt("validate")
+				.isRequired(false)
+				.withDescription("Validate the ETL.  Performs a dry run without saving data, and sends back a list of validation results.")
+				.create();
+		
+		options.addOption(validateOption);
+		
 		HelpFormatter helpFormatter = new HelpFormatter();
 		
 		CommandLine commandLine = null;
@@ -383,6 +400,10 @@ public class Main {
 				System.exit(0);
 	        }
 	        
+	        
+	        if (commandLine.hasOption("validate")) {
+	        	etlClient.validationRequested = true;
+	        }
 	        
 	        /* Process model parameters. Create a new model if necessary. */
 	        if( modelIdStr != null) { 
