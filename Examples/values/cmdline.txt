@@ -1,0 +1,6 @@
+Sample commandline for creating a Model then loading intersections, 
+lids and lidlabels into it.  Make sure to use the latest version of the
+cmdline-etl-tool jar (This example shows version 1.4, but a newer version 
+may be available.) 
+
+java -jar cmdline-etl-tool-1.4.jar  -host=localhost -port=8080 -apiUser=1.1 --apiKey=1f4cd590ddf2484299122f0c8079054f --createModel="ETL Values Test 02" --file=model.csv;hierarchy --file=intersections.csv;intersections --file=lid_labels.csv;lid_labels --file=lids.csv;lids
