@@ -278,7 +278,15 @@ public class Main {
 	    try {
 	        // parse the command line arguments
 	        commandLine = parser.parse( options, args );
+	    }
+	    catch( ParseException exp ) {
+	        System.err.println( "Error: " + exp.getMessage() );
 	        
+	        helpFormatter.printHelp( EXAMPLE_COMMANDLINE, options );
+	        
+	        System.exit(1);
+	    }
+
 			if(commandLine.hasOption("help") || args.length == 0) {
 				
 				helpFormatter.printHelp(EXAMPLE_COMMANDLINE, options);
@@ -453,18 +461,6 @@ public class Main {
 	        }
 
 			return metadata;
-	    }
-	    catch( ParseException exp ) {
-	        System.err.println( "Error: " + exp.getMessage() );
-	        
-	        helpFormatter.printHelp( EXAMPLE_COMMANDLINE, options );
-	        
-	        System.exit(1);
-	    }
-	
 
-		
-		//Needed to silence a compiler error.  Unreachable, actually.
-		return null;
 	}
 }
