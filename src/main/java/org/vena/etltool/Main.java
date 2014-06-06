@@ -60,7 +60,8 @@ public class Main {
 
 			client.addFilter(new HTTPBasicAuthFilter(etlClient.apiUser, etlClient.apiKey));
 
-			WebResource webResource = client.resource(etlClient.protocol+"://"+etlClient.host+":"+etlClient.port+"/api/etl/upload");
+			WebResource webResource = client.resource(etlClient.protocol+"://"+etlClient.host+":"+etlClient.port+"/api/etl/upload"
+					+ (etlClient.templateId == null ? "" : "?templateId=" + etlClient.templateId));
 
 			webResource.accept("application/json");
 
@@ -270,6 +271,16 @@ public class Main {
 		
 		options.addOption(jobOption);
 		
+		Option templateOption = 
+				OptionBuilder
+				.withLongOpt("templateId")
+				.isRequired(false)
+				.hasArg()
+				.withDescription("Specify a template ID to associate with this template")
+				.create();
+		
+		options.addOption(templateOption);
+		
 		HelpFormatter helpFormatter = new HelpFormatter();
 		
 		CommandLine commandLine = null;
@@ -331,6 +342,10 @@ public class Main {
 	        
 	        String jobId =  commandLine.getOptionValue("job");
 
+	        String templateId = commandLine.getOptionValue("templateId");
+	        
+	        etlClient.templateId = templateId;
+	        
 	        /* Cross validation for the authentication options. */
 	        if( apiKey == null && username == null) {
 	        	System.err.println( "Error: You must specify either --username/--password options  or --apiUser/--apiKey to authenticate with the server.");
