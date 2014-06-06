@@ -364,7 +364,12 @@ public class Main {
 					System.exit(1);
 	        	}
 
-				etlClient.requestJobStatus(jobId);
+	        	ETLJob etlJob = etlClient.requestJobStatus(jobId);
+
+				System.out.println("Job Id: " + jobId);
+				System.out.println("Cancelled: " + etlJob.isCancelRequested());
+				System.out.println("Error: " + etlJob.isError());
+				System.out.println("Error Message: " + etlJob.getErrorMessage());
 				
 				System.exit(0);
 			}
