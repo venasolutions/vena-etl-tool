@@ -37,7 +37,10 @@ public class ETLClient {
 
 		client.addFilter(new HTTPBasicAuthFilter(username, password));
 
-		WebResource webResource = client.resource(protocol+"://"+host+":"+port+"/login");
+		String uri = protocol+"://"+host+":"+port+"/login";
+		System.out.println("Calling " + uri);
+		
+		WebResource webResource = client.resource(uri);
 
 		webResource.accept("application/json");
 
@@ -61,7 +64,10 @@ public class ETLClient {
 
 		client.addFilter(new HTTPBasicAuthFilter(apiUser, apiKey));
 
-		WebResource webResource = client.resource(protocol+"://"+host+":"+port+"/api/models");
+		String uri = protocol+"://"+host+":"+port+"/api/models";
+		System.out.println("Calling " + uri);
+
+		WebResource webResource = client.resource(uri);
 
 		webResource.accept("application/json");
 
@@ -90,12 +96,17 @@ public class ETLClient {
 
 		client.addFilter(new HTTPBasicAuthFilter(apiUser, apiKey));
 
-		WebResource webResource = client.resource(protocol+"://"+host+":"+port+"/api/etl/jobs/"+idString);
+		String uri = protocol+"://"+host+":"+port+"/api/etl/jobs/"+idString;
+		System.out.println("Calling " + uri);
+		
+		WebResource webResource = client.resource(uri);
 
 		webResource.accept("application/json");
 
 
 		ClientResponse response = webResource.get(ClientResponse.class);
+		
+		System.out.println(">>> " + response);
 
 		if (response.getStatus() != 200) {
 			throw new RuntimeException("Unable to get job status. : "+ response.getStatus());
@@ -112,8 +123,11 @@ public class ETLClient {
 
 		client.addFilter(new HTTPBasicAuthFilter(apiUser, apiKey));
 
-		WebResource webResource = client.resource(protocol+"://"+host+":"+port+"/api/etl/jobs/"+idString + "/setError" + 
-		(errMsg == null ? "" : "?message=" + URLEncoder.encode(errMsg, "UTF-8")));
+		String uri = protocol+"://"+host+":"+port+"/api/etl/jobs/"+idString + "/setError" + 
+				(errMsg == null ? "" : "?message=" + URLEncoder.encode(errMsg, "UTF-8"));
+		System.out.println("Calling " + uri);
+
+		WebResource webResource = client.resource(uri);
 
 		webResource.accept("application/json");
 
@@ -135,7 +149,10 @@ public class ETLClient {
 
 		client.addFilter(new HTTPBasicAuthFilter(apiUser, apiKey));
 
-		WebResource webResource = client.resource(protocol+"://"+host+":"+port+"/api/etl/jobs/"+idString + "/transformComplete");
+		String uri = protocol+"://"+host+":"+port+"/api/models";
+		System.out.println("Calling " + uri);
+		
+		WebResource webResource = client.resource(uri);
 
 		webResource.accept("application/json");
 

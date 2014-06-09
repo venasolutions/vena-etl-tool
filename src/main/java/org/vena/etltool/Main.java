@@ -59,9 +59,13 @@ public class Main {
 			Client client = Client.create(jerseyClientConfig);
 
 			client.addFilter(new HTTPBasicAuthFilter(etlClient.apiUser, etlClient.apiKey));
+			
+			String uri = etlClient.protocol+"://"+etlClient.host+":"+etlClient.port+"/api/etl/upload"
+					+ (etlClient.templateId == null ? "" : "?templateId=" + etlClient.templateId);
 
-			WebResource webResource = client.resource(etlClient.protocol+"://"+etlClient.host+":"+etlClient.port+"/api/etl/upload"
-					+ (etlClient.templateId == null ? "" : "?templateId=" + etlClient.templateId));
+			System.out.println("Calling "+uri);
+
+			WebResource webResource = client.resource(uri);
 
 			webResource.accept("application/json");
 
@@ -86,6 +90,8 @@ public class Main {
 			}
 			
 			ClientResponse response = webResource.type(MediaType.MULTIPART_FORM_DATA_TYPE).post(ClientResponse.class, form);
+			
+			System.out.println(">>> " + response);
 
 			switch( response.getStatus()) {
 			
