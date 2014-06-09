@@ -59,8 +59,13 @@ public class Main {
 			Client client = Client.create(jerseyClientConfig);
 
 			client.addFilter(new HTTPBasicAuthFilter(etlClient.apiUser, etlClient.apiKey));
+			
+			String uri = etlClient.protocol+"://"+etlClient.host+":"+etlClient.port+"/api/etl/upload"
+					+ (etlClient.templateId == null ? "" : "?templateId=" + etlClient.templateId);
 
-			WebResource webResource = client.resource(etlClient.protocol+"://"+etlClient.host+":"+etlClient.port+"/api/etl/upload");
+			System.out.println("Calling "+uri);
+
+			WebResource webResource = client.resource(uri);
 
 			webResource.accept("application/json");
 
@@ -85,6 +90,8 @@ public class Main {
 			}
 			
 			ClientResponse response = webResource.type(MediaType.MULTIPART_FORM_DATA_TYPE).post(ClientResponse.class, form);
+			
+			System.out.println(">>> " + response);
 
 			switch( response.getStatus()) {
 			
@@ -270,6 +277,16 @@ public class Main {
 		
 		options.addOption(jobOption);
 		
+		Option templateOption = 
+				OptionBuilder
+				.withLongOpt("templateId")
+				.isRequired(false)
+				.hasArg()
+				.withDescription("Specify a template ID to associate with this template")
+				.create();
+		
+		options.addOption(templateOption);
+		
 		HelpFormatter helpFormatter = new HelpFormatter();
 		
 		CommandLine commandLine = null;
@@ -278,7 +295,15 @@ public class Main {
 	    try {
 	        // parse the command line arguments
 	        commandLine = parser.parse( options, args );
+	    }
+	    catch( ParseException exp ) {
+	        System.err.println( "Error: " + exp.getMessage() );
 	        
+	        helpFormatter.printHelp( EXAMPLE_COMMANDLINE, options );
+	        
+	        System.exit(1);
+	    }
+
 			if(commandLine.hasOption("help") || args.length == 0) {
 				
 				helpFormatter.printHelp(EXAMPLE_COMMANDLINE, options);
@@ -323,6 +348,10 @@ public class Main {
 	        
 	        String jobId =  commandLine.getOptionValue("job");
 
+	        String templateId = commandLine.getOptionValue("templateId");
+	        
+	        etlClient.templateId = templateId;
+	        
 	        /* Cross validation for the authentication options. */
 	        if( apiKey == null && username == null) {
 	        	System.err.println( "Error: You must specify either --username/--password options  or --apiUser/--apiKey to authenticate with the server.");
@@ -356,7 +385,12 @@ public class Main {
 					System.exit(1);
 	        	}
 
-				etlClient.requestJobStatus(jobId);
+	        	ETLJob etlJob = etlClient.requestJobStatus(jobId);
+
+				System.out.println("Job Id: " + jobId);
+				System.out.println("Cancelled: " + etlJob.isCancelRequested());
+				System.out.println("Error: " + etlJob.isError());
+				System.out.println("Error Message: " + etlJob.getErrorMessage());
 				
 				System.exit(0);
 			}
@@ -453,18 +487,6 @@ public class Main {
 	        }
 
 			return metadata;
-	    }
-	    catch( ParseException exp ) {
-	        System.err.println( "Error: " + exp.getMessage() );
-	        
-	        helpFormatter.printHelp( EXAMPLE_COMMANDLINE, options );
-	        
-	        System.exit(1);
-	    }
-	
 
-		
-		//Needed to silence a compiler error.  Unreachable, actually.
-		return null;
 	}
 }
