@@ -21,7 +21,7 @@ import org.vena.api.etl.ETLFile;
 import org.vena.api.etl.ETLFile.Type;
 import org.vena.api.etl.ETLJob;
 import org.vena.api.etl.ETLMetadata;
-import org.vena.etltool.entities.CreateModelResponseDTO;
+import org.vena.etltool.entities.ModelResponseDTO;
 import org.vena.id.Id;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -214,10 +214,20 @@ public class Main {
 				.withLongOpt("modelId")
 				.isRequired(false)
 				.hasArg()
-				.withDescription("The Id of the model to apply the etl job to. See also --createModel.")
+				.withDescription("The Id of the model to apply the etl job to. See also --modelName.")
 				.create();
 		
 		options.addOption(modelId);
+		
+		Option modelName = 
+				OptionBuilder
+				.withLongOpt("modelName")
+				.isRequired(false)
+				.hasArg()
+				.withDescription("The name of the model to apply the etl job to. See also --modelId.")
+				.create();
+		
+		options.addOption(modelName);
 		
 		Option createModel = 
 				OptionBuilder
@@ -318,7 +328,7 @@ public class Main {
 	        if( port != null)
 	        	etlClient.port=Integer.parseInt(port);
 	        
-	        String modelIdStr = commandLine.getOptionValue("modelId");
+	        
 	        
 	        String hostname = commandLine.getOptionValue("host");
 	        
@@ -417,18 +427,41 @@ public class Main {
 				System.exit(0);
 	        }
 	        
+	        String modelIdStr = commandLine.getOptionValue("modelId");
+	        String modelNameStr = commandLine.getOptionValue("modelName");
 	        
 	        /* Process model parameters. Create a new model if necessary. */
-	        if( modelIdStr != null) { 
-	        	etlClient.modelId = Id.valueOf(modelIdStr);
+	        if( modelIdStr != null || modelNameStr != null) {
+	        	
+	        	if(modelIdStr != null && modelNameStr != null)  {
+	        		System.err.println( "Error: You must specify either --modelId=<existing model Id> or --modelName=<model name>, but not both.");
+			        
+			        System.exit(1);
+	        	}
+	        	
+	        	//Lookup model by name.
+	        	if( modelNameStr != null ) {
+	        		ModelResponseDTO searchResults = etlClient.lookupModel(modelNameStr);
+	        		
+	        		if( searchResults == null) {
+	        			System.err.println( "Error: Could not find the model named \""+modelNameStr+"\".");
+				        
+				        System.exit(1);
+	        		}
+	        		
+	        		etlClient.modelId = searchResults.getId();
+	        	}
+	        	else {
+	        		etlClient.modelId = Id.valueOf(modelIdStr);
+	        	}
 	        }
 	        else if(commandLine.getOptionValue("createModel") !=null) {
-	        	CreateModelResponseDTO modelResponse = etlClient.createModel(commandLine.getOptionValue("createModel"));
+	        	ModelResponseDTO modelResponse = etlClient.createModel(commandLine.getOptionValue("createModel"));
 	        	
 	        	System.out.println("Created model. Id="+modelResponse.getId());
 	        }
 	        else {
-	        	System.err.println( "Error: You must specify either --modelId=<existing model Id> or --createModel=<model name>.");
+	        	System.err.println( "Error: You must can not specify --createModel=<model name> together with either --modelId or --modelName.");
 		        
 		        System.exit(1);
 	        }

@@ -5,7 +5,7 @@ import org.vena.id.Id;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class CreateModelResponseDTO {
+public class ModelResponseDTO {
 	Id id;
 	
 	private String name;
@@ -21,7 +21,7 @@ public class CreateModelResponseDTO {
 		this.id = id;
 	}
 
-	public CreateModelResponseDTO()
+	public ModelResponseDTO()
 	{
 	}
 

@@ -2,17 +2,19 @@ package org.vena.etltool;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.List;
 
 import javax.ws.rs.core.MediaType;
 
 import org.vena.api.customer.authentication.LoginResult;
 import org.vena.api.etl.ETLJob;
 import org.vena.etltool.entities.CreateModelRequestDTO;
-import org.vena.etltool.entities.CreateModelResponseDTO;
+import org.vena.etltool.entities.ModelResponseDTO;
 import org.vena.id.Id;
 
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
+import com.sun.jersey.api.client.GenericType;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
 
@@ -58,7 +60,7 @@ public class ETLClient {
 	}
 	
 	//FIMXE - there is some code duplication between login() and this method that should be refactored out.
-	public CreateModelResponseDTO createModel(String modelName) {
+	public ModelResponseDTO createModel(String modelName) {
 
 		Client client = Client.create();
 
@@ -79,15 +81,49 @@ public class ETLClient {
 		ClientResponse response = webResource.type(MediaType.APPLICATION_JSON_TYPE).post(ClientResponse.class, createModelDTO);
 
 		if (response.getStatus() != 200) {
-			throw new RuntimeException("Login failed : HTTP error code : "+ response.getStatus());
+			throw new RuntimeException("Create model failed : HTTP error code : "+ response.getStatus());
 		}
 
-		CreateModelResponseDTO result = response.getEntity(CreateModelResponseDTO.class);
+		ModelResponseDTO result = response.getEntity(ModelResponseDTO.class);
 
 		this.modelId = result.getId();
 		
 		return result;
 
+	}
+	
+	public ModelResponseDTO lookupModel(String modelName) {
+
+		Client client = Client.create();
+
+		client.addFilter(new HTTPBasicAuthFilter(apiUser, apiKey));
+
+		String uri = protocol+"://"+host+":"+port+"/api/models";
+		System.out.println("Calling " + uri);
+
+		WebResource webResource = client.resource(uri);
+
+		webResource.accept("application/json");
+
+		CreateModelRequestDTO createModelDTO = new CreateModelRequestDTO();
+
+		createModelDTO.setName(modelName);
+		createModelDTO.setDesc(modelName);
+
+		ClientResponse response = webResource.type(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
+
+		if (response.getStatus() != 200) {
+			throw new RuntimeException("Lookup model failed : HTTP error code : "+ response.getStatus());
+		}
+
+		List<ModelResponseDTO> results = response.getEntity(new GenericType<List<ModelResponseDTO>>(){});
+
+		for(ModelResponseDTO model : results)  {
+			if(modelName.equals(model.getName()))
+				return model;
+		}
+		
+		return null;
 	}
 	
 	public ETLJob requestJobStatus(String idString)
