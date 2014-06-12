@@ -4,7 +4,10 @@ import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import javax.ws.rs.core.MediaType;
@@ -22,6 +25,7 @@ import org.vena.api.etl.ETLFile.Type;
 import org.vena.api.etl.ETLJob;
 import org.vena.api.etl.ETLMetadata;
 import org.vena.etltool.entities.ModelResponseDTO;
+import org.vena.etltool.util.TwoTuple;
 import org.vena.id.Id;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -60,8 +64,7 @@ public class Main {
 
 			client.addFilter(new HTTPBasicAuthFilter(etlClient.apiUser, etlClient.apiKey));
 			
-			String uri = etlClient.protocol+"://"+etlClient.host+":"+etlClient.port+"/api/etl/upload"
-					+ (etlClient.templateId == null ? "" : "?templateId=" + etlClient.templateId);
+			String uri = buildURI(etlClient);
 
 			System.out.println("Calling "+uri);
 
@@ -117,6 +120,50 @@ public class Main {
 		}
 	}
 
+	private static String buildURI(ETLClient etlClient)
+	{
+		StringBuilder urlBuf = new StringBuilder();
+		List<TwoTuple<String, String>> parameters = new ArrayList<>();
+		
+		urlBuf.append(etlClient.protocol).append("://");
+		urlBuf.append(etlClient.host).append(":");
+		urlBuf.append(etlClient.port);
+		
+		String resource;
+		
+		if( !etlClient.validationRequested ) {
+			resource = "/api/etl/upload";
+		}
+		else {
+			resource = "/api/etl/validate";
+		}
+		
+		urlBuf.append(resource);
+		
+		if( etlClient.templateId != null )
+			parameters.add(new TwoTuple<String, String>("templateId", etlClient.templateId));
+		 
+		Iterator<TwoTuple<String, String>> it = parameters.iterator();
+		
+		StringBuilder parameterBuf = new StringBuilder();
+		
+		if(it.hasNext())
+			parameterBuf.append("?");
+		
+		while(it.hasNext()) {
+			TwoTuple<String, String> parameter = it.next();
+			
+			parameterBuf.append(parameter.getO1()).append("=").append(parameter.getO2());
+			
+			if(it.hasNext())
+				parameterBuf.append("&");
+		}
+
+		urlBuf.append(parameterBuf);
+		
+		return urlBuf.toString();
+	}
+	
 	@SuppressWarnings("static-access")
 	private  static ETLMetadata parseCmdlineArgs(String[] args, ETLClient etlClient) throws UnsupportedEncodingException {
 		Options options  = new Options();
@@ -296,6 +343,15 @@ public class Main {
 				.create();
 		
 		options.addOption(templateOption);
+
+		Option validateOption = 
+				OptionBuilder
+				.withLongOpt("validate")
+				.isRequired(false)
+				.withDescription("Validate the ETL.  Performs a dry run without saving data, and sends back a list of validation results.")
+				.create();
+		
+		options.addOption(validateOption);
 		
 		HelpFormatter helpFormatter = new HelpFormatter();
 		
@@ -429,6 +485,10 @@ public class Main {
 	        
 	        String modelIdStr = commandLine.getOptionValue("modelId");
 	        String modelNameStr = commandLine.getOptionValue("modelName");
+	        
+	        if (commandLine.hasOption("validate")) {
+	        	etlClient.validationRequested = true;
+	        }
 	        
 	        /* Process model parameters. Create a new model if necessary. */
 	        if( modelIdStr != null || modelNameStr != null) {

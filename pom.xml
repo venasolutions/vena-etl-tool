@@ -20,7 +20,7 @@
 		<dependency>
 			<groupId>org.vena</groupId>
 			<artifactId>mt-api</artifactId>
-			<version>[0.222,)</version>
+			<version>[0.248,)</version>
 			<!-- mt-parent includes way too many dependencies that should either be 
 				removed outright or moved to mt-server. All this project needs from mt-api 
 				are the entity classes, so for now, apply a blanket exclusion for every transitive 

@@ -29,6 +29,7 @@ public class ETLClient {
 	public Id modelId;
 	public String protocol = "http";
 	public String templateId;
+	public boolean validationRequested = false;
 
 	public ETLClient() {
 	}
