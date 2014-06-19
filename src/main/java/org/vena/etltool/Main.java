@@ -51,7 +51,7 @@ public class Main {
 		
 		Option statusOption =  OptionBuilder
 				.withLongOpt( "status")
-				.withDescription("Request status for the specified etlJob.  Requires --job <id> option." )
+				.withDescription("Request status for the specified etlJob.  Requires --jobId option." )
 				.isRequired(false)
 				.create();
 			
@@ -182,7 +182,7 @@ public class Main {
 				OptionBuilder
 				.withLongOpt("transformComplete")
 				.isRequired(false)
-				.withDescription("Signal to the server to start loading from the SQL staging area. Requires --job <id> option.")
+				.withDescription("Signal to the server to start loading from the SQL staging area. Requires --jobId option.")
 				.create();
 		
 		options.addOption(transformCompleteOption);
@@ -192,20 +192,30 @@ public class Main {
 				.withLongOpt("setError")
 				.isRequired(false)
 				.hasOptionalArg()
-				.withDescription("Set the job status to error with optional error message. Requires --job <id> option.")
+				.withDescription("Set the job status to error with optional error message. Requires --jobId option.")
 				.create();
 		
 		options.addOption(setErrorOption);
 		
-		Option jobOption = 
+		Option jobIdOption = 
 				OptionBuilder
-				.withLongOpt("job")
+				.withLongOpt("jobId")
 				.isRequired(false)
 				.hasArg()
-				.withDescription("Specify a job ID (for certain operations). Example: --job=79026536904130560")
+				.withDescription("Specify a job ID (for certain operations). Example: --jobId=79026536904130560")
 				.create();
 		
-		options.addOption(jobOption);
+		options.addOption(jobIdOption);
+		
+		Option jobNameOption = 
+				OptionBuilder
+				.withLongOpt("jobName")
+				.isRequired(false)
+				.hasArg()
+				.withDescription("Specify a job name (when creating a new job only)")
+				.create();
+		
+		options.addOption(jobNameOption);
 		
 		Option templateOption = 
 				OptionBuilder
@@ -285,7 +295,9 @@ public class Main {
 	        
 	        etlClient.password = password;
 	        
-	        String jobId =  commandLine.getOptionValue("job");
+	        String jobId =  commandLine.getOptionValue("jobId");
+
+	        String jobName =  commandLine.getOptionValue("jobName");
 
 	        String templateId = commandLine.getOptionValue("templateId");
 	        
@@ -399,9 +411,16 @@ public class Main {
 		        System.exit(1);
 	        }
 	        
+	        System.out.println("Creating a new job.");
 	        
 			String[] etlFileOptionValues = commandLine.getOptionValues("file");
-	        
+			
+			if (etlFileOptionValues == null) {
+	        	System.err.println( "Error: You must specify at least one --file option when submitting a job.");
+		        
+		        System.exit(1);
+			}
+       
 			List<ETLFile> etlFiles = new ArrayList<>();
 			
 	        for(String etlFileOption : etlFileOptionValues)  {
@@ -410,7 +429,7 @@ public class Main {
 	        	String[] optionFields = etlFileOption.split(";");
 	        	
 	        	if( optionFields.length < 2) {
-	        		System.err.println( "Error: The option  \""+etlFileOption+"\" you entered is invalid.  Please specify the filename followed by the file type. Example: -F intersections.csv;intersections");
+	        		System.err.println( "Error: The value \""+etlFileOption+"\" for option --file is invalid.  Please specify the filename followed by the file type. Example: -F intersections.csv;intersections");
 			        
 			        System.exit(1);
 	        	}
@@ -447,6 +466,7 @@ public class Main {
 			ETLMetadata metadata = new ETLMetadata();
 			metadata.addFiles(etlFiles);
 			metadata.setModelId(etlClient.modelId);
+			metadata.setName(jobName);
 	        
 	        if (commandLine.hasOption("stage")) {
 	        	metadata.setStagingRequired(true);
