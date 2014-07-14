@@ -342,6 +342,7 @@ public class Main {
 				System.out.println("Cancelled: " + etlJob.isCancelRequested());
 				System.out.println("Error: " + etlJob.isError());
 				System.out.println("Error Message: " + etlJob.getErrorMessage());
+				System.out.println("Phase: " + etlJob.getPhase());
 				
 				System.exit(0);
 			}

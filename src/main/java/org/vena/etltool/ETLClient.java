@@ -299,6 +299,7 @@ public class ETLClient {
 
 
 		ClientResponse response = webResource.get(ClientResponse.class);
+		System.out.println(">>> " + response);
 
 		if (response.getStatus() != 200) {
 			throw new RuntimeException("Unable to set job error. : "+ response.getStatus());
@@ -315,7 +316,7 @@ public class ETLClient {
 
 		client.addFilter(new HTTPBasicAuthFilter(apiUser, apiKey));
 
-		String uri = protocol+"://"+host+":"+port+"/api/models";
+		String uri = protocol+"://"+host+":"+port+"/api/etl/jobs/"+idString + "/transformComplete";
 		System.out.println("Calling " + uri);
 		
 		WebResource webResource = client.resource(uri);
@@ -324,6 +325,7 @@ public class ETLClient {
 
 
 		ClientResponse response = webResource.get(ClientResponse.class);
+		System.out.println(">>> " + response);
 
 		if (response.getStatus() != 200) {
 			throw new RuntimeException("Unable to send transform complete. : "+ response.getStatus());
