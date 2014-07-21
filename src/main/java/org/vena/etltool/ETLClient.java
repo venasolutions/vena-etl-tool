@@ -15,6 +15,8 @@ import org.vena.api.customer.authentication.LoginResult;
 import org.vena.api.etl.ETLFile;
 import org.vena.api.etl.ETLJob;
 import org.vena.api.etl.ETLMetadata;
+import org.vena.api.etl.QueryDTO;
+import org.vena.api.etl.QueryDTO.Destination;
 import org.vena.etltool.entities.CreateModelRequestDTO;
 import org.vena.etltool.entities.ModelResponseDTO;
 import org.vena.etltool.util.TwoTuple;
@@ -334,5 +336,48 @@ public class ETLClient {
 		ETLJob result = response.getEntity(ETLJob.class);
 
 		return result;
+	}
+	
+	public void sendExport(ETLFile.Type type, String tableName, String whereClause) {
+		
+		Client client = Client.create();
+
+		client.addFilter(new HTTPBasicAuthFilter(apiUser, apiKey));
+		
+		String typePath;
+
+		switch (type) {
+		case hierarchy:
+			typePath = "hierarchies";
+			break;
+		case intersections:
+			typePath = "intersections";
+			break;
+		case lids:
+			typePath = "lids";
+			break;
+		default:
+			throw new RuntimeException("Type "+type+" not supported for queries.");
+		}
+
+		String uri = protocol+"://"+host+":"+port+"/api/models/"+modelId+"/etl/query/" + typePath;
+		System.out.println("Calling " + uri);
+		
+		WebResource webResource = client.resource(uri);
+
+		webResource.accept("application/json");
+
+		QueryDTO query = new QueryDTO();
+		query.setDestination(Destination.ToStaging);
+		query.setTableName(tableName);
+		query.setQueryString(whereClause);
+
+		ClientResponse response = webResource.type(MediaType.APPLICATION_JSON_TYPE).post(ClientResponse.class, query);
+		System.out.println(">>> " + response);
+
+		if (response.getStatus() != 204) {
+			throw new RuntimeException("Unable to send export. : "+ response.getStatus());
+		}
+
 	}
 }

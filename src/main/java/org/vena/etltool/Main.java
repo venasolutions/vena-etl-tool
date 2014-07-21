@@ -236,6 +236,38 @@ public class Main {
 		
 		options.addOption(validateOption);
 		
+		Option exportOption = 
+				OptionBuilder
+				.withLongOpt("export")
+				.isRequired(false)
+				.hasArg()
+				.withArgName("type")
+				.withDescription("Export part of the datamodel to a staging table. Type may be 'hierarchy', 'intersections', 'lids'.")
+				.create();
+		
+		options.addOption(exportOption);
+
+		Option exportStagingOption = 
+				OptionBuilder
+				.withLongOpt("exportToTable")
+				.isRequired(false)
+				.hasArg()
+				.withArgName("name")
+				.withDescription("Name of table in staging DB to export to.")
+				.create();
+		
+		options.addOption(exportStagingOption);
+
+		Option exportWhereOption = 
+				OptionBuilder
+				.withLongOpt("exportWhere")
+				.isRequired(false)
+				.hasArg()
+				.withDescription("Where clause for export.")
+				.create();
+		
+		options.addOption(exportWhereOption);
+
 		HelpFormatter helpFormatter = new HelpFormatter();
 		
 		CommandLine commandLine = null;
@@ -407,10 +439,36 @@ public class Main {
 	        	System.out.println("Created model. Id="+modelResponse.getId());
 	        }
 	        else {
-	        	System.err.println( "Error: You must can not specify --createModel=<model name> together with either --modelId or --modelName.");
+	        	System.err.println( "Error: You must specify one of --createModel=<model name> or --modelId or --modelName.");
 		        
 		        System.exit(1);
 	        }
+	        
+	        if (commandLine.hasOption("export")) {
+	        	String exportTypeStr = commandLine.getOptionValue("export");
+	        	String exportToTable = commandLine.getOptionValue("exportToTable");
+	        	if (exportToTable == null) {
+		        	System.err.println( "Error: export option requires --exportToTable <name>.");
+		        	System.exit(1);
+	        	}
+	        	
+	        	Type type = null;
+				try {
+	        		type = ETLFile.Type.valueOf(exportTypeStr);
+	        	}
+	        	catch(IllegalArgumentException e) {
+	        		System.err.println( "Error: The option \""+exportOption+"\" you entered is invalid.  The ETL file type \""+exportTypeStr+"\" does not exist. The supported filetypes are ["+ETLFile.SUPPORTED_FILETYPES_LIST+"]");
+			        System.exit(1);
+	        	}
+				
+				String whereClause = commandLine.getOptionValue("exportWhere");
+				
+				etlClient.sendExport(type, exportToTable, whereClause);
+				
+				System.exit(0);
+	        }
+	        
+	        // Do an Import
 	        
 	        System.out.println("Creating a new job.");
 	        
