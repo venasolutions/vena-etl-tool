@@ -1,10 +1,14 @@
 package org.vena.etltool;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
@@ -53,22 +57,22 @@ public class ETLClient {
 	public void uploadETL(ETLMetadata metadata)
 	{
 		try {
+			String resource;
 
-			ClientConfig jerseyClientConfig = new DefaultClientConfig();
-			jerseyClientConfig.getClasses().add(MultiPartWriter.class);
+			if( !validationRequested ) {
+				resource = getETLBasePath() + "/upload";
+			}
+			else {
+				resource = getETLBasePath() + "/validate";
+			}
 			
-			Client client = Client.create(jerseyClientConfig);
-
-			client.addFilter(new HTTPBasicAuthFilter(apiUser, apiKey));
+			List<TwoTuple<String, String>> parameters = new ArrayList<>();
+			if( templateId != null ) {
+				parameters.add(new TwoTuple<String, String>("templateId", templateId));
+			}
 			
-			String uri = buildURI();
-
-			System.out.println("Calling "+uri);
-
-			WebResource webResource = client.resource(uri);
-
-			webResource.accept("application/json");
-
+			WebResource webResource = buildWebResource(resource, parameters);
+			
 			FormDataMultiPart form = new FormDataMultiPart();
 
 			ObjectMapper objectMapper = new ObjectMapper();
@@ -121,29 +125,23 @@ public class ETLClient {
 		}
 	}
 	
-	private  String buildURI()
+	private String getETLBasePath() {
+		if (modelId == null) {
+			return "/api/etl";
+		}
+		return "/api/models/" + modelId + "/etl";
+	}
+	
+	private  String buildURI(String path, Iterable<TwoTuple<String, String>> parameters)
 	{
 		StringBuilder urlBuf = new StringBuilder();
-		List<TwoTuple<String, String>> parameters = new ArrayList<>();
 		
 		urlBuf.append(protocol).append("://");
 		urlBuf.append(host).append(":");
 		urlBuf.append(port);
 		
-		String resource;
+		urlBuf.append(path);
 		
-		if( !validationRequested ) {
-			resource = "/api/etl/upload";
-		}
-		else {
-			resource = "/api/etl/validate";
-		}
-		
-		urlBuf.append(resource);
-		
-		if( templateId != null )
-			parameters.add(new TwoTuple<String, String>("templateId", templateId));
-		 
 		Iterator<TwoTuple<String, String>> it = parameters.iterator();
 		
 		StringBuilder parameterBuf = new StringBuilder();
@@ -154,7 +152,12 @@ public class ETLClient {
 		while(it.hasNext()) {
 			TwoTuple<String, String> parameter = it.next();
 			
-			parameterBuf.append(parameter.getO1()).append("=").append(parameter.getO2());
+			try {
+				parameterBuf.append(URLEncoder.encode(parameter.getO1(), "UTF-8"))
+					.append("=").append(URLEncoder.encode(parameter.getO2(), "UTF-8"));
+			} catch (UnsupportedEncodingException e) {
+				throw new RuntimeException(e);
+			}
 			
 			if(it.hasNext())
 				parameterBuf.append("&");
@@ -164,7 +167,36 @@ public class ETLClient {
 		
 		return urlBuf.toString();
 	}
-	
+
+	private  String buildURI(String path)
+	{
+		return buildURI(path, Collections.<TwoTuple<String, String>> emptyList());
+	}
+
+
+	private WebResource buildWebResource(String path) {
+		return buildWebResource(path, Collections.<TwoTuple<String, String>> emptyList());
+	}
+
+	private WebResource buildWebResource(String path, Iterable<TwoTuple<String, String>> parameters) {
+
+		ClientConfig jerseyClientConfig = new DefaultClientConfig();
+		jerseyClientConfig.getClasses().add(MultiPartWriter.class);
+		
+		Client client = Client.create(jerseyClientConfig);
+
+		client.addFilter(new HTTPBasicAuthFilter(apiUser, apiKey));
+
+		String uri = buildURI(path);
+		System.out.println("Calling " + uri);
+
+		WebResource webResource = client.resource(uri);
+
+		webResource.accept("application/json");
+		
+		return webResource;
+	}
+
 	public void login()
 	{
 		Client client = Client.create();
@@ -194,16 +226,7 @@ public class ETLClient {
 	//FIMXE - there is some code duplication between login() and this method that should be refactored out.
 	public ModelResponseDTO createModel(String modelName) {
 
-		Client client = Client.create();
-
-		client.addFilter(new HTTPBasicAuthFilter(apiUser, apiKey));
-
-		String uri = protocol+"://"+host+":"+port+"/api/models";
-		System.out.println("Calling " + uri);
-
-		WebResource webResource = client.resource(uri);
-
-		webResource.accept("application/json");
+		WebResource webResource = buildWebResource("/api/models");
 
 		CreateModelRequestDTO createModelDTO = new CreateModelRequestDTO();
 
@@ -226,16 +249,7 @@ public class ETLClient {
 	
 	public ModelResponseDTO lookupModel(String modelName) {
 
-		Client client = Client.create();
-
-		client.addFilter(new HTTPBasicAuthFilter(apiUser, apiKey));
-
-		String uri = protocol+"://"+host+":"+port+"/api/models";
-		System.out.println("Calling " + uri);
-
-		WebResource webResource = client.resource(uri);
-
-		webResource.accept("application/json");
+		WebResource webResource = buildWebResource("/api/models");
 
 		CreateModelRequestDTO createModelDTO = new CreateModelRequestDTO();
 
@@ -260,16 +274,7 @@ public class ETLClient {
 	
 	public ETLJob requestJobStatus(String idString)
 	{
-		Client client = Client.create();
-
-		client.addFilter(new HTTPBasicAuthFilter(apiUser, apiKey));
-
-		String uri = protocol+"://"+host+":"+port+"/api/etl/jobs/"+idString;
-		System.out.println("Calling " + uri);
-		
-		WebResource webResource = client.resource(uri);
-
-		webResource.accept("application/json");
+		WebResource webResource = buildWebResource(getETLBasePath() + "/jobs/" + idString);
 
 
 		ClientResponse response = webResource.get(ClientResponse.class);
@@ -287,18 +292,10 @@ public class ETLClient {
 
 	public ETLJob setJobError(String idString, String errMsg) throws UnsupportedEncodingException
 	{
-		Client client = Client.create();
+		List<TwoTuple<String, String>> params = new ArrayList<>();
+		params.add(new TwoTuple<String, String>("message", errMsg));
 
-		client.addFilter(new HTTPBasicAuthFilter(apiUser, apiKey));
-
-		String uri = protocol+"://"+host+":"+port+"/api/etl/jobs/"+idString + "/setError" + 
-				(errMsg == null ? "" : "?message=" + URLEncoder.encode(errMsg, "UTF-8"));
-		System.out.println("Calling " + uri);
-
-		WebResource webResource = client.resource(uri);
-
-		webResource.accept("application/json");
-
+		WebResource webResource = buildWebResource(getETLBasePath() + "/jobs/"+idString + "/setError", params);
 
 		ClientResponse response = webResource.get(ClientResponse.class);
 		System.out.println(">>> " + response);
@@ -314,17 +311,7 @@ public class ETLClient {
 
 	public ETLJob sendTransformComplete(String idString)
 	{
-		Client client = Client.create();
-
-		client.addFilter(new HTTPBasicAuthFilter(apiUser, apiKey));
-
-		String uri = protocol+"://"+host+":"+port+"/api/etl/jobs/"+idString + "/transformComplete";
-		System.out.println("Calling " + uri);
-		
-		WebResource webResource = client.resource(uri);
-
-		webResource.accept("application/json");
-
+		WebResource webResource = buildWebResource(getETLBasePath() + "/jobs/"+idString + "/transformComplete");
 
 		ClientResponse response = webResource.get(ClientResponse.class);
 		System.out.println(">>> " + response);
@@ -340,10 +327,6 @@ public class ETLClient {
 	
 	public void sendExport(ETLFile.Type type, String tableName, String whereClause) {
 		
-		Client client = Client.create();
-
-		client.addFilter(new HTTPBasicAuthFilter(apiUser, apiKey));
-		
 		String typePath;
 
 		switch (type) {
@@ -357,15 +340,12 @@ public class ETLClient {
 			typePath = "lids";
 			break;
 		default:
-			throw new RuntimeException("Type "+type+" not supported for queries.");
+			System.err.println("Type "+type+" not supported for queries.");
+			System.exit(1);
+			return;
 		}
 
-		String uri = protocol+"://"+host+":"+port+"/api/models/"+modelId+"/etl/query/" + typePath;
-		System.out.println("Calling " + uri);
-		
-		WebResource webResource = client.resource(uri);
-
-		webResource.accept("application/json");
+		WebResource webResource = buildWebResource(getETLBasePath() + "/query/" + typePath);
 
 		QueryDTO query = new QueryDTO();
 		query.setDestination(Destination.ToStaging);
@@ -376,7 +356,17 @@ public class ETLClient {
 		System.out.println(">>> " + response);
 
 		if (response.getStatus() != 204) {
-			throw new RuntimeException("Unable to send export. : "+ response.getStatus());
+			System.err.println("Unable to send export : "+ response.getStatus());
+
+			BufferedReader reader = new BufferedReader(new InputStreamReader(response.getEntityInputStream()));
+			String line;
+			try {
+				while ((line = reader.readLine()) != null) {
+					System.err.println(line);
+				}
+			} catch (IOException e) {
+				System.err.println("An error occurred trying to read the error message from the server.");
+			}
 		}
 
 	}
