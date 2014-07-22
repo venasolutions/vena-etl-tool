@@ -377,6 +377,8 @@ public class Main {
 				
 				ETLMetadata metadata = etlJob.getMetadata();
 				
+				System.out.println("  Model id: " + metadata.getModelId());
+				
 				boolean allDone = true;
 				
 				if (metadata.getFiles() != null) {
@@ -386,6 +388,8 @@ public class Main {
 						allDone &= file.getDone();
 					}
 				}
+
+				System.out.println("  Uses staging tables: " + metadata.isStagingRequired());
 
 				if (metadata.getTables() != null) {
 					for (ETLTableStatus table : metadata.getTables().values()) {
