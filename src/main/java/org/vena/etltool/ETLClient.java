@@ -95,8 +95,6 @@ public class ETLClient {
 			
 			ClientResponse response = webResource.type(MediaType.MULTIPART_FORM_DATA_TYPE).post(ClientResponse.class, form);
 			
-			System.out.println(">>> " + response);
-
 			switch( response.getStatus()) {
 			
 			case 200:
@@ -105,17 +103,8 @@ public class ETLClient {
 				System.out.println("Job submitted. Your ETL Job Id is "+output.getId());
 				
 				break;
-			case 401:
-				System.err.println("Access denied.  Check your credentials and try again.");
-				System.exit(2);
-				break;
-			case 403:
-				System.err.println("Permission denied. Login was successful, but your user does not have permission to perform an ETL upload.");
-				System.exit(2);
-				break;
 			default:
-				System.err.println("Error"+response);
-				System.exit(4);
+				handleErrorResponse(response, "Unable to submit job.");
 			}
 
 		} catch (Exception e) {
@@ -168,12 +157,6 @@ public class ETLClient {
 		return urlBuf.toString();
 	}
 
-	private  String buildURI(String path)
-	{
-		return buildURI(path, Collections.<TwoTuple<String, String>> emptyList());
-	}
-
-
 	private WebResource buildWebResource(String path) {
 		return buildWebResource(path, Collections.<TwoTuple<String, String>> emptyList());
 	}
@@ -187,7 +170,7 @@ public class ETLClient {
 
 		client.addFilter(new HTTPBasicAuthFilter(apiUser, apiKey));
 
-		String uri = buildURI(path);
+		String uri = buildURI(path, parameters);
 		System.out.println("Calling " + uri);
 
 		WebResource webResource = client.resource(uri);
@@ -214,7 +197,7 @@ public class ETLClient {
 		ClientResponse response = webResource.post(ClientResponse.class);
 
 		if (response.getStatus() != 200) {
-			throw new RuntimeException("Login failed : HTTP error code : "+ response.getStatus());
+			handleErrorResponse(response, "Login failed.");
 		}
 
 		LoginResult result = response.getEntity(LoginResult.class);
@@ -236,7 +219,7 @@ public class ETLClient {
 		ClientResponse response = webResource.type(MediaType.APPLICATION_JSON_TYPE).post(ClientResponse.class, createModelDTO);
 
 		if (response.getStatus() != 200) {
-			throw new RuntimeException("Create model failed : HTTP error code : "+ response.getStatus());
+			handleErrorResponse(response, "Create model failed.");
 		}
 
 		ModelResponseDTO result = response.getEntity(ModelResponseDTO.class);
@@ -259,7 +242,7 @@ public class ETLClient {
 		ClientResponse response = webResource.type(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
 
 		if (response.getStatus() != 200) {
-			throw new RuntimeException("Lookup model failed : HTTP error code : "+ response.getStatus());
+			handleErrorResponse(response, "Lookup model failed.");
 		}
 
 		List<ModelResponseDTO> results = response.getEntity(new GenericType<List<ModelResponseDTO>>(){});
@@ -279,10 +262,8 @@ public class ETLClient {
 
 		ClientResponse response = webResource.get(ClientResponse.class);
 		
-		System.out.println(">>> " + response);
-
 		if (response.getStatus() != 200) {
-			throw new RuntimeException("Unable to get job status. : "+ response.getStatus());
+			handleErrorResponse(response, "Unable to get job status.");
 		}
 
 		ETLJob result = response.getEntity(ETLJob.class);
@@ -298,10 +279,9 @@ public class ETLClient {
 		WebResource webResource = buildWebResource(getETLBasePath() + "/jobs/"+idString + "/setError", params);
 
 		ClientResponse response = webResource.get(ClientResponse.class);
-		System.out.println(">>> " + response);
 
 		if (response.getStatus() != 200) {
-			throw new RuntimeException("Unable to set job error. : "+ response.getStatus());
+			handleErrorResponse(response, "Unable to set job error.");
 		}
 
 		ETLJob result = response.getEntity(ETLJob.class);
@@ -314,10 +294,9 @@ public class ETLClient {
 		WebResource webResource = buildWebResource(getETLBasePath() + "/jobs/"+idString + "/transformComplete");
 
 		ClientResponse response = webResource.get(ClientResponse.class);
-		System.out.println(">>> " + response);
 
 		if (response.getStatus() != 200) {
-			throw new RuntimeException("Unable to send transform complete. : "+ response.getStatus());
+			handleErrorResponse(response, "'transformComplete' request failed.");
 		}
 
 		ETLJob result = response.getEntity(ETLJob.class);
@@ -341,7 +320,6 @@ public class ETLClient {
 			break;
 		default:
 			System.err.println("Type "+type+" not supported for queries.");
-			System.exit(1);
 			return;
 		}
 
@@ -353,21 +331,61 @@ public class ETLClient {
 		query.setQueryString(whereClause);
 
 		ClientResponse response = webResource.type(MediaType.APPLICATION_JSON_TYPE).post(ClientResponse.class, query);
-		System.out.println(">>> " + response);
 
-		if (response.getStatus() != 204) {
-			System.err.println("Unable to send export : "+ response.getStatus());
-
-			BufferedReader reader = new BufferedReader(new InputStreamReader(response.getEntityInputStream()));
-			String line;
-			try {
-				while ((line = reader.readLine()) != null) {
-					System.err.println(line);
-				}
-			} catch (IOException e) {
-				System.err.println("An error occurred trying to read the error message from the server.");
-			}
+		if ((response.getStatus() != 204) && (response.getStatus() != 200)) {
+			handleErrorResponse(response, "Request to export failed.");
 		}
 
 	}
+
+	private void handleErrorResponse(ClientResponse response) {
+		handleErrorResponse(response, null);
+	}
+
+	private void handleErrorResponse(ClientResponse response, String message) {
+
+		System.err.println("ERROR :");
+		System.err.println(">>> " + response);
+		BufferedReader reader = new BufferedReader(new InputStreamReader(response.getEntityInputStream()));
+		String line;
+		try {
+			while ((line = reader.readLine()) != null) {
+				System.err.println(">>> " + line);
+			}
+		} catch (IOException e) {
+			System.err.println("An error occurred trying to read the response from the server.");
+			e.printStackTrace(System.err);
+		}
+		
+		System.err.println();
+
+		switch( response.getStatus()) {
+		case 200:
+		case 204:
+			System.err.println("No error.");
+			break;
+		case 401:
+			System.err.println("Access denied.  Check your credentials and try again.");
+			break;
+		case 403:
+			System.err.println("Permission denied. Login was successful, but your user does not have permission to perform this operation.");
+			break;
+		case 404:
+			System.err.println("The path was incorrect. Usually this is an incorrect ID somewhere.");
+			break;
+		case 422:
+			System.err.println("The server rejected the input. See response message for more info.");
+			break;
+		case 500:
+			System.err.println("Server error. Contact your administrator.");
+			break;
+		default:
+			System.err.println("Unknown error.");
+			break;
+		}
+
+		if (message != null) System.out.println(message);
+		System.exit(1);
+	}
+	
 }
