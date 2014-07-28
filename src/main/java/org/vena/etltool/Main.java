@@ -278,6 +278,15 @@ public class Main {
 				.create();
 		
 		options.addOption(waitOption);
+		
+		Option verboseOption = 
+				OptionBuilder
+				.withLongOpt("verbose")
+				.isRequired(false)
+				.withDescription("Wait for job to complete (or fail) before returning.")
+				.create();
+		
+		options.addOption(verboseOption);
 
 		HelpFormatter helpFormatter = new HelpFormatter();
 		
@@ -324,6 +333,10 @@ public class Main {
 	        
 	        if( commandLine.hasOption("wait") ) { 
 	        	etlClient.pollingRequested = true;
+	        }
+	        
+	        if( commandLine.hasOption("verbose") ) { 
+	        	etlClient.verbose = true;
 	        }
 	        
 	        String apiUser =  commandLine.getOptionValue("apiUser");
