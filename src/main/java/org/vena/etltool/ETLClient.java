@@ -40,7 +40,7 @@ import com.sun.jersey.multipart.FormDataMultiPart;
 import com.sun.jersey.multipart.impl.MultiPartWriter;
 
 public class ETLClient {
-	private static final int POLL_INTERVAL = 5;
+	private static final int POLL_INTERVAL = 5000;
 	
 	protected int port = 8080;
 	protected String host = "localhost";
@@ -54,6 +54,7 @@ public class ETLClient {
 	public String templateId;
 	public boolean validationRequested = false;
 	public boolean pollingRequested = false;
+	public boolean verbose;
 
 	public ETLClient() {
 	}
@@ -210,7 +211,9 @@ public class ETLClient {
 		client.addFilter(new HTTPBasicAuthFilter(apiUser, apiKey));
 
 		String uri = buildURI(path, parameters);
-		System.out.println("Calling " + uri);
+		
+		if( verbose )
+			System.err.println("Calling " + uri);
 
 		WebResource webResource = client.resource(uri);
 
@@ -226,7 +229,9 @@ public class ETLClient {
 		client.addFilter(new HTTPBasicAuthFilter(username, password));
 
 		String uri = protocol+"://"+host+":"+port+"/login";
-		System.out.println("Calling " + uri);
+		
+		if( verbose )
+			System.err.println("Calling " + uri);
 		
 		WebResource webResource = client.resource(uri);
 
