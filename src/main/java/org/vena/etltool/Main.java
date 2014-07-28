@@ -269,6 +269,15 @@ public class Main {
 				.create();
 		
 		options.addOption(exportWhereOption);
+		
+		Option waitOption = 
+				OptionBuilder
+				.withLongOpt("wait")
+				.isRequired(false)
+				.withDescription("Wait for job to complete (or fail) before returning.")
+				.create();
+		
+		options.addOption(waitOption);
 
 		HelpFormatter helpFormatter = new HelpFormatter();
 		
@@ -311,6 +320,10 @@ public class Main {
 	        
 	        if( commandLine.hasOption("ssl") ) { 
 	        	etlClient.protocol = "https";
+	        }
+	        
+	        if( commandLine.hasOption("wait") ) { 
+	        	etlClient.pollingRequested = true;
 	        }
 	        
 	        String apiUser =  commandLine.getOptionValue("apiUser");

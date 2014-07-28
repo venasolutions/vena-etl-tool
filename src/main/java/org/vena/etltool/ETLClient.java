@@ -20,6 +20,7 @@ import org.vena.api.etl.ETLFile;
 import org.vena.api.etl.ETLJob;
 import org.vena.api.etl.ETLMetadata;
 import org.vena.api.etl.QueryDTO;
+import org.vena.api.etl.ETLJob.Phase;
 import org.vena.api.etl.QueryDTO.Destination;
 import org.vena.etltool.entities.CreateModelRequestDTO;
 import org.vena.etltool.entities.ModelResponseDTO;
@@ -39,6 +40,8 @@ import com.sun.jersey.multipart.FormDataMultiPart;
 import com.sun.jersey.multipart.impl.MultiPartWriter;
 
 public class ETLClient {
+	private static final int POLL_INTERVAL = 5;
+	
 	protected int port = 8080;
 	protected String host = "localhost";
 	protected String apiUser;
@@ -50,6 +53,7 @@ public class ETLClient {
 	public String protocol = "http";
 	public String templateId;
 	public boolean validationRequested = false;
+	public boolean pollingRequested = false;
 
 	public ETLClient() {
 	}
@@ -95,12 +99,18 @@ public class ETLClient {
 			
 			ClientResponse response = webResource.type(MediaType.MULTIPART_FORM_DATA_TYPE).post(ClientResponse.class, form);
 			
+			
 			switch( response.getStatus()) {
 			
 			case 200:
-				ETLJob output = response.getEntity(ETLJob.class);
+				ETLJob etlJob = response.getEntity(ETLJob.class);
 
-				System.out.println("Job submitted. Your ETL Job Id is "+output.getId());
+				System.out.println("Job submitted. Your ETL Job Id is "+etlJob.getId());
+				
+				/* If polling option was provided, poll until the task completes. */
+				if( pollingRequested  ) {
+					pollTillJobComplete(etlJob);
+				}
 				
 				break;
 			default:
@@ -113,7 +123,36 @@ public class ETLClient {
 
 		}
 	}
+
+	private void pollTillJobComplete(ETLJob etlJob) {
+		while( true) {
+			if( ! isJobStillRunning(etlJob.getId()) )  {
+				break;
+			}
+			else {
+				try {
+					Thread.sleep(POLL_INTERVAL);
+				}
+				catch(InterruptedException intEx) {
+					
+				}
+			}
+		}
+	}
 	
+	private boolean isJobStillRunning(Id jobId) {
+		ETLJob etlJob = requestJobStatus(jobId);
+		
+		if (etlJob.isError()) 
+			return false;
+		else if (etlJob.isCancelRequested()) 
+			return false;
+		else if (etlJob.getPhase() == Phase.COMPLETE) 
+			return false;
+		else 
+			return true;
+	}
+
 	private String getETLBasePath() {
 		if (modelId == null) {
 			return "/api/etl";
@@ -255,6 +294,11 @@ public class ETLClient {
 		return null;
 	}
 	
+	public ETLJob requestJobStatus(Id etlJobId)
+	{
+		return requestJobStatus(etlJobId.toString());
+	}
+	
 	public ETLJob requestJobStatus(String idString)
 	{
 		WebResource webResource = buildWebResource(getETLBasePath() + "/jobs/" + idString);
@@ -299,9 +343,15 @@ public class ETLClient {
 			handleErrorResponse(response, "'transformComplete' request failed.");
 		}
 
-		ETLJob result = response.getEntity(ETLJob.class);
+		ETLJob etlJob = response.getEntity(ETLJob.class);
+		
+		/* If polling option was provided, poll until the task completes. */
+		if( pollingRequested  ) {
+			pollTillJobComplete(etlJob);
+		}
+		
 
-		return result;
+		return etlJob;
 	}
 	
 	public void sendExport(ETLFile.Type type, String tableName, String whereClause) {
