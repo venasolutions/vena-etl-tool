@@ -358,7 +358,22 @@ public class ETLClient {
 
 		return etlJob;
 	}
-	
+
+	public ETLJob sendCancel(String idString)
+	{
+		WebResource webResource = buildWebResource(getETLBasePath() + "/jobs/"+idString + "/cancel");
+
+		ClientResponse response = webResource.get(ClientResponse.class);
+
+		if (response.getStatus() != 200) {
+			handleErrorResponse(response, "Cancel request failed.");
+		}
+
+		ETLJob etlJob = response.getEntity(ETLJob.class);
+		
+		return etlJob;
+	}	
+
 	public void sendExport(ETLFile.Type type, String tableName, String whereClause) {
 		
 		String typePath;

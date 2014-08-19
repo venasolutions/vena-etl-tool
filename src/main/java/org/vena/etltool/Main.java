@@ -198,7 +198,16 @@ public class Main {
 				.create();
 		
 		options.addOption(setErrorOption);
+
+		Option cancelOption = 
+				OptionBuilder
+				.withLongOpt("cancel")
+				.isRequired(false)
+				.withDescription("Request a job to be cancelled. Requires --jobId option.")
+				.create();
 		
+		options.addOption(cancelOption);
+
 		Option jobIdOption = 
 				OptionBuilder
 				.withLongOpt("jobId")
@@ -389,6 +398,8 @@ public class Main {
 	        	etlClient.login();
 	        }
 	        
+	        // Options that work on a single job ID
+
 	        if(commandLine.hasOption("status") || args.length == 0) {
 				
 	        	if (jobId == null) {
@@ -453,7 +464,7 @@ public class Main {
 	        if (commandLine.hasOption("transformComplete")) {
 
 	        	if (jobId == null) {
-					System.err.println( "Error: You must specify --job=<job Id>.");
+					System.err.println( "Error: You must specify --jobId=<job Id>.");
 					System.exit(1);
 	        	}
 
@@ -464,14 +475,25 @@ public class Main {
 	        if (commandLine.hasOption("setError")) {
 
 	        	if (jobId == null) {
-					System.err.println( "Error: You must specify --job=<job Id>.");
+					System.err.println( "Error: You must specify --jobId=<job Id>.");
 					System.exit(1);
 	        	}
 
 				etlClient.setJobError(jobId, commandLine.getOptionValue("setError"));
 				System.exit(0);
 	        }
-	        
+
+	        if (commandLine.hasOption("cancel")) {
+
+	        	if (jobId == null) {
+					System.err.println( "Error: You must specify --jobId=<job Id>.");
+					System.exit(1);
+	        	}
+
+				etlClient.sendCancel(jobId);
+				System.exit(0);
+	        }
+
 	        String modelIdStr = commandLine.getOptionValue("modelId");
 	        String modelNameStr = commandLine.getOptionValue("modelName");
 	        
