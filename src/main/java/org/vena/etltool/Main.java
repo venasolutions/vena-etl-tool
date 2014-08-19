@@ -166,7 +166,7 @@ public class Main {
 				.withLongOpt("file")
 				.isRequired(false)
 				.hasArg()
-				.withDescription("An ETL file to add to the ETL job. -F<filename>;<filetype ["+ETLFile.SUPPORTED_FILETYPES_LIST+"]>;<tableName>. <tableName> is only required if <filetype> is user_defined. Example: -F intersections.csv;intersections")
+				.withDescription("An ETL file to add to the ETL job. -F<filename>;<filetype>[;<tableName>]. <filetype> is one of {"+ETLFile.SUPPORTED_FILETYPES_LIST+"}>. <tableName> is only required if <filetype> is 'user_defined'. Example: -F intersections.csv;intersections")
 				.create('F');
 		
 		options.addOption(fileOption);
@@ -244,7 +244,7 @@ public class Main {
 				.isRequired(false)
 				.hasArg()
 				.withArgName("type")
-				.withDescription("Export part of the datamodel to a staging table. Type may be 'hierarchy', 'intersections', 'lids'.")
+				.withDescription("Export part of the datamodel to a staging table. <type> may be one of {"+ETLFile.SUPPORTED_FILETYPES_LIST+"}.")
 				.create();
 		
 		options.addOption(exportOption);
@@ -283,7 +283,7 @@ public class Main {
 				OptionBuilder
 				.withLongOpt("verbose")
 				.isRequired(false)
-				.withDescription("Wait for job to complete (or fail) before returning.")
+				.withDescription("Show the server calls made while the command runs.")
 				.create();
 		
 		options.addOption(verboseOption);
