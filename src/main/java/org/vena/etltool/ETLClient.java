@@ -15,12 +15,12 @@ import java.util.Map.Entry;
 
 import javax.ws.rs.core.MediaType;
 
-import org.vena.api.customer.authentication.LoginResult;
+import org.vena.api.customer.authentication.APILoginResult;
 import org.vena.api.etl.ETLFile;
 import org.vena.api.etl.ETLJob;
+import org.vena.api.etl.ETLJob.Phase;
 import org.vena.api.etl.ETLMetadata;
 import org.vena.api.etl.QueryDTO;
-import org.vena.api.etl.ETLJob.Phase;
 import org.vena.api.etl.QueryDTO.Destination;
 import org.vena.etltool.entities.CreateModelRequestDTO;
 import org.vena.etltool.entities.ModelResponseDTO;
@@ -244,7 +244,7 @@ public class ETLClient {
 			handleErrorResponse(response, "Login failed.");
 		}
 
-		LoginResult result = response.getEntity(LoginResult.class);
+		APILoginResult result = response.getEntity(APILoginResult.class);
 
 		this.apiKey = result.getApiKey();
 		this.apiUser = result.getApiUser();
