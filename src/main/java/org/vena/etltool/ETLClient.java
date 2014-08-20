@@ -15,12 +15,13 @@ import java.util.Map.Entry;
 
 import javax.ws.rs.core.MediaType;
 
-import org.vena.api.customer.authentication.LoginResult;
+import org.vena.api.customer.authentication.APILoginResult;
 import org.vena.api.etl.ETLFile;
 import org.vena.api.etl.ETLJob;
+import org.vena.api.etl.QueryExpressionDTO;
+import org.vena.api.etl.ETLJob.Phase;
 import org.vena.api.etl.ETLMetadata;
 import org.vena.api.etl.QueryDTO;
-import org.vena.api.etl.ETLJob.Phase;
 import org.vena.api.etl.QueryDTO.Destination;
 import org.vena.etltool.entities.CreateModelRequestDTO;
 import org.vena.etltool.entities.ModelResponseDTO;
@@ -244,7 +245,7 @@ public class ETLClient {
 			handleErrorResponse(response, "Login failed.");
 		}
 
-		LoginResult result = response.getEntity(LoginResult.class);
+		APILoginResult result = response.getEntity(APILoginResult.class);
 
 		this.apiKey = result.getApiKey();
 		this.apiUser = result.getApiUser();
@@ -358,12 +359,30 @@ public class ETLClient {
 
 		return etlJob;
 	}
-	
+
+	public ETLJob sendCancel(String idString)
+	{
+		WebResource webResource = buildWebResource(getETLBasePath() + "/jobs/"+idString + "/cancel");
+
+		ClientResponse response = webResource.get(ClientResponse.class);
+
+		if (response.getStatus() != 200) {
+			handleErrorResponse(response, "Cancel request failed.");
+		}
+
+		ETLJob etlJob = response.getEntity(ETLJob.class);
+		
+		return etlJob;
+	}	
+
 	public void sendExport(ETLFile.Type type, String tableName, String whereClause) {
 		
 		String typePath;
 
 		switch (type) {
+		case attributes:
+			typePath = "attributes";
+			break;
 		case hierarchy:
 			typePath = "hierarchies";
 			break;
@@ -374,7 +393,7 @@ public class ETLClient {
 			typePath = "lids";
 			break;
 		default:
-			System.err.println("Type "+type+" not supported for queries.");
+			System.err.println("Type \""+type+"\" not supported for export.");
 			return;
 		}
 
@@ -389,6 +408,32 @@ public class ETLClient {
 
 		if ((response.getStatus() != 204) && (response.getStatus() != 200)) {
 			handleErrorResponse(response, "Request to export failed.");
+		}
+
+	}
+
+	public void sendDelete(ETLFile.Type type, String expression) {
+
+		String typePath;
+
+		switch (type) {
+		case intersections:
+			typePath = "intersections";
+			break;
+		default:
+			System.err.println("Type \""+type+"\" not supported for delete.");
+			return;
+		}
+
+		WebResource webResource = buildWebResource(getETLBasePath() + "/delete/" + typePath);
+
+		QueryExpressionDTO queryExpr = new QueryExpressionDTO();
+		queryExpr.setExpression(expression);
+
+		ClientResponse response = webResource.type(MediaType.APPLICATION_JSON_TYPE).post(ClientResponse.class, queryExpr);
+
+		if ((response.getStatus() != 204) && (response.getStatus() != 200)) {
+			handleErrorResponse(response, "Request to delete failed.");
 		}
 
 	}

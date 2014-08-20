@@ -166,7 +166,7 @@ public class Main {
 				.withLongOpt("file")
 				.isRequired(false)
 				.hasArg()
-				.withDescription("An ETL file to add to the ETL job. -F<filename>;<filetype ["+ETLFile.SUPPORTED_FILETYPES_LIST+"]>;<tableName>. <tableName> is only required if <filetype> is user_defined. Example: -F intersections.csv;intersections")
+				.withDescription("An ETL file to add to the ETL job. -F<filename>;<filetype>[;<tableName>]. <filetype> is one of {"+ETLFile.SUPPORTED_FILETYPES_LIST+"}>. <tableName> is only required if <filetype> is 'user_defined'. Example: -F intersections.csv;intersections")
 				.create('F');
 		
 		options.addOption(fileOption);
@@ -198,7 +198,16 @@ public class Main {
 				.create();
 		
 		options.addOption(setErrorOption);
+
+		Option cancelOption = 
+				OptionBuilder
+				.withLongOpt("cancel")
+				.isRequired(false)
+				.withDescription("Request a job to be cancelled. Requires --jobId option.")
+				.create();
 		
+		options.addOption(cancelOption);
+
 		Option jobIdOption = 
 				OptionBuilder
 				.withLongOpt("jobId")
@@ -244,7 +253,7 @@ public class Main {
 				.isRequired(false)
 				.hasArg()
 				.withArgName("type")
-				.withDescription("Export part of the datamodel to a staging table. Type may be 'hierarchy', 'intersections', 'lids'.")
+				.withDescription("Export part of the datamodel to a staging table. <type> may be one of {"+ETLFile.SUPPORTED_FILETYPES_LIST+"}.")
 				.create();
 		
 		options.addOption(exportOption);
@@ -270,6 +279,28 @@ public class Main {
 		
 		options.addOption(exportWhereOption);
 		
+		Option deleteOption = 
+				OptionBuilder
+				.withLongOpt("delete")
+				.isRequired(false)
+				.hasArg()
+				.withArgName("type")
+				.withDescription("Delete all <type> from the datamodel that matches --deleteQuery. <type> can be one of {intersections}.")
+				.create();
+		
+		options.addOption(deleteOption);
+
+		Option deleteQueryOption = 
+				OptionBuilder
+				.withLongOpt("deleteQuery")
+				.isRequired(false)
+				.hasArg()
+				.withArgName("expr")
+				.withDescription("The query expression to match for --delete.")
+				.create();
+		
+		options.addOption(deleteQueryOption);
+
 		Option waitOption = 
 				OptionBuilder
 				.withLongOpt("wait")
@@ -283,7 +314,7 @@ public class Main {
 				OptionBuilder
 				.withLongOpt("verbose")
 				.isRequired(false)
-				.withDescription("Wait for job to complete (or fail) before returning.")
+				.withDescription("Show the server calls made while the command runs.")
 				.create();
 		
 		options.addOption(verboseOption);
@@ -389,6 +420,8 @@ public class Main {
 	        	etlClient.login();
 	        }
 	        
+	        // Options that work on a single job ID
+
 	        if(commandLine.hasOption("status") || args.length == 0) {
 				
 	        	if (jobId == null) {
@@ -453,7 +486,7 @@ public class Main {
 	        if (commandLine.hasOption("transformComplete")) {
 
 	        	if (jobId == null) {
-					System.err.println( "Error: You must specify --job=<job Id>.");
+					System.err.println( "Error: You must specify --jobId=<job Id>.");
 					System.exit(1);
 	        	}
 
@@ -464,14 +497,25 @@ public class Main {
 	        if (commandLine.hasOption("setError")) {
 
 	        	if (jobId == null) {
-					System.err.println( "Error: You must specify --job=<job Id>.");
+					System.err.println( "Error: You must specify --jobId=<job Id>.");
 					System.exit(1);
 	        	}
 
 				etlClient.setJobError(jobId, commandLine.getOptionValue("setError"));
 				System.exit(0);
 	        }
-	        
+
+	        if (commandLine.hasOption("cancel")) {
+
+	        	if (jobId == null) {
+					System.err.println( "Error: You must specify --jobId=<job Id>.");
+					System.exit(1);
+	        	}
+
+				etlClient.sendCancel(jobId);
+				System.exit(0);
+	        }
+
 	        String modelIdStr = commandLine.getOptionValue("modelId");
 	        String modelNameStr = commandLine.getOptionValue("modelName");
 	        
@@ -528,7 +572,7 @@ public class Main {
 	        		type = ETLFile.Type.valueOf(exportTypeStr);
 	        	}
 	        	catch(IllegalArgumentException e) {
-	        		System.err.println( "Error: The option \""+exportOption+"\" you entered is invalid.  The ETL file type \""+exportTypeStr+"\" does not exist. The supported filetypes are ["+ETLFile.SUPPORTED_FILETYPES_LIST+"]");
+	        		System.err.println( "Error: The ETL file type \""+exportTypeStr+"\" does not exist. The known filetypes are ["+ETLFile.SUPPORTED_FILETYPES_LIST+"]");
 			        System.exit(1);
 	        	}
 				
@@ -539,6 +583,29 @@ public class Main {
 				System.exit(0);
 	        }
 	        
+	        if (commandLine.hasOption("delete")) {
+	        	String deleteTypeStr = commandLine.getOptionValue("delete");
+				String expr = commandLine.getOptionValue("deleteQuery");
+				
+				if (expr == null) {
+					System.err.println("Error: delete option requires --deleteQuery <expr>.");
+					System.exit(1);
+				}
+
+	        	Type type = null;
+				try {
+	        		type = ETLFile.Type.valueOf(deleteTypeStr);
+	        	}
+	        	catch(IllegalArgumentException e) {
+	        		System.err.println( "Error: The ETL file type \""+deleteTypeStr+"\" does not exist. The known filetypes are ["+ETLFile.SUPPORTED_FILETYPES_LIST+"]");
+			        System.exit(1);
+	        	}
+
+				etlClient.sendDelete(type, expr);
+				
+				System.exit(0);
+	        }
+
 	        // Do an Import
 	        
 	        System.out.println("Creating a new job.");
