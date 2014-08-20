@@ -279,6 +279,28 @@ public class Main {
 		
 		options.addOption(exportWhereOption);
 		
+		Option deleteOption = 
+				OptionBuilder
+				.withLongOpt("delete")
+				.isRequired(false)
+				.hasArg()
+				.withArgName("type")
+				.withDescription("Delete all <type> from the datamodel that matches --deleteQuery. <type> can be one of {intersections}.")
+				.create();
+		
+		options.addOption(deleteOption);
+
+		Option deleteQueryOption = 
+				OptionBuilder
+				.withLongOpt("deleteQuery")
+				.isRequired(false)
+				.hasArg()
+				.withArgName("expr")
+				.withDescription("The query expression to match for --delete.")
+				.create();
+		
+		options.addOption(deleteQueryOption);
+
 		Option waitOption = 
 				OptionBuilder
 				.withLongOpt("wait")
@@ -550,7 +572,7 @@ public class Main {
 	        		type = ETLFile.Type.valueOf(exportTypeStr);
 	        	}
 	        	catch(IllegalArgumentException e) {
-	        		System.err.println( "Error: The option \""+exportOption+"\" you entered is invalid.  The ETL file type \""+exportTypeStr+"\" does not exist. The supported filetypes are ["+ETLFile.SUPPORTED_FILETYPES_LIST+"]");
+	        		System.err.println( "Error: The ETL file type \""+exportTypeStr+"\" does not exist. The known filetypes are ["+ETLFile.SUPPORTED_FILETYPES_LIST+"]");
 			        System.exit(1);
 	        	}
 				
@@ -561,6 +583,29 @@ public class Main {
 				System.exit(0);
 	        }
 	        
+	        if (commandLine.hasOption("delete")) {
+	        	String deleteTypeStr = commandLine.getOptionValue("delete");
+				String expr = commandLine.getOptionValue("deleteQuery");
+				
+				if (expr == null) {
+					System.err.println("Error: delete option requires --deleteQuery <expr>.");
+					System.exit(1);
+				}
+
+	        	Type type = null;
+				try {
+	        		type = ETLFile.Type.valueOf(deleteTypeStr);
+	        	}
+	        	catch(IllegalArgumentException e) {
+	        		System.err.println( "Error: The ETL file type \""+deleteTypeStr+"\" does not exist. The known filetypes are ["+ETLFile.SUPPORTED_FILETYPES_LIST+"]");
+			        System.exit(1);
+	        	}
+
+				etlClient.sendDelete(type, expr);
+				
+				System.exit(0);
+	        }
+
 	        // Do an Import
 	        
 	        System.out.println("Creating a new job.");

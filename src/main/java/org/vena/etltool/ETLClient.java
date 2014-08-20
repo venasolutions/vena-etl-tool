@@ -18,6 +18,7 @@ import javax.ws.rs.core.MediaType;
 import org.vena.api.customer.authentication.APILoginResult;
 import org.vena.api.etl.ETLFile;
 import org.vena.api.etl.ETLJob;
+import org.vena.api.etl.QueryExpressionDTO;
 import org.vena.api.etl.ETLJob.Phase;
 import org.vena.api.etl.ETLMetadata;
 import org.vena.api.etl.QueryDTO;
@@ -392,7 +393,7 @@ public class ETLClient {
 			typePath = "lids";
 			break;
 		default:
-			System.err.println("Type "+type+" not supported for queries.");
+			System.err.println("Type \""+type+"\" not supported for export.");
 			return;
 		}
 
@@ -407,6 +408,32 @@ public class ETLClient {
 
 		if ((response.getStatus() != 204) && (response.getStatus() != 200)) {
 			handleErrorResponse(response, "Request to export failed.");
+		}
+
+	}
+
+	public void sendDelete(ETLFile.Type type, String expression) {
+
+		String typePath;
+
+		switch (type) {
+		case intersections:
+			typePath = "intersections";
+			break;
+		default:
+			System.err.println("Type \""+type+"\" not supported for delete.");
+			return;
+		}
+
+		WebResource webResource = buildWebResource(getETLBasePath() + "/delete/" + typePath);
+
+		QueryExpressionDTO queryExpr = new QueryExpressionDTO();
+		queryExpr.setExpression(expression);
+
+		ClientResponse response = webResource.type(MediaType.APPLICATION_JSON_TYPE).post(ClientResponse.class, queryExpr);
+
+		if ((response.getStatus() != 204) && (response.getStatus() != 200)) {
+			handleErrorResponse(response, "Request to delete failed.");
 		}
 
 	}
