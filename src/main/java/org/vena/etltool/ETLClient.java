@@ -379,6 +379,9 @@ public class ETLClient {
 		String typePath;
 
 		switch (type) {
+		case attributes:
+			typePath = "attributes";
+			break;
 		case hierarchy:
 			typePath = "hierarchies";
 			break;
