@@ -472,6 +472,7 @@ public class Main {
 				if (etlJob.isError()) overallStatus = "Error";
 				else if (etlJob.isCancelRequested()) overallStatus = "Cancelled";
 				else if (etlJob.getPhase() == Phase.COMPLETE) overallStatus = "Complete";
+				else if (etlJob.getPhase() == Phase.IN_STAGING) overallStatus = "Waiting for transform to complete";
 				else if (etlJob.getPhase() != null) overallStatus = "In Progress";
 				else { //etlJob.getPhase() == null
 					if (!allDone) overallStatus = "In Progress";
