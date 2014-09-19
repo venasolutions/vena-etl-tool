@@ -154,6 +154,8 @@ public class ETLClient {
 			return false;
 		else if (etlJob.getPhase() == Phase.COMPLETE) 
 			return false;
+		else if (etlJob.getPhase() == Phase.IN_STAGING)
+			return false;
 		else 
 			return true;
 	}
