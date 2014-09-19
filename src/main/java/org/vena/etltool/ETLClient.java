@@ -20,6 +20,7 @@ import org.vena.api.etl.ETLFile;
 import org.vena.api.etl.ETLJob;
 import org.vena.api.etl.ETLJob.Phase;
 import org.vena.api.etl.ETLMetadata;
+import org.vena.api.etl.ETLTableStatus;
 import org.vena.api.etl.QueryDTO;
 import org.vena.api.etl.QueryDTO.Destination;
 import org.vena.api.etl.QueryExpressionDTO;
@@ -111,7 +112,7 @@ public class ETLClient {
 				
 				/* If polling option was provided, poll until the task completes. */
 				if( pollingRequested  ) {
-					pollTillJobComplete(etlJob);
+					pollTillJobComplete(etlJob.getId());
 				}
 				
 				break;
@@ -126,9 +127,13 @@ public class ETLClient {
 		}
 	}
 
-	private void pollTillJobComplete(ETLJob etlJob) {
+	private void pollTillJobComplete(Id jobId) {
 		while( true) {
-			if( ! isJobStillRunning(etlJob.getId()) )  {
+			ETLJob etlJob = requestJobStatus(jobId);
+
+			if( ! isJobStillRunning(etlJob) )  {
+
+				printJobStatus(etlJob);
 				break;
 			}
 			else {
@@ -142,14 +147,14 @@ public class ETLClient {
 		}
 	}
 	
-	private boolean isJobStillRunning(Id jobId) {
-		ETLJob etlJob = requestJobStatus(jobId);
-		
+	private boolean isJobStillRunning(ETLJob etlJob) {
 		if (etlJob.isError()) 
 			return false;
 		else if (etlJob.isCancelRequested()) 
 			return false;
 		else if (etlJob.getPhase() == Phase.COMPLETE) 
+			return false;
+		else if (etlJob.getPhase() == Phase.IN_STAGING)
 			return false;
 		else 
 			return true;
@@ -352,7 +357,7 @@ public class ETLClient {
 		
 		/* If polling option was provided, poll until the task completes. */
 		if( pollingRequested  ) {
-			pollTillJobComplete(etlJob);
+			pollTillJobComplete(etlJob.getId());
 		}
 		
 
@@ -437,10 +442,6 @@ public class ETLClient {
 
 	}
 
-	private void handleErrorResponse(ClientResponse response) {
-		handleErrorResponse(response, null);
-	}
-
 	private void handleErrorResponse(ClientResponse response, String message) {
 
 		System.err.println("ERROR :");
@@ -486,39 +487,89 @@ public class ETLClient {
 		if (message != null) System.out.println(message);
 		System.exit(1);
 	}
-	
 
-	
+	static void printJobStatus(ETLJob etlJob) {
+    	System.out.println();
+		System.out.println("  Job Id: " + etlJob.getId());
+		
+		ETLMetadata metadata = etlJob.getMetadata();
+		
+		System.out.println("  Model id: " + metadata.getModelId());
+		
+		boolean allDone = true;
+		
+		if (metadata.getFiles() != null) {
+			for (ETLFile file : metadata.getFiles().values()) {
+				System.out.println("   - File: " + file.getFilename() + "(" + file.getFileType() + "): " + 
+						(file.getDone() ? "done":"not done") + " (" + file.getLinesProcessed() + " lines)");
+				allDone &= file.getDone();
+			}
+		}
+
+		System.out.println("  Uses staging tables: " + metadata.isStagingRequired());
+
+		if (metadata.getTables() != null) {
+			for (ETLTableStatus table : metadata.getTables().values()) {
+				System.out.println("   - Table: " + table.getTableName() + ": " + 
+						(table.getDone() ? "done":"not done") + " (" + table.getRowsProcessed() + " rows)");
+				allDone &= table.getDone();
+			}
+		}
+
+		if (etlJob.getErrorMessage() != null) {
+			System.out.println("  Error Message: " + etlJob.getErrorMessage());
+		}
+
+		if (etlJob.getValidationResults() != null) {
+			System.out.println("  Validation Results: " + etlJob.getValidationResults());
+		}
+
+		System.out.println("  Phase: " + etlJob.getPhase());
+
+		String overallStatus = "Unknown";
+		if (etlJob.isError()) overallStatus = "Error";
+		else if (etlJob.isCancelRequested()) overallStatus = "Cancelled";
+		else if (etlJob.getPhase() == Phase.COMPLETE) overallStatus = "Complete";
+		else if (etlJob.getPhase() == Phase.IN_STAGING) overallStatus = "Waiting for transform to complete";
+		else if (etlJob.getPhase() != null) overallStatus = "In Progress";
+		else { //etlJob.getPhase() == null
+			if (!allDone) overallStatus = "In Progress";
+			else if (!metadata.isStagingRequired()) overallStatus = "Complete";
+		}
+
+		System.out.println("  Overall status: " + overallStatus);
+	}
+
 	private static <T> T getEntity(ClientResponse response, Class<T> type) {
 		String rawJSONOutput = response.getEntity(String.class);
 
 		ObjectMapper objectMapper = new ObjectMapper();
-		
+
 		objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        
+
 		T result;
-		
+
 		try {
 			result = objectMapper.readValue(rawJSONOutput, type);
-			
+
 			return type.cast(result);
 		} catch ( IOException e) {
 			throw new RuntimeException(e);
 		}
 	}
-	
+
 	private static <T> List<T> getListOfEntity(ClientResponse response, Class<T> type) {
 		String rawJSONOutput = response.getEntity(String.class);
 
 		ObjectMapper objectMapper = new ObjectMapper();
-		
+
 		objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        
+
 		List<T> result;
-		
+
 		try {
 			result = objectMapper.readValue(rawJSONOutput, objectMapper.getTypeFactory().constructCollectionType(List.class, type));
-			
+
 			return (List<T>) result;
 		} catch ( IOException e) {
 			throw new RuntimeException(e);
