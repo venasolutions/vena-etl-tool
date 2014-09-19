@@ -267,7 +267,11 @@ public class ETLClient {
 			handleErrorResponse(response, "Create model failed.");
 		}
 
-		return getEntity(response, ModelResponseDTO.class);
+		ModelResponseDTO result = getEntity(response, ModelResponseDTO.class);
+
+		this.modelId = result.getId();
+		
+		return result;
 	}
 	
 	public ModelResponseDTO lookupModel(String modelName) {
