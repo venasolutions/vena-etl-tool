@@ -9,9 +9,11 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Properties;
 
 import javax.ws.rs.core.MediaType;
 
@@ -29,10 +31,10 @@ import org.vena.etltool.entities.ModelResponseDTO;
 import org.vena.etltool.util.TwoTuple;
 import org.vena.id.Id;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.api.client.GenericType;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.config.ClientConfig;
 import com.sun.jersey.api.client.config.DefaultClientConfig;
@@ -83,7 +85,7 @@ public class ETLClient {
 			FormDataMultiPart form = new FormDataMultiPart();
 
 			ObjectMapper objectMapper = new ObjectMapper();
-
+			
 			byte[] metadataBytes = objectMapper.writeValueAsBytes(metadata);
 
 			FormDataBodyPart metadataPart = new FormDataBodyPart("metadata",new ByteArrayInputStream(metadataBytes), MediaType.APPLICATION_JSON_TYPE);
@@ -106,7 +108,7 @@ public class ETLClient {
 			switch( response.getStatus()) {
 			
 			case 200:
-				ETLJob etlJob = response.getEntity(ETLJob.class);
+				ETLJob etlJob = getEntity(response, ETLJob.class);
 
 				System.out.println("Job submitted. Your ETL Job Id is "+etlJob.getId());
 				
@@ -250,14 +252,14 @@ public class ETLClient {
 			handleErrorResponse(response, "Login failed.");
 		}
 
-		APILoginResult result = response.getEntity(APILoginResult.class);
+		APILoginResult result = getEntity(response, APILoginResult.class);
 
 		this.apiKey = result.getApiKey();
 		this.apiUser = result.getApiUser();
 	}
 	
 	//FIMXE - there is some code duplication between login() and this method that should be refactored out.
-	public ModelResponseDTO createModel(String modelName) {
+	public ModelResponseDTO createModel(String modelName)  {
 
 		WebResource webResource = buildWebResource("/api/models");
 
@@ -272,12 +274,11 @@ public class ETLClient {
 			handleErrorResponse(response, "Create model failed.");
 		}
 
-		ModelResponseDTO result = response.getEntity(ModelResponseDTO.class);
+		ModelResponseDTO result = getEntity(response, ModelResponseDTO.class);
 
 		this.modelId = result.getId();
 		
 		return result;
-
 	}
 	
 	public ModelResponseDTO lookupModel(String modelName) {
@@ -295,7 +296,7 @@ public class ETLClient {
 			handleErrorResponse(response, "Lookup model failed.");
 		}
 
-		List<ModelResponseDTO> results = response.getEntity(new GenericType<List<ModelResponseDTO>>(){});
+		List<ModelResponseDTO> results = getListOfEntity(response, ModelResponseDTO.class);
 
 		for(ModelResponseDTO model : results)  {
 			if(modelName.equals(model.getName()))
@@ -321,11 +322,36 @@ public class ETLClient {
 			handleErrorResponse(response, "Unable to get job status.");
 		}
 
-		ETLJob result = response.getEntity(ETLJob.class);
-
+		ETLJob result = getEntity(response, ETLJob.class);
+		
 		return result;
 	}
 
+	public static String requestVersionInfo() {
+		Properties props = new Properties();
+		StringBuilder buf = new StringBuilder();
+
+		try {
+			props.load(ETLClient.class
+					.getResourceAsStream("/global.properties"));
+
+			String[] keys = new String[] { "artifactId", "version",
+					"git.branch", "git.commit.id", "git.commit.id.describe", 
+					"git.commit.time", "git.build.time" };
+
+			for (String key : keys) {
+				buf.append(key).append(": ");
+				buf.append(props.getProperty(key)).append("\n");
+			}
+
+			return buf.toString();
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			return "Error: Could not extract any git information.";
+		}
+	}
+	
 	public ETLJob setJobError(String idString, String errMsg) throws UnsupportedEncodingException
 	{
 		List<TwoTuple<String, String>> params = new ArrayList<>();
@@ -339,7 +365,7 @@ public class ETLClient {
 			handleErrorResponse(response, "Unable to set job error.");
 		}
 
-		ETLJob result = response.getEntity(ETLJob.class);
+		ETLJob result = getEntity(response, ETLJob.class);
 
 		return result;
 	}
@@ -354,7 +380,7 @@ public class ETLClient {
 			handleErrorResponse(response, "'transformComplete' request failed.");
 		}
 
-		ETLJob etlJob = response.getEntity(ETLJob.class);
+		ETLJob etlJob = getEntity(response, ETLJob.class);
 		
 		/* If polling option was provided, poll until the task completes. */
 		if( pollingRequested  ) {
@@ -375,7 +401,7 @@ public class ETLClient {
 			handleErrorResponse(response, "Cancel request failed.");
 		}
 
-		ETLJob etlJob = response.getEntity(ETLJob.class);
+		ETLJob etlJob = getEntity(response, ETLJob.class);
 		
 		return etlJob;
 	}	
@@ -539,5 +565,41 @@ public class ETLClient {
 		}
 
 		System.out.println("  Overall status: " + overallStatus);
+	}
+
+	private static <T> T getEntity(ClientResponse response, Class<T> type) {
+		String rawJSONOutput = response.getEntity(String.class);
+
+		ObjectMapper objectMapper = new ObjectMapper();
+
+		objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+		T result;
+
+		try {
+			result = objectMapper.readValue(rawJSONOutput, type);
+
+			return type.cast(result);
+		} catch ( IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	private static <T> List<T> getListOfEntity(ClientResponse response, Class<T> type) {
+		String rawJSONOutput = response.getEntity(String.class);
+
+		ObjectMapper objectMapper = new ObjectMapper();
+
+		objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+		List<T> result;
+
+		try {
+			result = objectMapper.readValue(rawJSONOutput, objectMapper.getTypeFactory().constructCollectionType(List.class, type));
+
+			return (List<T>) result;
+		} catch ( IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 }

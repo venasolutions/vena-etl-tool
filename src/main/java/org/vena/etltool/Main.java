@@ -49,6 +49,14 @@ public class Main {
 		
 		options.addOption(helpOption);
 		
+		Option versionOption =  OptionBuilder
+				.withLongOpt( "version")
+				.withDescription("Print the version of the cmdline tool." )
+				.isRequired(false)
+				.create();
+			
+		options.addOption(versionOption);
+		
 		Option statusOption =  OptionBuilder
 				.withLongOpt( "status")
 				.withDescription("Request status for the specified etlJob.  Requires --jobId option." )
@@ -338,6 +346,12 @@ public class Main {
 				
 				helpFormatter.printHelp(EXAMPLE_COMMANDLINE, options);
 				
+				System.exit(0);
+			}
+			
+			if(commandLine.hasOption("version")) {
+				
+				System.out.print(ETLClient.requestVersionInfo());
 				System.exit(0);
 			}
 			
