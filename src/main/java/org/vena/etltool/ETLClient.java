@@ -9,9 +9,11 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Properties;
 
 import javax.ws.rs.core.MediaType;
 
@@ -325,6 +327,31 @@ public class ETLClient {
 		return result;
 	}
 
+	public static String requestVersionInfo() {
+		Properties props = new Properties();
+		StringBuilder buf = new StringBuilder();
+
+		try {
+			props.load(ETLClient.class
+					.getResourceAsStream("/global.properties"));
+
+			String[] keys = new String[] { "artifactId", "version",
+					"git.branch", "git.commit.id", "git.commit.id.describe", 
+					"git.commit.time", "git.build.time" };
+
+			for (String key : keys) {
+				buf.append(key).append(": ");
+				buf.append(props.getProperty(key)).append("\n");
+			}
+
+			return buf.toString();
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			return "Error: Could not extract any git information.";
+		}
+	}
+	
 	public ETLJob setJobError(String idString, String errMsg) throws UnsupportedEncodingException
 	{
 		List<TwoTuple<String, String>> params = new ArrayList<>();

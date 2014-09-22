@@ -93,6 +93,19 @@
 	</dependencies>
 
 	<build>
+	    <resources>
+	        <resource>
+	            <targetPath>.</targetPath>
+	            <filtering>true</filtering>
+	            <directory>${basedir}/src/main/resources</directory>
+	            <includes>
+	                <include>**/*</include>
+	            </includes>
+	            <excludes>
+	                <exclude></exclude>
+	            </excludes>
+	        </resource>
+        </resources>
 		<plugins>
 			<!-- The maven 'Shade Plugin' creates a fat jar bundling all our code 
 				and all its dependencies in one jar -->
@@ -132,6 +145,23 @@
 					</execution>
 				</executions>
 			</plugin>
+			<plugin>
+                <groupId>pl.project13.maven</groupId>
+                <artifactId>git-commit-id-plugin</artifactId>
+                <version>2.1.10</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>revision</goal>
+                         </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <gitDescribe>
+                        <dirty>git-repo-was-dirty</dirty>
+                    </gitDescribe>
+                </configuration>
+            </plugin>
 		</plugins>
 	</build>
 	<!-- Route all requests through Vena's maven cache. -->
