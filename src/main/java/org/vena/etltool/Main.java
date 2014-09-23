@@ -311,7 +311,7 @@ public class Main {
 				OptionBuilder
 				.withLongOpt("wait")
 				.isRequired(false)
-				.withDescription("Wait for job to complete (or fail) before returning.")
+				.withDescription("Wait for job to complete (or fail) before returning. Returns status code 0 if the job was successful and non-zero if it failed.")
 				.create();
 		
 		options.addOption(waitOption);

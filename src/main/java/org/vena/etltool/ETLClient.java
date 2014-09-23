@@ -136,6 +136,10 @@ public class ETLClient {
 			if( ! isJobStillRunning(etlJob) )  {
 
 				printJobStatus(etlJob);
+				
+				if (etlJob.isError() || etlJob.isCancelRequested()) {
+					System.exit(1);
+				}
 				break;
 			}
 			else {
