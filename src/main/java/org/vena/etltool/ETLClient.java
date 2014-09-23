@@ -46,15 +46,15 @@ import com.sun.jersey.multipart.impl.MultiPartWriter;
 public class ETLClient {
 	private static final int POLL_INTERVAL = 5000;
 	
-	protected int port = 8080;
-	protected String host = "localhost";
+	protected Integer port = null;
+	protected String host = "proxy.vena.io";
 	protected String apiUser;
 	protected String apiKey;
 	public String username;
 	public String password;
 	public boolean needsLogin = false;
 	public Id modelId;
-	public String protocol = "http";
+	public String protocol = "https";
 	public String templateId;
 	public boolean validationRequested = false;
 	public boolean pollingRequested = false;
@@ -173,14 +173,20 @@ public class ETLClient {
 		return "/api/models/" + modelId + "/etl";
 	}
 	
+	private  String buildURI(String path) {
+		return buildURI(path, Collections.<TwoTuple<String, String>> emptyList());
+	}
+	
 	private  String buildURI(String path, Iterable<TwoTuple<String, String>> parameters)
 	{
 		StringBuilder urlBuf = new StringBuilder();
 		
 		urlBuf.append(protocol).append("://");
-		urlBuf.append(host).append(":");
-		urlBuf.append(port);
-		
+		urlBuf.append(host);
+		if (port != null) {
+			urlBuf.append(":").append(port);
+		}
+
 		urlBuf.append(path);
 		
 		Iterator<TwoTuple<String, String>> it = parameters.iterator();
@@ -240,7 +246,7 @@ public class ETLClient {
 
 		client.addFilter(new HTTPBasicAuthFilter(username, password));
 
-		String uri = protocol+"://"+host+":"+port+"/login";
+		String uri = buildURI("/login");
 		
 		if( verbose )
 			System.err.println("Calling " + uri);

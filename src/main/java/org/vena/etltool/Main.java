@@ -69,10 +69,19 @@ public class Main {
 				OptionBuilder
 				.withLongOpt("ssl")
 				.isRequired(false)
-				.withDescription("Use ssl to connect to the server.")
+				.withDescription("Use SSL encryption to connect to the server (this is default).")
 				.create();
 		
 		options.addOption(sslOption);
+		
+		Option noSSLOption = 
+				OptionBuilder
+				.withLongOpt("nossl")
+				.isRequired(false)
+				.withDescription("Don't use SSL encryption to connect to the server.")
+				.create();
+		
+		options.addOption(noSSLOption);
 		
 		Option apiUserOption = 
 				OptionBuilder
@@ -121,7 +130,7 @@ public class Main {
 				.withLongOpt("host")
 				.isRequired(false)
 				.hasArg()
-				.withDescription("The hostname of the API server to connect to.  Defaults to localhost.")
+				.withDescription("The hostname of the API server to connect to.  Defaults to proxy.vena.io.")
 				.create();
 		
 		options.addOption(hostOption);
@@ -131,7 +140,7 @@ public class Main {
 				.withLongOpt("port")
 				.isRequired(false)
 				.hasArg()
-				.withDescription("The port to connect to on the  the API server.  Defaults to 8080.")
+				.withDescription("The port to connect to on the  the API server.  Defaults to 443 with SSL or 80 without SSL.")
 				.create();
 		
 		portOption.setType(Integer.class);
@@ -370,8 +379,18 @@ public class Main {
 	        	etlClient.host=hostname;
 	        }
 	        
+	        if( commandLine.hasOption("ssl") && commandLine.hasOption("nossl") ) { 
+        		System.err.println( "Error: ssl and nossl options cannot be combined.");
+		        
+		        System.exit(1);
+	        }
+	        
 	        if( commandLine.hasOption("ssl") ) { 
 	        	etlClient.protocol = "https";
+	        }
+	        
+	        else if( commandLine.hasOption("nossl") ) { 
+	        	etlClient.protocol = "http";
 	        }
 	        
 	        if( commandLine.hasOption("wait") ) { 
