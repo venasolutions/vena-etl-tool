@@ -346,8 +346,6 @@ public class Main {
 	    catch( ParseException exp ) {
 	        System.err.println( "Error: " + exp.getMessage() );
 	        
-	        helpFormatter.printHelp( EXAMPLE_COMMANDLINE, options );
-	        
 	        System.exit(1);
 	    }
 
