@@ -9,7 +9,6 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
@@ -533,22 +532,24 @@ public class ETLClient {
 		
 		System.out.println("  Model id: " + metadata.getModelId());
 		
+		System.out.println("  Load Type: " + ETLMetadata.loadTypeToString(metadata.getLoadType()));
+
 		boolean allDone = true;
 		
 		if (metadata.getFiles() != null) {
+			System.out.println("  Files:");
 			for (ETLFile file : metadata.getFiles().values()) {
-				System.out.println("   - File: " + file.getFilename() + "(" + file.getFileType() + "): " + 
-						(file.getDone() ? "done":"not done") + " (" + file.getLinesProcessed() + " lines)");
+				System.out.println("   - " + file.getFilename() + " (" + file.getFileType() + "):  " + 
+						(file.getDone() ? "Done!":"Not done") + " (processed " + file.getLinesProcessed() + " lines)");
 				allDone &= file.getDone();
 			}
 		}
 
-		System.out.println("  Uses staging tables: " + metadata.isStagingRequired());
-
 		if (metadata.getTables() != null) {
+			System.out.println("  Tables:");
 			for (ETLTableStatus table : metadata.getTables().values()) {
-				System.out.println("   - Table: " + table.getTableName() + ": " + 
-						(table.getDone() ? "done":"not done") + " (" + table.getRowsProcessed() + " rows)");
+				System.out.println("   - " + table.getTableName() + ":  " + 
+						(table.getDone() ? "Done!":"Not done") + " (processed " + table.getRowsProcessed() + " rows)");
 				allDone &= table.getDone();
 			}
 		}
@@ -568,10 +569,10 @@ public class ETLClient {
 		else if (etlJob.isCancelRequested()) overallStatus = "Cancelled";
 		else if (etlJob.getPhase() == Phase.COMPLETE) overallStatus = "Complete";
 		else if (etlJob.getPhase() == Phase.IN_STAGING) overallStatus = "Waiting for transform to complete";
+		else if (etlJob.getPhase() == Phase.NOT_STARTED) overallStatus = "Not started";
 		else if (etlJob.getPhase() != null) overallStatus = "In Progress";
 		else { //etlJob.getPhase() == null
 			if (!allDone) overallStatus = "In Progress";
-			else if (!metadata.isStagingRequired()) overallStatus = "Complete";
 		}
 
 		System.out.println("  Overall status: " + overallStatus);
