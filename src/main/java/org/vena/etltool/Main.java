@@ -14,9 +14,9 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.vena.api.etl.ETLFile;
 import org.vena.api.etl.ETLFile.Type;
-import org.vena.api.etl.ETLJob;
 import org.vena.api.etl.ETLMetadata;
 import org.vena.api.etl.ETLMetadata.ETLLoadType;
+import org.vena.etltool.entities.ETLJobDTO;
 import org.vena.etltool.entities.ModelResponseDTO;
 import org.vena.id.Id;
 
@@ -484,7 +484,7 @@ public class Main {
 				System.exit(1);
 			}
 
-			ETLJob etlJob = etlClient.requestJobStatus(jobId);
+			ETLJobDTO etlJob = etlClient.requestJobStatus(jobId);
 
 			ETLClient.printJobStatus(etlJob);
 

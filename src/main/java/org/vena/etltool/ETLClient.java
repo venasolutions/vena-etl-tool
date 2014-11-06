@@ -18,7 +18,6 @@ import javax.ws.rs.core.MediaType;
 
 import org.vena.api.customer.authentication.APILoginResult;
 import org.vena.api.etl.ETLFile;
-import org.vena.api.etl.ETLJob;
 import org.vena.api.etl.ETLJob.Phase;
 import org.vena.api.etl.ETLMetadata;
 import org.vena.api.etl.ETLTableStatus;
@@ -26,6 +25,7 @@ import org.vena.api.etl.QueryDTO;
 import org.vena.api.etl.QueryDTO.Destination;
 import org.vena.api.etl.QueryExpressionDTO;
 import org.vena.etltool.entities.CreateModelRequestDTO;
+import org.vena.etltool.entities.ETLJobDTO;
 import org.vena.etltool.entities.ModelResponseDTO;
 import org.vena.etltool.util.TwoTuple;
 import org.vena.id.Id;
@@ -107,7 +107,7 @@ public class ETLClient {
 			switch( response.getStatus()) {
 			
 			case 200:
-				ETLJob etlJob = getEntity(response, ETLJob.class);
+				ETLJobDTO etlJob = getEntity(response, ETLJobDTO.class);
 
 				System.out.println("Job submitted. Your ETL Job Id is "+etlJob.getId());
 				
@@ -130,7 +130,7 @@ public class ETLClient {
 
 	private void pollTillJobComplete(Id jobId) {
 		while( true) {
-			ETLJob etlJob = requestJobStatus(jobId);
+			ETLJobDTO etlJob = requestJobStatus(jobId);
 
 			if( ! isJobStillRunning(etlJob) )  {
 
@@ -152,7 +152,7 @@ public class ETLClient {
 		}
 	}
 	
-	private boolean isJobStillRunning(ETLJob etlJob) {
+	private boolean isJobStillRunning(ETLJobDTO etlJob) {
 		if (etlJob.isError()) 
 			return false;
 		else if (etlJob.isCancelRequested()) 
@@ -315,12 +315,12 @@ public class ETLClient {
 		return null;
 	}
 	
-	public ETLJob requestJobStatus(Id etlJobId)
+	public ETLJobDTO requestJobStatus(Id etlJobId)
 	{
 		return requestJobStatus(etlJobId.toString());
 	}
 	
-	public ETLJob requestJobStatus(String idString)
+	public ETLJobDTO requestJobStatus(String idString)
 	{
 		WebResource webResource = buildWebResource(getETLBasePath() + "/jobs/" + idString);
 
@@ -331,7 +331,7 @@ public class ETLClient {
 			handleErrorResponse(response, "Unable to get job status.");
 		}
 
-		ETLJob result = getEntity(response, ETLJob.class);
+		ETLJobDTO result = getEntity(response, ETLJobDTO.class);
 		
 		return result;
 	}
@@ -361,7 +361,7 @@ public class ETLClient {
 		}
 	}
 	
-	public ETLJob setJobError(String idString, String errMsg) throws UnsupportedEncodingException
+	public ETLJobDTO setJobError(String idString, String errMsg) throws UnsupportedEncodingException
 	{
 		List<TwoTuple<String, String>> params = new ArrayList<>();
 		params.add(new TwoTuple<String, String>("message", errMsg));
@@ -374,12 +374,12 @@ public class ETLClient {
 			handleErrorResponse(response, "Unable to set job error.");
 		}
 
-		ETLJob result = getEntity(response, ETLJob.class);
+		ETLJobDTO result = getEntity(response, ETLJobDTO.class);
 
 		return result;
 	}
 
-	public ETLJob sendTransformComplete(String idString)
+	public ETLJobDTO sendTransformComplete(String idString)
 	{
 		WebResource webResource = buildWebResource(getETLBasePath() + "/jobs/"+idString + "/transformComplete");
 
@@ -389,7 +389,7 @@ public class ETLClient {
 			handleErrorResponse(response, "'transformComplete' request failed.");
 		}
 
-		ETLJob etlJob = getEntity(response, ETLJob.class);
+		ETLJobDTO etlJob = getEntity(response, ETLJobDTO.class);
 		
 		/* If polling option was provided, poll until the task completes. */
 		if( pollingRequested  ) {
@@ -400,7 +400,7 @@ public class ETLClient {
 		return etlJob;
 	}
 
-	public ETLJob sendCancel(String idString)
+	public ETLJobDTO sendCancel(String idString)
 	{
 		WebResource webResource = buildWebResource(getETLBasePath() + "/jobs/"+idString + "/cancel");
 
@@ -410,7 +410,7 @@ public class ETLClient {
 			handleErrorResponse(response, "Cancel request failed.");
 		}
 
-		ETLJob etlJob = getEntity(response, ETLJob.class);
+		ETLJobDTO etlJob = getEntity(response, ETLJobDTO.class);
 		
 		return etlJob;
 	}	
@@ -524,14 +524,25 @@ public class ETLClient {
 		System.exit(1);
 	}
 
-	static void printJobStatus(ETLJob etlJob) {
-    	System.out.println();
-		System.out.println("  Job Id: " + etlJob.getId());
+	static void printJobStatus(ETLJobDTO etlJob) {
 		
 		ETLMetadata metadata = etlJob.getMetadata();
 		
+    	System.out.println();
+		System.out.println("  Job Id: " + etlJob.getId());
 		System.out.println("  Model id: " + metadata.getModelId());
-		
+		System.out.println("  Created: " + etlJob.getCreatedDate());
+		System.out.println("  Updated: " + (etlJob.getUpdatedDate() == null ? "-" : etlJob.getUpdatedDate()));
+
+		String userString;
+		if (etlJob.getUser() != null) {
+			userString = etlJob.getUser().toString();
+		} else if (etlJob.getUserId() != null) {
+			userString = etlJob.getUserId().toString();
+		} else {
+			userString = "-";
+		}
+		System.out.println("  Created by user: " + userString);
 		System.out.println("  Load Type: " + ETLMetadata.loadTypeToString(metadata.getLoadType()));
 
 		boolean allDone = true;
