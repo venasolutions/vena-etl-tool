@@ -34,7 +34,17 @@ public class Main {
 
 		ETLMetadata metadata = parseCmdlineArgs(args, etlClient);
 
-		etlClient.uploadETL(metadata);
+		System.out.print("Submitting job... ");
+		ETLJobDTO etlJob = etlClient.uploadETL(metadata);
+		System.out.println("OK");
+		System.out.println("Job submitted. Your ETL Job Id is "+etlJob.getId());
+		
+		/* If polling option was provided, poll until the task completes. */
+		if( etlClient.pollingRequested  ) {
+			System.out.println("Waiting for job to finish... ");
+			etlClient.pollTillJobComplete(etlJob.getId());
+			System.out.println("Done.");
+		}
 	}
 
 
@@ -472,7 +482,9 @@ public class Main {
 				System.exit(1);
 			}
 
+			System.out.print("Logging in... ");
 			etlClient.login();
+			System.out.println("OK");
 		}
 
 		// Options that work on a single job ID
@@ -484,7 +496,9 @@ public class Main {
 				System.exit(1);
 			}
 
+			System.out.print("Fetching job status... ");
 			ETLJobDTO etlJob = etlClient.requestJobStatus(jobId);
+			System.out.println("OK");
 
 			ETLClient.printJobStatus(etlJob);
 
@@ -498,7 +512,17 @@ public class Main {
 				System.exit(1);
 			}
 
-			etlClient.sendTransformComplete(jobId);
+			System.out.print("Signalling job to continue... ");
+			ETLJobDTO etlJob = etlClient.sendTransformComplete(jobId);
+			System.out.println("OK");
+			
+			/* If polling option was provided, poll until the task completes. */
+			if( etlClient.pollingRequested  ) {
+				System.out.println("Waiting for job to finish... ");
+				etlClient.pollTillJobComplete(etlJob.getId());
+				System.out.println("Done.");
+			}
+			
 			System.exit(0);
 		}
 
@@ -509,7 +533,9 @@ public class Main {
 				System.exit(1);
 			}
 
+			System.out.print("Setting job error status... ");
 			etlClient.setJobError(jobId, commandLine.getOptionValue("setError"));
+			System.out.println("OK");
 			System.exit(0);
 		}
 
@@ -520,7 +546,9 @@ public class Main {
 				System.exit(1);
 			}
 
+			System.out.print("Cancelling job... ");
 			etlClient.sendCancel(jobId);
+			System.out.println("OK");
 			System.exit(0);
 		}
 		
@@ -542,6 +570,7 @@ public class Main {
 
 			//Lookup model by name.
 			if( modelNameStr != null ) {
+				System.out.print("Looking up model... ");
 				ModelResponseDTO searchResults = etlClient.lookupModel(modelNameStr);
 
 				if( searchResults == null) {
@@ -550,6 +579,7 @@ public class Main {
 					System.exit(1);
 				}
 
+				System.out.println("OK");
 				etlClient.modelId = searchResults.getId();
 			}
 			else {
@@ -557,9 +587,10 @@ public class Main {
 			}
 		}
 		else if(commandLine.getOptionValue("createModel") !=null) {
-			ModelResponseDTO modelResponse = etlClient.createModel(commandLine.getOptionValue("createModel"));
+			System.out.print("Creating new model... ");
+			etlClient.createModel(commandLine.getOptionValue("createModel"));
 
-			System.out.println("Created model. Id="+modelResponse.getId());
+			System.out.println("OK");
 		}
 		else {
 			System.err.println( "Error: You must specify one of --createModel=<model name> or --modelId or --modelName.");
@@ -588,7 +619,9 @@ public class Main {
 
 			String whereClause = commandLine.getOptionValue("exportWhere");
 
+			System.out.print("Running export (this might take a while)... ");
 			etlClient.sendExport(type, exportToTable, whereClause);
+			System.out.print("OK.");
 
 			System.exit(0);
 		}
@@ -611,7 +644,9 @@ public class Main {
 				System.exit(1);
 			}
 
+			System.out.print("Running delete (this might take a while)... ");
 			etlClient.sendDelete(type, expr);
+			System.out.print("OK.");
 
 			System.exit(0);
 		}

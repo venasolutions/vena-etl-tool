@@ -62,7 +62,7 @@ public class ETLClient {
 	public ETLClient() {
 	}
 	 
-	public void uploadETL(ETLMetadata metadata)
+	public ETLJobDTO uploadETL(ETLMetadata metadata)
 	{
 		try {
 			String resource;
@@ -108,15 +108,7 @@ public class ETLClient {
 			
 			case 200:
 				ETLJobDTO etlJob = getEntity(response, ETLJobDTO.class);
-
-				System.out.println("Job submitted. Your ETL Job Id is "+etlJob.getId());
-				
-				/* If polling option was provided, poll until the task completes. */
-				if( pollingRequested  ) {
-					pollTillJobComplete(etlJob.getId());
-				}
-				
-				break;
+				return etlJob;
 			default:
 				handleErrorResponse(response, "Unable to submit job.");
 			}
@@ -124,19 +116,22 @@ public class ETLClient {
 		} catch (Exception e) {
 
 			e.printStackTrace();
-
 		}
+		System.exit(1);
+		return null; // should never reach here
 	}
 
-	private void pollTillJobComplete(Id jobId) {
+	void pollTillJobComplete(Id jobId) {
 		while( true) {
 			ETLJobDTO etlJob = requestJobStatus(jobId);
 
 			if( ! isJobStillRunning(etlJob) )  {
 
 				printJobStatus(etlJob);
+				System.out.println();
 				
 				if (etlJob.isError() || etlJob.isCancelRequested()) {
+					System.out.println("The job stopped due to error or was cancelled.");
 					System.exit(1);
 				}
 				break;
@@ -391,11 +386,6 @@ public class ETLClient {
 
 		ETLJobDTO etlJob = getEntity(response, ETLJobDTO.class);
 		
-		/* If polling option was provided, poll until the task completes. */
-		if( pollingRequested  ) {
-			pollTillJobComplete(etlJob.getId());
-		}
-		
 
 		return etlJob;
 	}
@@ -480,7 +470,7 @@ public class ETLClient {
 
 	private void handleErrorResponse(ClientResponse response, String message) {
 
-		System.err.println("ERROR :");
+		System.err.println("ERROR:");
 		System.err.println(">>> " + response);
 		BufferedReader reader = new BufferedReader(new InputStreamReader(response.getEntityInputStream()));
 		String line;
