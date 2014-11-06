@@ -531,7 +531,7 @@ public class ETLClient {
     	System.out.println();
 		System.out.println("  Job Id: " + etlJob.getId());
 		System.out.println("  Model id: " + metadata.getModelId());
-		System.out.println("  Created: " + etlJob.getCreatedDate());
+		System.out.println("  Created: " + (etlJob.getCreatedDate() == null ? "-" : etlJob.getCreatedDate()));
 		System.out.println("  Updated: " + (etlJob.getUpdatedDate() == null ? "-" : etlJob.getUpdatedDate()));
 
 		String userString;
@@ -543,7 +543,8 @@ public class ETLClient {
 			userString = "-";
 		}
 		System.out.println("  Created by user: " + userString);
-		System.out.println("  Load Type: " + ETLMetadata.loadTypeToString(metadata.getLoadType()));
+		System.out.println("  Load Type: " + (metadata.getLoadType() == null ? "-" :
+			ETLMetadata.loadTypeToString(metadata.getLoadType())));
 
 		boolean allDone = true;
 		
