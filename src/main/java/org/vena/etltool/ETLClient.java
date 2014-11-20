@@ -46,7 +46,7 @@ public class ETLClient {
 	private static final int POLL_INTERVAL = 5000;
 	
 	protected Integer port = null;
-	protected String host = "proxy.vena.io";
+	protected String host = "vena.io";
 	protected String apiUser;
 	protected String apiKey;
 	public String username;
