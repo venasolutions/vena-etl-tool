@@ -405,26 +405,68 @@ public class ETLClient {
 		return etlJob;
 	}	
 
-	public void sendExport(ETLFile.Type type, String tableName, String whereClause) {
+	public void sendExport(ETLFile.Type type, String tableName, String whereClause, String queryExpr) {
 		
 		String typePath;
 
-		switch (type) {
-		case attributes:
-			typePath = "attributes";
-			break;
-		case hierarchy:
-			typePath = "hierarchies";
-			break;
-		case intersections:
-			typePath = "intersections";
-			break;
-		case lids:
-			typePath = "lids";
-			break;
-		default:
-			System.err.println("Type \""+type+"\" not supported for export.");
-			return;
+		if (whereClause != null) {
+			switch (type) {
+			case attributes:
+				typePath = "attributes";
+				break;
+			case hierarchy:
+				typePath = "hierarchies";
+				break;
+			case intersections:
+				typePath = "intersections";
+				break;
+			case lids:
+				typePath = "lids";
+				break;
+			default:
+				System.err.println("Type \""+type+"\" not supported for export.");
+				System.exit(1);
+				return;
+			}
+		}
+
+		else if (queryExpr != null) {
+			switch (type) {
+			case attributes:
+			case hierarchy:
+			case lids:
+				System.err.println("Type \""+type+"\" doesn't support query expression. Use where clause instead.");
+				System.exit(1);
+				return;
+			case intersections:
+				typePath = "intersections2";
+				break;
+			default:
+				System.err.println("Type \""+type+"\" not supported for export.");
+				System.exit(1);
+				return;
+			}
+		}
+
+		else { // both whereClause and queryExpr are null
+			switch (type) {
+			case attributes:
+				typePath = "attributes";
+				break;
+			case hierarchy:
+				typePath = "hierarchies";
+				break;
+			case intersections:
+				typePath = "intersections2";
+				break;
+			case lids:
+				typePath = "lids";
+				break;
+			default:
+				System.err.println("Type \""+type+"\" not supported for export.");
+				System.exit(1);
+				return;
+			}
 		}
 
 		WebResource webResource = buildWebResource(getETLBasePath() + "/query/" + typePath);
@@ -432,7 +474,11 @@ public class ETLClient {
 		QueryDTO query = new QueryDTO();
 		query.setDestination(Destination.ToStaging);
 		query.setTableName(tableName);
-		query.setQueryString(whereClause);
+		if (whereClause != null) {
+			query.setQueryString(whereClause);
+		} else if (queryExpr != null) {
+			query.setQueryString(queryExpr);
+		}
 
 		ClientResponse response = webResource.type(MediaType.APPLICATION_JSON_TYPE).post(ClientResponse.class, query);
 

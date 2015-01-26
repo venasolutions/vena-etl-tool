@@ -327,10 +327,20 @@ public class Main {
 				.withLongOpt("exportWhere")
 				.isRequired(false)
 				.hasArg()
-				.withDescription("Where clause for export.")
+				.withDescription("Where clause for export (HQL). May not be combined with --exportQuery.")
 				.create();
 
 		options.addOption(exportWhereOption);
+
+		Option exportQueryOption = 
+				OptionBuilder
+				.withLongOpt("exportQuery")
+				.isRequired(false)
+				.hasArg()
+				.withDescription("Query expression for export (model slice language).  May not be combined with --exportWhere.")
+				.create();
+
+		options.addOption(exportQueryOption);
 
 		Option deleteOption = 
 				OptionBuilder
@@ -618,9 +628,15 @@ public class Main {
 			}
 
 			String whereClause = commandLine.getOptionValue("exportWhere");
+			String queryExpr = commandLine.getOptionValue("exportQuery");
+			
+			if (whereClause != null && queryExpr != null) {
+				System.err.println( "Error: exportWhere and exportQuery options cannot be combined.");
+				System.exit(1);
+			}
 
 			System.out.print("Running export (this might take a while)... ");
-			etlClient.sendExport(type, exportToTable, whereClause);
+			etlClient.sendExport(type, exportToTable, whereClause, queryExpr);
 			System.out.print("OK.");
 
 			System.exit(0);
