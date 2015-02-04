@@ -1,11 +1,9 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
-                      http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0                       http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.vena</groupId>
 	<artifactId>cmdline-etl-tool</artifactId>
 	<packaging>jar</packaging>
-	<version>1.19-SNAPSHOT</version>
+	<version>1.19</version>
 	<name>Vena command line ETL tool.</name>
 
 	<properties>
@@ -102,7 +100,7 @@
 	                <include>**/*</include>
 	            </includes>
 	            <excludes>
-	                <exclude></exclude>
+	                <exclude />
 	            </excludes>
 	        </resource>
         </resources>
@@ -134,10 +132,8 @@
 						</goals>
 						<configuration>
 							<transformers>
-								<transformer
-									implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
-								<transformer
-									implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+								<transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
+								<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
 									<mainClass>org.vena.etltool.Main</mainClass>
 								</transformer>
 							</transformers>
@@ -204,6 +200,7 @@
 	</pluginRepositories>
 	<scm>
 		<developerConnection>scm:git:https://github.vena.io/development/etl-console.git</developerConnection>
-	</scm>
+	  <tag>cmdline-etl-tool-1.19</tag>
+  </scm>
 </project>
 
