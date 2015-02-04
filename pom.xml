@@ -162,6 +162,11 @@
                     </gitDescribe>
                 </configuration>
             </plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-release-plugin</artifactId>
+				<version>2.5.1</version>
+			</plugin>
 		</plugins>
 	</build>
 	<!-- Route all requests through Vena's maven cache. -->
@@ -197,5 +202,8 @@
 			<url>http://${artifactory.host}:8081/artifactory/plugins-snapshot</url>
 		</pluginRepository>
 	</pluginRepositories>
+	<scm>
+		<developerConnection>scm:git:https://github.vena.io/development/etl-console.git</developerConnection>
+	</scm>
 </project>
 
