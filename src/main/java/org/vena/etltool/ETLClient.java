@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -405,9 +406,9 @@ public class ETLClient {
 		return etlJob;
 	}	
 
-	public void sendExport(ETLFile.Type type, String tableName, String whereClause, String queryExpr) {
+	public InputStream sendExport(ETLFile.Type type, boolean toFile, String tableName, String whereClause, String queryExpr) {
 		
-		String typePath;
+		String typePath = null;
 
 		if (whereClause != null) {
 			switch (type) {
@@ -425,8 +426,6 @@ public class ETLClient {
 				break;
 			default:
 				System.err.println("Type \""+type+"\" not supported for export.");
-				System.exit(1);
-				return;
 			}
 		}
 
@@ -436,15 +435,12 @@ public class ETLClient {
 			case hierarchy:
 			case lids:
 				System.err.println("Type \""+type+"\" doesn't support query expression. Use where clause instead.");
-				System.exit(1);
-				return;
+				break;
 			case intersections:
 				typePath = "intersections2";
 				break;
 			default:
 				System.err.println("Type \""+type+"\" not supported for export.");
-				System.exit(1);
-				return;
 			}
 		}
 
@@ -464,16 +460,23 @@ public class ETLClient {
 				break;
 			default:
 				System.err.println("Type \""+type+"\" not supported for export.");
-				System.exit(1);
-				return;
 			}
+		}
+
+		if (typePath == null) {
+			System.exit(1);
+			return null;
 		}
 
 		WebResource webResource = buildWebResource(getETLBasePath() + "/query/" + typePath);
 
 		QueryDTO query = new QueryDTO();
-		query.setDestination(Destination.ToStaging);
-		query.setTableName(tableName);
+		if (!toFile) {
+			query.setDestination(Destination.ToStaging);
+			query.setTableName(tableName);
+		} else {
+			query.setDestination(Destination.ToCSV);
+		}
 		if (whereClause != null) {
 			query.setQueryString(whereClause);
 		} else if (queryExpr != null) {
@@ -486,6 +489,8 @@ public class ETLClient {
 			handleErrorResponse(response, "Request to export failed.");
 		}
 
+		if (toFile) return response.getEntityInputStream();
+		else return null;
 	}
 
 	public void sendDelete(ETLFile.Type type, String expression) {

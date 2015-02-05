@@ -7,7 +7,7 @@
 	<name>Vena command line ETL tool.</name>
 
 	<properties>
-	    <artifactory.host>build.venasolutions.com</artifactory.host>
+	    <artifactory.host>artifactory.vena.io</artifactory.host>
 		<maven.compiler.source>1.7</maven.compiler.source>
 		<maven.compiler.target>1.7</maven.compiler.target>
 		<jackson.version>2.1.4</jackson.version>
