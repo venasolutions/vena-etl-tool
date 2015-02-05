@@ -1,6 +1,11 @@
 package org.vena.etltool;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -322,6 +327,17 @@ public class Main {
 
 		options.addOption(exportStagingOption);
 
+		Option exportFileOption = 
+				OptionBuilder
+				.withLongOpt("exportToFile")
+				.isRequired(false)
+				.hasArg()
+				.withArgName("name")
+				.withDescription("Name of file to export to.")
+				.create();
+
+		options.addOption(exportFileOption);
+
 		Option exportWhereOption = 
 				OptionBuilder
 				.withLongOpt("exportWhere")
@@ -613,8 +629,15 @@ public class Main {
 		if (commandLine.hasOption("export")) {
 			String exportTypeStr = commandLine.getOptionValue("export");
 			String exportToTable = commandLine.getOptionValue("exportToTable");
-			if (exportToTable == null) {
-				System.err.println( "Error: export option requires --exportToTable <name>.");
+			String exportToFile = commandLine.getOptionValue("exportToFile");
+
+			if (exportToFile != null && exportToTable != null)  {
+				System.err.println( "Error: --exportToTable and --exportToFile options cannot be combined.");
+				System.exit(1);
+			}
+			
+			if (exportToFile == null && exportToTable == null) {
+				System.err.println( "Error: export option requires either --exportToTable <name> or --exportToFile <name>.");
 				System.exit(1);
 			}
 
@@ -636,7 +659,20 @@ public class Main {
 			}
 
 			System.out.print("Running export (this might take a while)... ");
-			etlClient.sendExport(type, exportToTable, whereClause, queryExpr);
+			InputStream in = etlClient.sendExport(type, exportToFile != null, exportToTable, whereClause, queryExpr);
+			if (exportToFile != null) {
+				try {
+					Files.copy(in, new File(exportToFile).toPath(), StandardCopyOption.REPLACE_EXISTING);
+				} catch (IOException e) {
+					e.printStackTrace();
+					try {
+						in.close();
+					} catch (IOException e1) {
+						e1.printStackTrace();
+					}
+					System.exit(1);
+				}
+			}
 			System.out.print("OK.");
 
 			System.exit(0);
