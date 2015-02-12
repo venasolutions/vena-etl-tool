@@ -518,7 +518,7 @@ public class Main {
 		if(commandLine.hasOption("status") || args.length == 0) {
 
 			if (jobId == null) {
-				System.err.println( "Error: You must specify --job=<job Id>.");
+				System.err.println( "Error: You must specify --jobId=<job Id>.");
 				System.exit(1);
 			}
 
