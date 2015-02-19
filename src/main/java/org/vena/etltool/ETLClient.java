@@ -406,7 +406,7 @@ public class ETLClient {
 		return etlJob;
 	}	
 
-	public InputStream sendExport(ETLFile.Type type, boolean toFile, String tableName, String whereClause, String queryExpr) {
+	public InputStream sendExport(ETLFile.Type type, boolean toFile, String tableName, String whereClause, String queryExpr, boolean showHeaders) {
 		
 		String typePath = null;
 
@@ -482,6 +482,7 @@ public class ETLClient {
 		} else if (queryExpr != null) {
 			query.setQueryString(queryExpr);
 		}
+		query.setShowHeaders(showHeaders);
 
 		ClientResponse response = webResource.type(MediaType.APPLICATION_JSON_TYPE).post(ClientResponse.class, query);
 

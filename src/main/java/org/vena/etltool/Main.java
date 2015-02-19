@@ -358,6 +358,15 @@ public class Main {
 
 		options.addOption(exportQueryOption);
 
+		Option excludeHeadersOption = 
+				OptionBuilder
+				.withLongOpt("excludeHeaders")
+				.isRequired(false)
+				.withDescription("Exclude header row when exporting to file.")
+				.create();
+
+		options.addOption(excludeHeadersOption);
+
 		Option deleteOption = 
 				OptionBuilder
 				.withLongOpt("delete")
@@ -658,8 +667,10 @@ public class Main {
 				System.exit(1);
 			}
 
+			boolean excludeHeaders = commandLine.hasOption("excludeHeaders");
+
 			System.out.print("Running export (this might take a while)... ");
-			InputStream in = etlClient.sendExport(type, exportToFile != null, exportToTable, whereClause, queryExpr);
+			InputStream in = etlClient.sendExport(type, exportToFile != null, exportToTable, whereClause, queryExpr, !excludeHeaders);
 			if (exportToFile != null) {
 				try {
 					Files.copy(in, new File(exportToFile).toPath(), StandardCopyOption.REPLACE_EXISTING);
