@@ -27,8 +27,21 @@ import org.vena.etltool.entities.ModelResponseDTO;
 import org.vena.id.Id;
 
 public class Main {
-	private static final String EXAMPLE_COMMANDLINE = "etl-tool --host=localhost --port=8080 --apiUser=1.1 --apiKey=4d87c176227045de9628fb5f010a7b40 --file=model.csv;hierarchy";
-
+	private static final String EXAMPLE_COMMANDLINE = "etl-tool "
+			+ "[--host <addr>] [--port <num>] [--ssl|--nossl]"
+			+ "\n{ --apiUser=<uid.cid> --apiKey=<key> "
+			+ "\n| --user=<email> --password=<password>"
+			+ "\n}"
+			+ "\n { --loadFromStaging [--wait]"
+			+ "\n | [--stage|--stageOnly] [--wait] [--validate] [--templateId <id>] [--jobName <name>] --file \"[file=]<filename>; [type=]<filetype> [;[table=]<tableName>] [;format={CSV|TDF}] [;bulkInsert={true|false}]\""
+			+ "\n| --cancel --jobId <id>"
+			+ "\n| --setError --jobId <id>"
+			+ "\n| --status --jobId <id>"
+			+ "\n| --transformComplete --jobId <id>"
+			+ "\n| --delete <type> --deleteQuery <expr>"
+			+ "\n| --export <type>\n {--exportQuery <expr> | --exportWhere <clause>}\n {--exportToFile <name> [--excludeHeaders] | --exportToTable <name>}"
+			+ "\n}";
+	
 	/**
 	 * @param args
 	 * @throws UnsupportedEncodingException 
@@ -105,6 +118,7 @@ public class Main {
 				.withLongOpt("apiUser")
 				.isRequired(false)
 				.hasArg()
+				.withArgName("uid.cid")
 				.withDescription("The api user to use to access the API. Example 38450575909584901.2, (user 38450575909584901, customer 2). "+
 						"Note: This is different from the username used to login!")
 						.create();
@@ -116,6 +130,7 @@ public class Main {
 				.withLongOpt("apiKey")
 				.isRequired(false)
 				.hasArg()
+				.withArgName("key")
 				.withDescription("The api key to use to access the API. Example 4d87c176227045de9628fb5f010a7b40. "+
 						"Note: This is different from the password used to login!")
 						.create();
@@ -127,6 +142,7 @@ public class Main {
 				.withLongOpt("username")
 				.isRequired(false)
 				.hasArg()
+				.withArgName("email")
 				.withDescription("The username to use to access the API. This is the same username you would use to login to the vena application.")
 				.create('u');
 
@@ -137,6 +153,7 @@ public class Main {
 				.withLongOpt("password")
 				.isRequired(false)
 				.hasArg()
+				.withArgName("password")
 				.withDescription("The password to use to access the API. This is the same password you would use to login to the vena application.")
 				.create('p');
 
@@ -147,7 +164,8 @@ public class Main {
 				.withLongOpt("host")
 				.isRequired(false)
 				.hasArg()
-				.withDescription("The hostname of the API server to connect to.  Defaults to proxy.vena.io.")
+				.withArgName("addr")
+				.withDescription("The hostname of the API server to connect to.  Defaults to vena.io.")
 				.create();
 
 		options.addOption(hostOption);
@@ -157,6 +175,7 @@ public class Main {
 				.withLongOpt("port")
 				.isRequired(false)
 				.hasArg()
+				.withArgName("num")
 				.withDescription("The port to connect to on the API server.  Defaults to 443 with SSL or 80 without SSL.")
 				.create();
 
@@ -168,6 +187,7 @@ public class Main {
 				.withLongOpt("modelId")
 				.isRequired(false)
 				.hasArg()
+				.withArgName("id")
 				.withDescription("The Id of the model to apply the etl job to. See also --modelName.")
 				.create();
 
@@ -178,6 +198,7 @@ public class Main {
 				.withLongOpt("modelName")
 				.isRequired(false)
 				.hasArg()
+				.withArgName("name")
 				.withDescription("The name of the model to apply the etl job to. See also --modelId.")
 				.create();
 
@@ -188,6 +209,7 @@ public class Main {
 				.withLongOpt("createModel")
 				.isRequired(false)
 				.hasArg()
+				.withArgName("name")
 				.withDescription("Will cause a brand new model to be created with the specified name.  See also: --modelId.")
 				.create();
 
@@ -198,10 +220,11 @@ public class Main {
 				.withLongOpt("file")
 				.isRequired(false)
 				.hasArg()
+				.withArgName("options")
 				.withDescription("A data file to import (multiple allowed)."
-						+ "\n -F [file=]<filename>; [type=]<filetype> [;[table=]<tableName>] [;format={CSV|TDF}] [;bulkInsert={true|false}]"
+						+ "\n -F \"[file=]<filename>; [type=]<filetype> [;[table=]<tableName>] [;format={CSV|TDF}] [;bulkInsert={true|false}]\""
 						+ "\n where <filetype> is one of {"+ETLFile.SUPPORTED_FILETYPES_LIST+"}>."
-						+ "\n Example: -F model.csv;hierarchy;in_table"
+						+ "\n Example: -F model.csv;hierarchy"
 						+ "\n Example: -F file=values.tdf;format=TDF;type=intersections")
 				.create('F');
 
@@ -257,6 +280,7 @@ public class Main {
 				.withLongOpt("setError")
 				.isRequired(false)
 				.hasOptionalArg()
+				.withArgName("msg")
 				.withDescription("Set the job status to error with optional error message. Requires --jobId option.")
 				.create();
 
@@ -276,6 +300,7 @@ public class Main {
 				.withLongOpt("jobId")
 				.isRequired(false)
 				.hasArg()
+				.withArgName("id")
 				.withDescription("Specify a job ID (for certain operations). Example: --jobId=79026536904130560")
 				.create();
 
@@ -286,6 +311,7 @@ public class Main {
 				.withLongOpt("jobName")
 				.isRequired(false)
 				.hasArg()
+				.withArgName("name")
 				.withDescription("Specify a job name (when creating a new job only)")
 				.create();
 
@@ -296,6 +322,7 @@ public class Main {
 				.withLongOpt("templateId")
 				.isRequired(false)
 				.hasArg()
+				.withArgName("id")
 				.withDescription("Specify a template ID to associate when creating a new job")
 				.create();
 
@@ -348,6 +375,7 @@ public class Main {
 				.withLongOpt("exportWhere")
 				.isRequired(false)
 				.hasArg()
+				.withArgName("clause")
 				.withDescription("Where clause for export (HQL). May not be combined with --exportQuery.")
 				.create();
 
@@ -358,6 +386,7 @@ public class Main {
 				.withLongOpt("exportQuery")
 				.isRequired(false)
 				.hasArg()
+				.withArgName("expr")
 				.withDescription("Query expression for export (model slice language).  May not be combined with --exportWhere.")
 				.create();
 
