@@ -296,7 +296,7 @@ public class Main {
 				.withLongOpt("templateId")
 				.isRequired(false)
 				.hasArg()
-				.withDescription("Specify a template ID to associate with this template")
+				.withDescription("Specify a template ID to associate when creating a new job")
 				.create();
 
 		options.addOption(templateOption);
@@ -305,7 +305,7 @@ public class Main {
 				OptionBuilder
 				.withLongOpt("validate")
 				.isRequired(false)
-				.withDescription("Validate the ETL.  Performs a dry run without saving data, and sends back a list of validation results.")
+				.withDescription("Validate the import files.  Performs a dry run without saving data, and sends back a list of validation results.")
 				.create();
 
 		options.addOption(validateOption);
