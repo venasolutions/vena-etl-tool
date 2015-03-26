@@ -32,8 +32,10 @@ public class Main {
 			+ "\n{ --apiUser=<uid.cid> --apiKey=<key> "
 			+ "\n| --user=<email> --password=<password>"
 			+ "\n}"
-			+ "\n { --loadFromStaging [--wait]"
-			+ "\n | [--stage|--stageOnly] [--wait] [--validate] [--templateId <id>] [--jobName <name>] --file \"[file=]<filename>; [type=]<filetype> [;[table=]<tableName>] [;format={CSV|TDF}] [;bulkInsert={true|false}]\""
+			+ "\n{ --modelName <name> | --modelId <id> "
+			+ "\n}"
+			+ "\n{ --loadFromStaging [--wait|--waitFully]"
+			+ "\n| [--stage|--stageOnly] [--wait|--waitFully] [--validate] [--templateId <id>] [--jobName <name>] --file \"[file=]<filename>; [type=]<filetype> [;[table=]<tableName>] [;format={CSV|TDF}] [;bulkInsert={true|false}]\""
 			+ "\n| --cancel --jobId <id>"
 			+ "\n| --setError --jobId <id>"
 			+ "\n| --status --jobId <id>"
@@ -61,7 +63,7 @@ public class Main {
 		/* If polling option was provided, poll until the task completes. */
 		if( etlClient.pollingRequested  ) {
 			System.out.println("Waiting for job to finish... ");
-			etlClient.pollTillJobComplete(etlJob.getId());
+			etlClient.pollTillJobComplete(etlJob.getId(), etlClient.waitFully);
 			System.out.println("Done.");
 		}
 	}
@@ -427,10 +429,21 @@ public class Main {
 				OptionBuilder
 				.withLongOpt("wait")
 				.isRequired(false)
-				.withDescription("Wait for job to complete (or fail) before returning. Returns status code 0 if the job was successful and non-zero if it failed.")
+				.withDescription("Wait for job to complete (or fail) before returning. Returns status code 0 if the job was successful and non-zero if it failed. "
+						+ "For jobs run with --stage or --stageAndTransform, this will only wait until the job has completed the first step (reached IN_STAGING).")
 				.create();
 
 		options.addOption(waitOption);
+
+		Option waitFullyOption = 
+				OptionBuilder
+				.withLongOpt("waitFully")
+				.isRequired(false)
+				.withDescription("Wait for job to fully complete (or fail) before returning. Returns status code 0 if the job was successful and non-zero if it failed. "
+						+ "For jobs run with --stage or --stageAndTransform, this will wait until the job has fully completed.")
+				.create();
+
+		options.addOption(waitFullyOption);
 
 		Option verboseOption = 
 				OptionBuilder
@@ -500,6 +513,12 @@ public class Main {
 
 		if( commandLine.hasOption("wait") ) { 
 			etlClient.pollingRequested = true;
+			etlClient.waitFully = false;
+		}
+
+		if( commandLine.hasOption("waitFully") ) { 
+			etlClient.pollingRequested = true;
+			etlClient.waitFully = true;
 		}
 
 		if( commandLine.hasOption("verbose") ) { 
@@ -588,7 +607,7 @@ public class Main {
 			/* If polling option was provided, poll until the task completes. */
 			if( etlClient.pollingRequested  ) {
 				System.out.println("Waiting for job to finish... ");
-				etlClient.pollTillJobComplete(etlJob.getId());
+				etlClient.pollTillJobComplete(etlJob.getId(), etlClient.waitFully);
 				System.out.println("Done.");
 			}
 			
