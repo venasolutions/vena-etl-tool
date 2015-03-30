@@ -58,6 +58,7 @@ public class ETLClient {
 	public String templateId;
 	public boolean validationRequested = false;
 	public boolean pollingRequested = false;
+	public boolean waitFully = false;
 	public boolean verbose;
 
 	public ETLClient() {
@@ -122,11 +123,11 @@ public class ETLClient {
 		return null; // should never reach here
 	}
 
-	void pollTillJobComplete(Id jobId) {
+	void pollTillJobComplete(Id jobId, boolean waitFully) {
 		while( true) {
 			ETLJobDTO etlJob = requestJobStatus(jobId);
 
-			if( ! isJobStillRunning(etlJob) )  {
+			if( ! isJobStillRunning(etlJob) || (! waitFully && isJobInStaging(etlJob)))  {
 
 				printJobStatus(etlJob);
 				System.out.println();
@@ -142,7 +143,6 @@ public class ETLClient {
 					Thread.sleep(POLL_INTERVAL);
 				}
 				catch(InterruptedException intEx) {
-					
 				}
 			}
 		}
@@ -155,10 +155,12 @@ public class ETLClient {
 			return false;
 		else if (etlJob.getPhase() == Phase.COMPLETE) 
 			return false;
-		else if (etlJob.getPhase() == Phase.IN_STAGING)
-			return false;
 		else 
 			return true;
+	}
+
+	private boolean isJobInStaging(ETLJobDTO etlJob) {
+		return (etlJob.getPhase() == Phase.IN_STAGING);
 	}
 
 	private String getETLBasePath() {
