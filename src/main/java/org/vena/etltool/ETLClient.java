@@ -435,8 +435,10 @@ public class ETLClient {
 			switch (type) {
 			case attributes:
 			case hierarchy:
-			case lids:
 				System.err.println("Type \""+type+"\" doesn't support query expression. Use where clause instead.");
+				break;
+			case lids:
+				typePath = "lids2";
 				break;
 			case intersections:
 				typePath = "intersections2";
@@ -458,7 +460,7 @@ public class ETLClient {
 				typePath = "intersections2";
 				break;
 			case lids:
-				typePath = "lids";
+				typePath = "lids2";
 				break;
 			default:
 				System.err.println("Type \""+type+"\" not supported for export.");
