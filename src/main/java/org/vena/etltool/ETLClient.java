@@ -55,6 +55,7 @@ public class ETLClient {
 	public boolean needsLogin = false;
 	public Id modelId;
 	public String protocol = "https";
+	public String location;
 	public String templateId;
 	public boolean validationRequested = false;
 	public boolean pollingRequested = false;
@@ -178,8 +179,12 @@ public class ETLClient {
 	{
 		StringBuilder urlBuf = new StringBuilder();
 		
-		urlBuf.append(protocol).append("://");
-		urlBuf.append(host);
+		if (location != null) {
+			urlBuf.append(location);
+		} else {
+			urlBuf.append(protocol).append("://");
+			urlBuf.append(host);
+		}
 		if (port != null) {
 			urlBuf.append(":").append(port);
 		}
@@ -263,6 +268,7 @@ public class ETLClient {
 
 		this.apiKey = result.getApiKey();
 		this.apiUser = result.getApiUser();
+		this.location = result.getLocation();
 	}
 	
 	//FIMXE - there is some code duplication between login() and this method that should be refactored out.
