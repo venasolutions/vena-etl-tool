@@ -82,7 +82,7 @@ public class ETLClient {
 				parameters.add(new TwoTuple<String, String>("templateId", templateId));
 			}
 			
-			WebResource webResource = buildWebResource(resource, parameters);
+			WebResource webResource = buildWebResource(resource, parameters, true);
 			
 			FormDataMultiPart form = new FormDataMultiPart();
 
@@ -218,15 +218,22 @@ public class ETLClient {
 	}
 
 	private WebResource buildWebResource(String path) {
-		return buildWebResource(path, Collections.<TwoTuple<String, String>> emptyList());
+		return buildWebResource(path, Collections.<TwoTuple<String, String>> emptyList(), false);
 	}
 
 	private WebResource buildWebResource(String path, Iterable<TwoTuple<String, String>> parameters) {
+		return buildWebResource(path, parameters, false);
+	}
+
+	private WebResource buildWebResource(String path, Iterable<TwoTuple<String, String>> parameters, boolean chunked) {
 
 		ClientConfig jerseyClientConfig = new DefaultClientConfig();
 		jerseyClientConfig.getClasses().add(MultiPartWriter.class);
 		
 		Client client = Client.create(jerseyClientConfig);
+
+		if (chunked)
+			client.setChunkedEncodingSize(8192);
 
 		client.addFilter(new HTTPBasicAuthFilter(apiUser, apiKey));
 
