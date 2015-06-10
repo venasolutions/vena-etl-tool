@@ -18,9 +18,13 @@ import java.util.Properties;
 import javax.ws.rs.core.MediaType;
 
 import org.vena.api.customer.authentication.APILoginResult;
-import org.vena.api.etl.ETLFile;
+import org.vena.api.etl.ETLFileImportStep;
+import org.vena.api.etl.ETLFileOld;
 import org.vena.api.etl.ETLJob.Phase;
 import org.vena.api.etl.ETLMetadata;
+import org.vena.api.etl.ETLStep;
+import org.vena.api.etl.ETLStep.DataType;
+import org.vena.api.etl.ETLCubeToStageStep;
 import org.vena.api.etl.ETLTableStatus;
 import org.vena.api.etl.QueryDTO;
 import org.vena.api.etl.QueryDTO.Destination;
@@ -92,20 +96,19 @@ public class ETLClient {
 
 			FormDataBodyPart metadataPart = new FormDataBodyPart("metadata",new ByteArrayInputStream(metadataBytes), MediaType.APPLICATION_JSON_TYPE);
 			form.bodyPart(metadataPart);
-
 			
-			for(Entry<String, ETLFile> entry :  metadata.getFiles().entrySet()) {
-				String key = entry.getKey();
-				ETLFile etlFile = entry.getValue();
+			for (ETLStep step :  metadata.getSteps()) {
+				if (step instanceof ETLFileImportStep)
+				{
+					String mimePart = ((ETLFileImportStep)step).getMimePart();
+					String fileName = ((ETLFileImportStep)step).getFileName();
 				
-				etlFile.setMimePart(key);
-				
-				FormDataBodyPart filePart = new FormDataBodyPart(key, new FileInputStream(etlFile.getFilename()), MediaType.APPLICATION_OCTET_STREAM_TYPE);
-				form.bodyPart(filePart);
+					FormDataBodyPart filePart = new FormDataBodyPart(mimePart, new FileInputStream(fileName), MediaType.APPLICATION_OCTET_STREAM_TYPE);
+					form.bodyPart(filePart);
+				}
 			}
-			
-			ClientResponse response = webResource.type(MediaType.MULTIPART_FORM_DATA_TYPE).post(ClientResponse.class, form);
-			
+						
+			ClientResponse response = webResource.type(MediaType.MULTIPART_FORM_DATA_TYPE).post(ClientResponse.class, form);			
 			
 			switch( response.getStatus()) {
 			
@@ -421,7 +424,7 @@ public class ETLClient {
 		return etlJob;
 	}	
 
-	public InputStream sendExport(ETLFile.Type type, boolean toFile, String tableName, String whereClause, String queryExpr, boolean showHeaders) {
+	public InputStream sendExport(DataType type, boolean toFile, String tableName, String whereClause, String queryExpr, boolean showHeaders) {
 		
 		String typePath = null;
 
@@ -511,7 +514,7 @@ public class ETLClient {
 		else return null;
 	}
 
-	public void sendDelete(ETLFile.Type type, String expression) {
+	public void sendDelete(DataType type, String expression) {
 
 		String typePath;
 
@@ -530,7 +533,7 @@ public class ETLClient {
 		queryExpr.setExpression(expression);
 
 		ClientResponse response = webResource.type(MediaType.APPLICATION_JSON_TYPE).post(ClientResponse.class, queryExpr);
-
+		
 		if ((response.getStatus() != 204) && (response.getStatus() != 200)) {
 			handleErrorResponse(response, "Request to delete failed.");
 		}
@@ -609,7 +612,7 @@ public class ETLClient {
 		
 		if (metadata.getFiles() != null) {
 			System.out.println("  Files:");
-			for (ETLFile file : metadata.getFiles().values()) {
+			for (ETLFileOld file : metadata.getFiles().values()) {
 				System.out.println("   - " + file.getFilename() + " (" + file.getFileType() + "):  " + 
 						(file.getDone() ? "Done!":"Not done") + " (processed " + file.getLinesProcessed() + " lines)");
 				allDone &= file.getDone();
