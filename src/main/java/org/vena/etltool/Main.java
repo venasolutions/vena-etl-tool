@@ -41,7 +41,7 @@ import org.vena.id.Id;
 
 public class Main {
 	
-	public static final int FIRST_FILE_INDEX = 1;
+	public static int FIRST_FILE_INDEX = 1;
 	
 	private static final String EXAMPLE_COMMANDLINE = "etl-tool "
 			+ "[--host <addr>] [--port <num>] [--ssl|--nossl]"
@@ -75,6 +75,7 @@ public class Main {
 		ETLJobDTO etlJob = etlClient.uploadETL(metadata);
 		System.out.println("OK");
 		System.out.println("Job submitted. Your ETL Job Id is "+etlJob.getId());
+		System.out.println("Job status is " + etlJob.getStatus());
 		
 		/* If polling option was provided, poll until the task completes. */
 		if( etlClient.pollingRequested  ) {
@@ -785,6 +786,7 @@ public class Main {
 				metadata.setModelId(etlClient.modelId);
 				
 				ETLCubeToStageStep step = new ETLCubeToStageStep();
+				
 				step.setDataType(type);
 				step.setTableName(exportToTable);
 				if (whereClause != null) {
@@ -793,6 +795,8 @@ public class Main {
 				} else if (queryExpr != null) {
 					step.setQueryType(QueryType.MODEL_SLICE);
 					step.setQueryString(queryExpr);
+				} else if ((type == DataType.intersections) || (type == DataType.lids)) {
+					step.setQueryType(QueryType.MODEL_SLICE);
 				}
 				metadata.addStep(step);
 
@@ -851,35 +855,27 @@ public class Main {
 			    String line;
 			    while ((line = br.readLine()) != null) {
 			    	System.out.println(line);
-			    	String[] optionFields = line.trim().split(" ");
+			    	String[] optionFields = line.trim().split(" ", 2);
 			    	String loadType = optionFields[0];
 			    	
-					List<ETLFileOld> etlFiles = null;
+					ETLFileOld etlFile = null;
 			    	
 			    	switch (loadType.toUpperCase()) {
 			    	case "FILETOCUBE":
 			    	{
-			    		etlFiles = prepareFilesToLoad(optionFields);
-						for(ETLFileOld file : etlFiles) {
-							metadata.addStep(new ETLFileToCubeStep(file));
-						}
+			    		etlFile = prepareFilesToLoad(optionFields);
+						metadata.addStep(new ETLFileToCubeStep(etlFile));
 			    		break;
 			    	}
 			    	case "FILETOSTAGE":
 			    	{
-			    		etlFiles = prepareFilesToLoad(optionFields);
-						for(ETLFileOld file : etlFiles) {
-							metadata.addStep(new ETLFileToStageStep(file));
-						}
+			    		etlFile = prepareFilesToLoad(optionFields);
+						metadata.addStep(new ETLFileToStageStep(etlFile));
 			    		break;
 			    	}
-			    	case "FILETOSTAGETOCUBE":
+			    	case "SQLTRANSFORM":
 			    	{
-			    		etlFiles = prepareFilesToLoad(optionFields);
-						for(ETLFileOld file : etlFiles) {
-							metadata.addStep(new ETLFileToStageStep(file));
-						}
-						metadata.addStep(new ETLSQLTransformStep(etlFiles, null));
+						metadata.addStep(new ETLSQLTransformStep());
 			    		break;
 			    	}
 			    	case "STAGETOCUBE":
@@ -965,6 +961,11 @@ public class Main {
 							System.err.println( "Error: cubeToStage step requires type=<type>;table=<name>. The known types are ["+ETLFileOld.SUPPORTED_FILETYPES_LIST+"]");
 							System.exit(1);
 						}
+						
+						if (step.getQueryType() == null) {
+							if ((step.getDataType() == DataType.intersections) || (step.getDataType() == DataType.lids))
+								step.setQueryType(QueryType.MODEL_SLICE);
+						}
 
 						metadata.addStep(step);
 						break;
@@ -986,9 +987,7 @@ public class Main {
 	}
 
 
-	private static List<ETLFileOld> prepareFilesToLoad(String[] optionFields) {
-		
-		List<ETLFileOld> etlFiles = new ArrayList<ETLFileOld>();
+	private static ETLFileOld prepareFilesToLoad(String[] optionFields) {
 		
 		if (optionFields.length < 2)
 		{
@@ -1000,29 +999,23 @@ public class Main {
 			System.exit(1);
 		}
 		
-		for (int i = 1; i < optionFields.length; i++)  {
-			try {
-				ETLFileOld etlFile = parseETLFileArgs(optionFields[i]);
-				etlFiles.add(etlFile);
-			}
-			catch (IllegalArgumentException e) {
-				System.err.println( "Error: The value \"" + optionFields[i] + "\" is invalid for a file loading step.  " + e.getMessage());
-				System.err.println( "\nPlease specify the filename followed by the file type, table name, and optional arguments."
-						+ "\n Example: --file intersections.csv;intersections"
-						+ "\n Example: --file arbitrary.csv;user_defined;mytable;bulkInsert=true");
-				System.err.println( "\nOr specify options in any order using key-value pairs."
-						+ "\n Example: --file \"file=arbitrary.csv; type=user_defined; table=mytable; format=CSV; bulkInsert=true\"");
-				System.exit(1);
-			}
-		}
-		
-		int i = FIRST_FILE_INDEX;		
-		for(ETLFileOld etlFile : etlFiles) {
-			String key = "file" + (i++);			
+		ETLFileOld etlFile = null;
+		try {
+			etlFile = parseETLFileArgs(optionFields[1].replaceAll("\"", ""));
+			String key = "file" + (FIRST_FILE_INDEX++);			
 			etlFile.setMimePart(key);
 		}
+		catch (IllegalArgumentException e) {
+			System.err.println( "Error: The value \"" + optionFields[1] + "\" is invalid for a file loading step.  " + e.getMessage());
+			System.err.println( "\nPlease specify the filename followed by the file type, table name, and optional arguments."
+					+ "\n Example: --file intersections.csv;intersections"
+					+ "\n Example: --file arbitrary.csv;user_defined;mytable;bulkInsert=true");
+			System.err.println( "\nOr specify options in any order using key-value pairs."
+					+ "\n Example: --file \"file=arbitrary.csv; type=user_defined; table=mytable; format=CSV; bulkInsert=true\"");
+			System.exit(1);
+		}
 		
-		return etlFiles;
+		return etlFile;
 	}
 
 	private static ETLMetadata produceImportMetadata(CommandLine commandLine, Id modelId) {
@@ -1083,9 +1076,8 @@ public class Main {
 				}
 			}
 			
-			int i = FIRST_FILE_INDEX;		
 			for(ETLFileOld etlFile : etlFiles) {
-				String key = "file" + (i++);			
+				String key = "file" + (FIRST_FILE_INDEX++);			
 				etlFile.setMimePart(key);
 			}
 		}
@@ -1110,6 +1102,7 @@ public class Main {
 				metadata.addStep(new ETLFileToStageStep(file));
 			}
 			metadata.addStep(new ETLSQLTransformStep(etlFiles, null));
+			// fall-through:
 		case STAGE_TO_CUBE:
 			metadata.addStep(new ETLStageToCubeStep(DataType.hierarchy));
 			metadata.addStep(new ETLStageToCubeStep(DataType.attributes));
