@@ -611,9 +611,9 @@ public class ETLClient {
 		if (metadata.getSteps() != null) {
 			System.out.println("  Steps:");
 			for (ETLStep step : metadata.getSteps()) {
-				System.out.println("   - " + step.getStepNumber() + " (STATUS "
-						+ step.getStatus() + ") " + " ("
-						+ step.getPercentDone() + "% DONE)");
+				System.out.println("   - " + step.getStepNumber() + "- "
+						+ step.getName() + " (STATUS " + step.getStatus()
+						+ ") " + " (" + step.getPercentDone() + "% DONE)");
 			}
 		}
 
