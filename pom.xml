@@ -3,7 +3,7 @@
 	<groupId>org.vena</groupId>
 	<artifactId>cmdline-etl-tool</artifactId>
 	<packaging>jar</packaging>
-	<version>1.26-SNAPSHOT</version>
+	<version>2.0</version>
 	<name>Vena command line ETL tool.</name>
 
 	<properties>
@@ -18,7 +18,7 @@
 		<dependency>
 			<groupId>org.vena</groupId>
 			<artifactId>mt-api</artifactId>
-			<version>0.378</version>
+			<version>0.379</version>
 			<!-- mt-parent includes way too many dependencies that should either be 
 				removed outright or moved to mt-server. All this project needs from mt-api 
 				are the entity classes, so for now, apply a blanket exclusion for every transitive 
@@ -88,6 +88,7 @@
 			<artifactId>commons-cli</artifactId>
 			<version>1.2</version>
 		</dependency>
+
 	</dependencies>
 
 	<build>
