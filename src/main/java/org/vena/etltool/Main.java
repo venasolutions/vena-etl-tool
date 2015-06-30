@@ -974,7 +974,7 @@ public class Main {
 			    		break;
 			    	default:
 						System.err.println("Error: loadType " + loadType + " not supported. "
-								+ "Supported options are { fileToCube, fileToStage, fileToStageToCube, stageToCube, cubeToStage }.");
+								+ "Supported options are { fileToCube, fileToStage, SQLTransform, stageToCube, cubeToStage }.");
 						System.exit(1);	
 			    	}
 			    }
