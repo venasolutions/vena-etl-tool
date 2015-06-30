@@ -4,6 +4,7 @@ import java.util.Date;
 
 import org.vena.api.etl.ETLJob.Phase;
 import org.vena.api.etl.ETLMetadata;
+import org.vena.api.etl.ETLStep.Status;
 import org.vena.id.Id;
 
 public class ETLJobDTO {
@@ -23,6 +24,8 @@ public class ETLJobDTO {
 	private String validationResults;
 
 	private Phase phase;
+	
+	private Status status;
 
 	private Id templateId;
 
@@ -99,6 +102,14 @@ public class ETLJobDTO {
 
 	public void setPhase(Phase phase) {
 		this.phase = phase;
+	}
+	
+	public Status getStatus() {
+		return status;
+	}
+
+	public void setStatus(Status status) {
+		this.status = status;
 	}
 
 	public Id getTemplateId() {

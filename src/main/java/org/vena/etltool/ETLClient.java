@@ -607,15 +607,13 @@ public class ETLClient {
 		System.out.println("  Created by user: " + userString);
 		System.out.println("  Load Type: " + (metadata.getLoadType() == null ? "-" :
 			ETLMetadata.loadTypeToString(metadata.getLoadType())));
-
-		boolean allDone = true;
 		
-		if (metadata.getFiles() != null) {
-			System.out.println("  Files:");
-			for (ETLFileOld file : metadata.getFiles().values()) {
-				System.out.println("   - " + file.getFilename() + " (" + file.getFileType() + "):  " + 
-						(file.getDone() ? "Done!":"Not done") + " (processed " + file.getLinesProcessed() + " lines)");
-				allDone &= file.getDone();
+		if (metadata.getSteps() != null) {
+			System.out.println("  Steps:");
+			for (ETLStep step : metadata.getSteps()) {
+				System.out.println("   - " + step.getStepNumber() + "- "
+						+ step.getName() + " (STATUS " + step.getStatus()
+						+ ") " + " (" + step.getPercentDone() + "% DONE)");
 			}
 		}
 
@@ -624,7 +622,6 @@ public class ETLClient {
 			for (ETLTableStatus table : metadata.getTables().values()) {
 				System.out.println("   - " + table.getTableName() + ":  " + 
 						(table.getDone() ? "Done!":"Not done") + " (processed " + table.getRowsProcessed() + " rows)");
-				allDone &= table.getDone();
 			}
 		}
 
@@ -636,20 +633,8 @@ public class ETLClient {
 			System.out.println("  Validation Results: " + etlJob.getValidationResults());
 		}
 
-		System.out.println("  Phase: " + etlJob.getPhase());
+		System.out.println("  Status: " + etlJob.getStatus());
 
-		String overallStatus = "Unknown";
-		if (etlJob.isError()) overallStatus = "Error";
-		else if (etlJob.isCancelRequested()) overallStatus = "Cancelled";
-		else if (etlJob.getPhase() == Phase.COMPLETE) overallStatus = "Complete";
-		else if (etlJob.getPhase() == Phase.IN_STAGING) overallStatus = "Waiting for transform to complete";
-		else if (etlJob.getPhase() == Phase.NOT_STARTED) overallStatus = "Not started";
-		else if (etlJob.getPhase() != null) overallStatus = "In Progress";
-		else { //etlJob.getPhase() == null
-			if (!allDone) overallStatus = "In Progress";
-		}
-
-		System.out.println("  Overall status: " + overallStatus);
 	}
 
 	private static <T> T getEntity(ClientResponse response, Class<T> type) {

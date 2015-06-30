@@ -1,13 +1,19 @@
 package org.vena.etltool;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.swing.SortingFocusTraversalPolicy;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -35,7 +41,7 @@ import org.vena.id.Id;
 
 public class Main {
 	
-	public static final int FIRST_FILE_INDEX = 1;
+	public static int FIRST_FILE_INDEX = 1;
 	
 	private static final String EXAMPLE_COMMANDLINE = "etl-tool "
 			+ "[--host <addr>] [--port <num>] [--ssl|--nossl]"
@@ -69,6 +75,7 @@ public class Main {
 		ETLJobDTO etlJob = etlClient.uploadETL(metadata);
 		System.out.println("OK");
 		System.out.println("Job submitted. Your ETL Job Id is "+etlJob.getId());
+		System.out.println("Job status is " + etlJob.getStatus());
 		
 		/* If polling option was provided, poll until the task completes. */
 		if( etlClient.pollingRequested  ) {
@@ -463,6 +470,17 @@ public class Main {
 				.create();
 
 		options.addOption(verboseOption);
+		
+		Option loadStepsOption = 
+				OptionBuilder
+				.withLongOpt("loadSteps")
+				.isRequired(false)
+				.hasArg()
+				.withArgName("fileName")
+				.withDescription("Name of file containing load steps.")
+				.create();
+
+		options.addOption(loadStepsOption);
 
 		HelpFormatter helpFormatter = new HelpFormatter();
 
@@ -695,6 +713,16 @@ public class Main {
 
 			System.exit(1);
 		}
+		
+		// ETL 2.0 option for providing multiple steps at a time
+		
+		if (commandLine.hasOption("loadSteps")) {
+			if (commandLine.getOptionValue("loadSteps") == null) {
+				System.err.println( "Error: loadSteps option requires --loadSteps <fileName>.");
+				System.exit(1);
+			}
+			return produceStepsMetadata(etlClient, commandLine);
+		}
 
 		// Options that require a data model
 
@@ -750,21 +778,26 @@ public class Main {
 				System.exit(0);
 				
 			} else {
+				System.out.println("Creating a new job.");
+				
 				ETLMetadata metadata = new ETLMetadata();
 					
 				metadata.setSchemaVersion(2);
 				metadata.setModelId(etlClient.modelId);
 				
 				ETLCubeToStageStep step = new ETLCubeToStageStep();
+				
 				step.setDataType(type);
+				step.setTableName(exportToTable);
 				if (whereClause != null) {
 					step.setQueryType(QueryType.HQL);
 					step.setQueryString(whereClause);
 				} else if (queryExpr != null) {
 					step.setQueryType(QueryType.MODEL_SLICE);
 					step.setQueryString(queryExpr);
+				} else if ((type == DataType.intersections) || (type == DataType.lids)) {
+					step.setQueryType(QueryType.MODEL_SLICE);
 				}
-				step.setTableName(exportToTable);
 				metadata.addStep(step);
 
 				String jobName =  commandLine.getOptionValue("jobName");
@@ -801,12 +834,191 @@ public class Main {
 		}
 
 		// Do an Import
-		return produceMetadata(commandLine, etlClient.modelId);
+		return produceImportMetadata(commandLine, etlClient.modelId);
 	}
 
-	private static ETLMetadata produceMetadata(CommandLine commandLine, Id modelId) {
-
+	private static ETLMetadata produceStepsMetadata(ETLClient etlClient, CommandLine commandLine) {
+		
 		System.out.println("Creating a new job.");
+		
+		ETLMetadata metadata = new ETLMetadata();
+
+		String jobName =  commandLine.getOptionValue("jobName");
+		metadata.setName(jobName);
+		metadata.setSchemaVersion(2);
+		metadata.setModelId(etlClient.modelId);
+		
+		String stepsFile = commandLine.getOptionValue("loadSteps");
+		
+		try (BufferedReader br = new BufferedReader(new FileReader(new File(stepsFile).getPath()))) {
+				
+			    String line;
+			    while ((line = br.readLine()) != null) {
+			    	System.out.println(line);
+			    	String[] optionFields = line.trim().split(" ", 2);
+			    	String loadType = optionFields[0];
+			    	
+					ETLFileOld etlFile = null;
+			    	
+			    	switch (loadType.toUpperCase()) {
+			    	case "FILETOCUBE":
+			    	{
+			    		etlFile = prepareFilesToLoad(optionFields);
+						metadata.addStep(new ETLFileToCubeStep(etlFile));
+			    		break;
+			    	}
+			    	case "FILETOSTAGE":
+			    	{
+			    		etlFile = prepareFilesToLoad(optionFields);
+						metadata.addStep(new ETLFileToStageStep(etlFile));
+			    		break;
+			    	}
+			    	case "SQLTRANSFORM":
+			    	{
+						metadata.addStep(new ETLSQLTransformStep());
+			    		break;
+			    	}
+			    	case "STAGETOCUBE":
+			    	{
+			    		if (optionFields.length == 1) {
+							metadata.addStep(new ETLStageToCubeStep(DataType.hierarchy));
+							metadata.addStep(new ETLStageToCubeStep(DataType.attributes));
+							metadata.addStep(new ETLStageToCubeStep(DataType.intersections));
+							metadata.addStep(new ETLStageToCubeStep(DataType.lids));
+			    		} else if (optionFields.length == 2) {
+			    			String[] parts = optionFields[1].split("=", 2);
+			    			String key = parts[0].trim();
+							String value = parts[1].trim();
+			    			if (key.equalsIgnoreCase("type")) {
+			    				try {
+									metadata.addStep(new ETLStageToCubeStep(DataType.valueOf(DataType.class, value)));
+								} catch (IllegalArgumentException e) {
+									System.err.println( "Error: The ETL file type \""+value+"\" does not exist. The known filetypes are ["+ETLFileOld.SUPPORTED_FILETYPES_LIST+"]");
+									System.exit(1);
+								}
+			    			} else {
+								System.err.println( "Error: stageToCube valid option is type=<type>. The known types are ["+ETLFileOld.SUPPORTED_FILETYPES_LIST+"]");
+								System.exit(1);
+			    			}
+			    		} else {
+							System.err.println( "Error: stageToCube valid option is type=<type>. The known types are ["+ETLFileOld.SUPPORTED_FILETYPES_LIST+"]");
+							System.exit(1);
+			    		}
+			    		break;
+			    	}
+			    	case "CUBETOSTAGE": 
+			    	{
+						ETLCubeToStageStep step = new ETLCubeToStageStep();
+						
+						if (optionFields.length != 2)
+						{
+							System.err.println( "Error: cubeToStage step requires type=<type>;table=<name>. The known types are ["+ETLFileOld.SUPPORTED_FILETYPES_LIST+"]");
+							System.exit(1);
+						}
+						
+						String[] fields = optionFields[1].split(";");
+						
+						boolean typeFound = false;
+						boolean tableFound = false;
+						
+						for (String field : fields) {
+							String[] parts = field.split("=", 2);
+
+							if (parts.length == 2) {
+								String key = parts[0].trim();
+								String value = parts[1].trim();
+
+								switch (key) {
+								case "type":
+									try {
+										step.setDataType(DataType.valueOf(DataType.class, value));
+										typeFound = true;
+									} catch (IllegalArgumentException e) {
+										throw new IllegalArgumentException("The ETL file type \""+value+"\" does not exist. The supported filetypes are ["+ETLFileOld.SUPPORTED_FILETYPES_LIST+"]");
+									}
+									break;
+								case "table":
+									step.setTableName(value);
+									tableFound = true;
+									break;
+								case "exportQuery":
+									step.setQueryType(QueryType.MODEL_SLICE);
+									step.setQueryString(value);
+									break;
+								case "exportWhere":
+									step.setQueryType(QueryType.HQL);
+									step.setQueryString(value);
+									break;
+								default:
+									throw new IllegalArgumentException("Unsupported key " + key);
+								}
+							} else {
+								throw new IllegalArgumentException("The field "+ field +" contained "+ parts.length +" parts.");
+							}
+						}
+						
+						if (!typeFound || !tableFound) {
+							System.err.println( "Error: cubeToStage step requires type=<type>;table=<name>. The known types are ["+ETLFileOld.SUPPORTED_FILETYPES_LIST+"]");
+							System.exit(1);
+						}
+						
+						if (step.getQueryType() == null) {
+							if ((step.getDataType() == DataType.intersections) || (step.getDataType() == DataType.lids))
+								step.setQueryType(QueryType.MODEL_SLICE);
+						}
+
+						metadata.addStep(step);
+						break;
+			    	}
+			    	case "":
+			    		break;
+			    	default:
+						System.err.println("Error: loadType " + loadType + " not supported. "
+								+ "Supported options are { fileToCube, fileToStage, SQLTransform, stageToCube, cubeToStage }.");
+						System.exit(1);	
+			    	}
+			    }
+		} catch (IOException e) {
+			e.printStackTrace();
+			System.exit(1);
+		}
+		
+		return metadata;
+	}
+
+
+	private static ETLFileOld prepareFilesToLoad(String[] optionFields) {
+		
+		if (optionFields.length < 2)
+		{
+			System.err.println( "\nPlease specify the filename followed by the file type, table name, and optional arguments."
+					+ "\n Example: --file intersections.csv;intersections"
+					+ "\n Example: --file arbitrary.csv;user_defined;mytable;bulkInsert=true");
+			System.err.println( "\nOr specify options in any order using key-value pairs."
+					+ "\n Example: --file \"file=arbitrary.csv; type=user_defined; table=mytable; format=CSV; bulkInsert=true\"");
+			System.exit(1);
+		}
+		
+		ETLFileOld etlFile = null;
+		try {
+			etlFile = parseETLFileArgs(optionFields[1].replaceAll("\"", ""));
+			String key = "file" + (FIRST_FILE_INDEX++);			
+			etlFile.setMimePart(key);
+		}
+		catch (IllegalArgumentException e) {
+			System.err.println( "Error: The value \"" + optionFields[1] + "\" is invalid for a file loading step.  " + e.getMessage());
+			System.err.println( "\nPlease specify the filename followed by the file type, table name, and optional arguments."
+					+ "\n Example: --file intersections.csv;intersections"
+					+ "\n Example: --file arbitrary.csv;user_defined;mytable;bulkInsert=true");
+			System.err.println( "\nOr specify options in any order using key-value pairs."
+					+ "\n Example: --file \"file=arbitrary.csv; type=user_defined; table=mytable; format=CSV; bulkInsert=true\"");
+			System.exit(1);
+		}
+		
+		return etlFile;
+	}
+
+	private static ETLMetadata produceImportMetadata(CommandLine commandLine, Id modelId) {
 
 		ETLLoadType loadType = ETLLoadType.FILE_TO_CUBE;
 
@@ -864,12 +1076,13 @@ public class Main {
 				}
 			}
 			
-			int i = FIRST_FILE_INDEX;		
 			for(ETLFileOld etlFile : etlFiles) {
-				String key = "file" + (i++);			
+				String key = "file" + (FIRST_FILE_INDEX++);			
 				etlFile.setMimePart(key);
 			}
 		}
+		
+		System.out.println("Creating a new job.");
 
 		ETLMetadata metadata = new ETLMetadata();
 
@@ -888,20 +1101,13 @@ public class Main {
 			for(ETLFileOld file : etlFiles) {
 				metadata.addStep(new ETLFileToStageStep(file));
 			}
-			metadata.addStep(new ETLSQLTransformStep(etlFiles, metadata.getTables()));
+			metadata.addStep(new ETLSQLTransformStep(etlFiles, null));
 			// fall-through:
 		case STAGE_TO_CUBE:
-			if (metadata.getTables() == null) { 
-				metadata.addStep(new ETLStageToCubeStep(DataType.hierarchy));
-				metadata.addStep(new ETLStageToCubeStep(DataType.attributes));
-				metadata.addStep(new ETLStageToCubeStep(DataType.intersections));
-				metadata.addStep(new ETLStageToCubeStep(DataType.lids));
-			} else {
-				// this is an old job where STAGE_TO_CUBE has already started
-				for (ETLTableStatus table : metadata.getTables().values()) {
-					metadata.addStep(new ETLStageToCubeStep(table));
-				}
-			}
+			metadata.addStep(new ETLStageToCubeStep(DataType.hierarchy));
+			metadata.addStep(new ETLStageToCubeStep(DataType.attributes));
+			metadata.addStep(new ETLStageToCubeStep(DataType.intersections));
+			metadata.addStep(new ETLStageToCubeStep(DataType.lids));
 			break;
 		}
 		
