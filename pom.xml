@@ -3,7 +3,7 @@
 	<groupId>org.vena</groupId>
 	<artifactId>cmdline-etl-tool</artifactId>
 	<packaging>jar</packaging>
-	<version>2.0</version>
+	<version>1.27-SNAPSHOT</version>
 	<name>Vena command line ETL tool.</name>
 
 	<properties>
