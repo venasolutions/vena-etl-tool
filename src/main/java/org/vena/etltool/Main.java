@@ -1080,7 +1080,6 @@ public class Main {
 				String key = "file" + (FIRST_FILE_INDEX++);			
 				etlFile.setMimePart(key);
 			}
-			}
 		}
 		
 		System.out.println("Creating a new job.");
@@ -1109,13 +1108,6 @@ public class Main {
 			metadata.addStep(new ETLStageToCubeStep(DataType.attributes));
 			metadata.addStep(new ETLStageToCubeStep(DataType.intersections));
 			metadata.addStep(new ETLStageToCubeStep(DataType.lids));
-			break;
-		}
-		
-		metadata.setSchemaVersion(2);
-					metadata.addStep(new ETLStageToCubeStep(table));
-				}
-			}
 			break;
 		}
 		
