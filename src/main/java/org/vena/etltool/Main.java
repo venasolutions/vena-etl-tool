@@ -13,8 +13,6 @@ import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.SortingFocusTraversalPolicy;
-
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.GnuParser;
@@ -25,6 +23,7 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.vena.api.etl.ETLCubeToStageStep;
 import org.vena.api.etl.ETLCubeToStageStep.QueryType;
+import org.vena.api.etl.ETLDeleteIntersectionsStep;
 import org.vena.api.etl.ETLFileOld;
 import org.vena.api.etl.ETLFileToCubeStep;
 import org.vena.api.etl.ETLFileToStageStep;
@@ -820,17 +819,31 @@ public class Main {
 			DataType type = null;
 			try {
 				type = DataType.valueOf(deleteTypeStr);
+				if (!type.equals(DataType.intersections)) 
+					throw new IllegalArgumentException();
 			}
 			catch(IllegalArgumentException e) {
-				System.err.println( "Error: The ETL file type \""+deleteTypeStr+"\" does not exist. The known filetypes are ["+ETLFileOld.SUPPORTED_FILETYPES_LIST+"]");
+				System.err.println( "Error: The ETL file type \""+deleteTypeStr+"\" is not supported. The supported filetype is intersections.");
 				System.exit(1);
 			}
 
-			System.out.print("Running delete (this might take a while)... ");
-			etlClient.sendDelete(type, expr);
-			System.out.print("OK.");
+			System.out.println("Creating a new job.");
+			
+			ETLMetadata metadata = new ETLMetadata();
+				
+			metadata.setSchemaVersion(2);
+			metadata.setModelId(etlClient.modelId);
+			
+			ETLDeleteIntersectionsStep step = new ETLDeleteIntersectionsStep();
+			step.setDataType(type);
+			step.setExpression(expr);
+			
+			metadata.addStep(step);
 
-			System.exit(0);
+			String jobName =  commandLine.getOptionValue("jobName");
+			metadata.setName(jobName);
+			
+			return metadata;
 		}
 
 		// Do an Import
