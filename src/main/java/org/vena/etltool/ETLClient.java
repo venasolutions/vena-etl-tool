@@ -611,9 +611,12 @@ public class ETLClient {
 		if (metadata.getSteps() != null) {
 			System.out.println("  Steps:");
 			for (ETLStep step : metadata.getSteps()) {
-				System.out.println("   - " + step.getStepNumber() + "- "
-						+ step.getName() + " (STATUS " + step.getStatus()
-						+ ") " + " (" + step.getPercentDone() + "% DONE)");
+				System.out.println("   - " + step.getStepNumber()
+						+ "- " + step.getName()
+						+ " (Status " + step.getStatus() + ") "
+						+ " (" + step.getPercentDone()+ "% Done)"
+						+ ((step instanceof ETLFileImportStep)? 
+								" (Processed " + ((ETLFileImportStep) step).getLinesProcessed() + " lines)": ""));
 			}
 		}
 
