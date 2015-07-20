@@ -22,6 +22,7 @@ import org.vena.api.etl.ETLFileImportStep;
 import org.vena.api.etl.ETLFileOld;
 import org.vena.api.etl.ETLJob.Phase;
 import org.vena.api.etl.ETLMetadata;
+import org.vena.api.etl.ETLStageToCubeStep;
 import org.vena.api.etl.ETLStep;
 import org.vena.api.etl.ETLStep.DataType;
 import org.vena.api.etl.ETLCubeToStageStep;
@@ -616,7 +617,12 @@ public class ETLClient {
 						+ " (Status " + step.getStatus() + ") "
 						+ " (" + step.getPercentDone()+ "% Done)"
 						+ ((step instanceof ETLFileImportStep)? 
-								" (Processed " + ((ETLFileImportStep) step).getLinesProcessed() + " lines)": ""));
+								" (Processed " + ((ETLFileImportStep) step).getLinesProcessed() + " lines)": "")
+						+ ((step instanceof ETLStageToCubeStep)? 
+								" (Processed " + ((ETLStageToCubeStep) step).getRowsProcessed() + " rows)": "") 
+						+ ((step instanceof ETLCubeToStageStep)? 
+								" (Exported " + ((ETLCubeToStageStep) step).getRowsExported() + " rows)": "")
+				);
 			}
 		}
 
