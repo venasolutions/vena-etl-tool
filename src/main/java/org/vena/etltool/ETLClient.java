@@ -630,7 +630,7 @@ public class ETLClient {
 			System.out.println("  Tables:");
 			for (ETLTableStatus table : metadata.getTables().values()) {
 				System.out.println("   - " + table.getTableName() + ":  " + 
-						(table.getDone() ? "Done!":"Not done") + " (processed " + table.getRowsProcessed() + " rows)");
+						(table.getDone() ? "Done!":"Not done") + " (Processed " + table.getRowsProcessed() + " rows)");
 			}
 		}
 
