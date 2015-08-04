@@ -5,15 +5,11 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
-import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.swing.SortingFocusTraversalPolicy;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -25,16 +21,15 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.vena.api.etl.ETLCubeToStageStep;
 import org.vena.api.etl.ETLCubeToStageStep.QueryType;
+import org.vena.api.etl.ETLFileImportStep.FileFormat;
 import org.vena.api.etl.ETLFileOld;
 import org.vena.api.etl.ETLFileToCubeStep;
 import org.vena.api.etl.ETLFileToStageStep;
-import org.vena.api.etl.ETLSQLTransformStep;
-import org.vena.api.etl.ETLStageToCubeStep;
-import org.vena.api.etl.ETLTableStatus;
-import org.vena.api.etl.ETLFileImportStep.FileFormat;
-import org.vena.api.etl.ETLStep.DataType;
 import org.vena.api.etl.ETLMetadata;
 import org.vena.api.etl.ETLMetadata.ETLLoadType;
+import org.vena.api.etl.ETLSQLTransformStep;
+import org.vena.api.etl.ETLStageToCubeStep;
+import org.vena.api.etl.ETLStep.DataType;
 import org.vena.etltool.entities.ETLJobDTO;
 import org.vena.etltool.entities.ModelResponseDTO;
 import org.vena.id.Id;
@@ -373,7 +368,7 @@ public class Main {
 				.isRequired(false)
 				.hasArg()
 				.withArgName("name")
-				.withDescription("Name of table in staging DB to export to.")
+				.withDescription("Name of table in staging DB to export to. By default, waits for the job to complete unless --nowait is specified.")
 				.create();
 
 		options.addOption(exportStagingOption);
@@ -462,6 +457,15 @@ public class Main {
 
 		options.addOption(waitFullyOption);
 
+		Option noWaitOption = 
+				OptionBuilder
+				.withLongOpt("nowait")
+				.isRequired(false)
+				.withDescription("Do not wait for job to fully complete before returning. The command will return as soon as the job is submitted.")
+				.create();
+
+		options.addOption(noWaitOption);
+
 		Option verboseOption = 
 				OptionBuilder
 				.withLongOpt("verbose")
@@ -526,7 +530,7 @@ public class Main {
 		}
 
 		if( commandLine.hasOption("ssl") && commandLine.hasOption("nossl") ) { 
-			System.err.println( "Error: ssl and nossl options cannot be combined.");
+			System.err.println( "Error: --ssl and --nossl options cannot be combined.");
 
 			System.exit(1);
 		}
@@ -539,6 +543,18 @@ public class Main {
 			etlClient.protocol = "http";
 		}
 
+		if( commandLine.hasOption("nowait") && ( commandLine.hasOption("wait") || commandLine.hasOption("waitFully") ) ) { 
+			System.err.println( "Error: --wait/--waitFully and --nowait options cannot be combined.");
+
+			System.exit(1);
+		}
+
+		if (commandLine.hasOption("export") || commandLine.hasOption("delete")) {
+			// For these commands, default is wait
+			etlClient.pollingRequested = true;
+			etlClient.waitFully = true;
+		}
+
 		if( commandLine.hasOption("wait") ) { 
 			etlClient.pollingRequested = true;
 			etlClient.waitFully = false;
@@ -547,6 +563,11 @@ public class Main {
 		if( commandLine.hasOption("waitFully") ) { 
 			etlClient.pollingRequested = true;
 			etlClient.waitFully = true;
+		}
+
+		if( commandLine.hasOption("nowait") ) { 
+			etlClient.pollingRequested = false;
+			etlClient.waitFully = false;
 		}
 
 		if( commandLine.hasOption("verbose") ) { 
