@@ -52,7 +52,7 @@ public class Main {
 			+ "\n| --status --jobId <id>"
 			+ "\n| --transformComplete --jobId <id>"
 			+ "\n| --delete <type> --deleteQuery <expr>"
-			+ "\n| --export <type>\n {--exportQuery <expr> | --exportWhere <clause>}\n {--exportToFile <name> [--excludeHeaders] | --exportToTable <name>}"
+			+ "\n| --export <type>\n {--exportQuery <expr> | --exportWhere <clause>}\n {--exportToFile <name> [--excludeHeaders] | --exportToTable <name> [--background]}"
 			+ "\n}";
 	
 	/**
@@ -477,6 +477,15 @@ public class Main {
 
 		options.addOption(loadStepsOption);
 
+		Option backgroundOption = 
+				OptionBuilder
+				.withLongOpt("background")
+				.isRequired(false)
+				.withDescription("Use with --export command to run it in the background. Creates a job Id.")
+				.create('b');
+
+		options.addOption(backgroundOption);
+		
 		HelpFormatter helpFormatter = new HelpFormatter();
 
 		CommandLine commandLine = null;
@@ -725,6 +734,7 @@ public class Main {
 			String exportTypeStr = commandLine.getOptionValue("export");
 			String exportToTable = commandLine.getOptionValue("exportToTable");
 			String exportToFile = commandLine.getOptionValue("exportToFile");
+			boolean background = commandLine.hasOption("background");
 
 			if (exportToFile != null && exportToTable != null)  {
 				System.err.println( "Error: --exportToTable and --exportToFile options cannot be combined.");
@@ -733,6 +743,11 @@ public class Main {
 			
 			if (exportToFile == null && exportToTable == null) {
 				System.err.println( "Error: export option requires either --exportToTable <name> or --exportToFile <name>.");
+				System.exit(1);
+			}
+
+			if (exportToFile != null && background) {
+				System.err.println( "Error: --exportToFile does not support --background option.");
 				System.exit(1);
 			}
 
@@ -755,9 +770,10 @@ public class Main {
 
 			boolean excludeHeaders = commandLine.hasOption("excludeHeaders");
 
-			if (exportToFile != null) {
+			if (!background) {
 				System.out.print("Running export (this might take a while)... ");
 				InputStream in = etlClient.sendExport(type, true, exportToTable, whereClause, queryExpr, !excludeHeaders);
+				if (exportToFile != null) {
 					try {
 						Files.copy(in, new File(exportToFile).toPath(), StandardCopyOption.REPLACE_EXISTING);
 					} catch (IOException e) {
@@ -769,6 +785,7 @@ public class Main {
 						}
 						System.exit(1);
 					}
+				}
 				System.out.print("OK.");
 				System.exit(0);
 				
