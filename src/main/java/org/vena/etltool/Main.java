@@ -771,6 +771,9 @@ public class Main {
 			boolean excludeHeaders = commandLine.hasOption("excludeHeaders");
 
 			if (!background) {
+				if (exportToTable != null) {
+					System.out.println("WARNING: Running this command in the foreground is not recommended! Use the --background option to avoid potential timeout problems.");
+				}
 				System.out.print("Running export (this might take a while)... ");
 				InputStream in = etlClient.sendExport(type, true, exportToTable, whereClause, queryExpr, !excludeHeaders);
 				if (exportToFile != null) {
