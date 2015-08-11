@@ -775,7 +775,7 @@ public class Main {
 					System.out.println("WARNING: Running this command in the foreground is not recommended! Use the --background option to avoid potential timeout problems.");
 				}
 				System.out.print("Running export (this might take a while)... ");
-				InputStream in = etlClient.sendExport(type, true, exportToTable, whereClause, queryExpr, !excludeHeaders);
+				InputStream in = etlClient.sendExport(type, exportToFile != null, exportToTable, whereClause, queryExpr, !excludeHeaders);
 				if (exportToFile != null) {
 					try {
 						Files.copy(in, new File(exportToFile).toPath(), StandardCopyOption.REPLACE_EXISTING);
