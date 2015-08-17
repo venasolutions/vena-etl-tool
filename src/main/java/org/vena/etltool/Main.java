@@ -5,9 +5,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
-import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
@@ -24,16 +22,15 @@ import org.apache.commons.cli.ParseException;
 import org.vena.api.etl.ETLCubeToStageStep;
 import org.vena.api.etl.ETLCubeToStageStep.QueryType;
 import org.vena.api.etl.ETLDeleteIntersectionsStep;
+import org.vena.api.etl.ETLFileImportStep.FileFormat;
 import org.vena.api.etl.ETLFileOld;
 import org.vena.api.etl.ETLFileToCubeStep;
 import org.vena.api.etl.ETLFileToStageStep;
-import org.vena.api.etl.ETLSQLTransformStep;
-import org.vena.api.etl.ETLStageToCubeStep;
-import org.vena.api.etl.ETLTableStatus;
-import org.vena.api.etl.ETLFileImportStep.FileFormat;
-import org.vena.api.etl.ETLStep.DataType;
 import org.vena.api.etl.ETLMetadata;
 import org.vena.api.etl.ETLMetadata.ETLLoadType;
+import org.vena.api.etl.ETLSQLTransformStep;
+import org.vena.api.etl.ETLStageToCubeStep;
+import org.vena.api.etl.ETLStep.DataType;
 import org.vena.etltool.entities.ETLJobDTO;
 import org.vena.etltool.entities.ModelResponseDTO;
 import org.vena.id.Id;
@@ -56,7 +53,7 @@ public class Main {
 			+ "\n| --status --jobId <id>"
 			+ "\n| --transformComplete --jobId <id>"
 			+ "\n| --delete <type> --deleteQuery <expr>"
-			+ "\n| --export <type>\n {--exportQuery <expr> | --exportWhere <clause>}\n {--exportToFile <name> [--excludeHeaders] | --exportToTable <name>}"
+			+ "\n| --export <type>\n {--exportQuery <expr> | --exportWhere <clause>}\n {--exportToFile <name> [--excludeHeaders] | --exportToTable <name> [--background]}"
 			+ "\n}";
 	
 	/**
@@ -481,6 +478,15 @@ public class Main {
 
 		options.addOption(loadStepsOption);
 
+		Option backgroundOption = 
+				OptionBuilder
+				.withLongOpt("background")
+				.isRequired(false)
+				.withDescription("Use with --export command to run it in the background. Creates a job Id.")
+				.create('b');
+
+		options.addOption(backgroundOption);
+		
 		HelpFormatter helpFormatter = new HelpFormatter();
 
 		CommandLine commandLine = null;
@@ -525,7 +531,7 @@ public class Main {
 		}
 
 		if( commandLine.hasOption("ssl") && commandLine.hasOption("nossl") ) { 
-			System.err.println( "Error: ssl and nossl options cannot be combined.");
+			System.err.println( "Error: --ssl and --nossl options cannot be combined.");
 
 			System.exit(1);
 		}
@@ -729,6 +735,7 @@ public class Main {
 			String exportTypeStr = commandLine.getOptionValue("export");
 			String exportToTable = commandLine.getOptionValue("exportToTable");
 			String exportToFile = commandLine.getOptionValue("exportToFile");
+			boolean background = commandLine.hasOption("background");
 
 			if (exportToFile != null && exportToTable != null)  {
 				System.err.println( "Error: --exportToTable and --exportToFile options cannot be combined.");
@@ -737,6 +744,11 @@ public class Main {
 			
 			if (exportToFile == null && exportToTable == null) {
 				System.err.println( "Error: export option requires either --exportToTable <name> or --exportToFile <name>.");
+				System.exit(1);
+			}
+
+			if (exportToFile != null && background) {
+				System.err.println( "Error: --exportToFile does not support --background option.");
 				System.exit(1);
 			}
 
@@ -759,9 +771,13 @@ public class Main {
 
 			boolean excludeHeaders = commandLine.hasOption("excludeHeaders");
 
-			if (exportToFile != null) {
+			if (!background) {
+				if (exportToTable != null) {
+					System.out.println("WARNING: Running this command in the foreground is not recommended! Use the --background option to avoid potential timeout problems.");
+				}
 				System.out.print("Running export (this might take a while)... ");
-				InputStream in = etlClient.sendExport(type, true, exportToTable, whereClause, queryExpr, !excludeHeaders);
+				InputStream in = etlClient.sendExport(type, exportToFile != null, exportToTable, whereClause, queryExpr, !excludeHeaders);
+				if (exportToFile != null) {
 					try {
 						Files.copy(in, new File(exportToFile).toPath(), StandardCopyOption.REPLACE_EXISTING);
 					} catch (IOException e) {
@@ -773,6 +789,7 @@ public class Main {
 						}
 						System.exit(1);
 					}
+				}
 				System.out.print("OK.");
 				System.exit(0);
 				
