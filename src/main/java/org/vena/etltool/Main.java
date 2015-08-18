@@ -827,6 +827,7 @@ public class Main {
 		if (commandLine.hasOption("delete")) {
 			String deleteTypeStr = commandLine.getOptionValue("delete");
 			String expr = commandLine.getOptionValue("deleteQuery");
+			boolean background = commandLine.hasOption("background");
 
 			if (expr == null) {
 				System.err.println("Error: delete option requires --deleteQuery <expr>.");
@@ -843,24 +844,32 @@ public class Main {
 				System.err.println( "Error: The ETL file type \""+deleteTypeStr+"\" is not supported. The supported filetype is intersections.");
 				System.exit(1);
 			}
+			
+			if (!background) {
+				System.out.println("WARNING: Running this command in the foreground is not recommended! Use the --background option to avoid potential timeout problems.");
+				System.out.print("Running delete (this might take a while)... ");
+				etlClient.sendDelete(type, expr);
+				System.out.print("OK.");
+				System.exit(0);
+			} else {
+				System.out.println("Creating a new job.");
 
-			System.out.println("Creating a new job.");
-			
-			ETLMetadata metadata = new ETLMetadata();
-				
-			metadata.setSchemaVersion(2);
-			metadata.setModelId(etlClient.modelId);
-			
-			ETLDeleteIntersectionsStep step = new ETLDeleteIntersectionsStep();
-			step.setDataType(type);
-			step.setExpression(expr);
-			
-			metadata.addStep(step);
+				ETLMetadata metadata = new ETLMetadata();
 
-			String jobName =  commandLine.getOptionValue("jobName");
-			metadata.setName(jobName);
-			
-			return metadata;
+				metadata.setSchemaVersion(2);
+				metadata.setModelId(etlClient.modelId);
+
+				ETLDeleteIntersectionsStep step = new ETLDeleteIntersectionsStep();
+				step.setDataType(type);
+				step.setExpression(expr);
+
+				metadata.addStep(step);
+
+				String jobName = commandLine.getOptionValue("jobName");
+				metadata.setName(jobName);
+
+				return metadata;
+			}
 		}
 
 		// Do an Import
