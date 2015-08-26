@@ -12,20 +12,18 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.Properties;
 
 import javax.ws.rs.core.MediaType;
 
 import org.vena.api.customer.authentication.APILoginResult;
+import org.vena.api.etl.ETLCubeToStageStep;
 import org.vena.api.etl.ETLFileImportStep;
-import org.vena.api.etl.ETLFileOld;
 import org.vena.api.etl.ETLJob.Phase;
 import org.vena.api.etl.ETLMetadata;
 import org.vena.api.etl.ETLStageToCubeStep;
 import org.vena.api.etl.ETLStep;
 import org.vena.api.etl.ETLStep.DataType;
-import org.vena.api.etl.ETLCubeToStageStep;
 import org.vena.api.etl.ETLTableStatus;
 import org.vena.api.etl.QueryDTO;
 import org.vena.api.etl.QueryDTO.Destination;
@@ -438,10 +436,8 @@ public class ETLClient {
 				typePath = "hierarchies";
 				break;
 			case intersections:
-				typePath = "intersections";
-				break;
 			case lids:
-				typePath = "lids";
+				System.err.println("Type \""+type+"\" doesn't support where clause. Use query expression instead.");
 				break;
 			default:
 				System.err.println("Type \""+type+"\" not supported for export.");
