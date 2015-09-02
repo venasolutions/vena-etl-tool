@@ -24,6 +24,7 @@ import org.vena.api.etl.ETLMetadata;
 import org.vena.api.etl.ETLStageToCubeStep;
 import org.vena.api.etl.ETLStep;
 import org.vena.api.etl.ETLStep.DataType;
+import org.vena.api.etl.ETLStep.Status;
 import org.vena.api.etl.ETLTableStatus;
 import org.vena.api.etl.QueryDTO;
 import org.vena.api.etl.QueryDTO.Destination;
@@ -608,17 +609,26 @@ public class ETLClient {
 		if (metadata.getSteps() != null) {
 			System.out.println("  Steps:");
 			for (ETLStep step : metadata.getSteps()) {
-				System.out.println("   - " + step.getStepNumber()
-						+ "- " + step.getName()
-						+ " (Status " + step.getStatus() + ") "
-						+ " (" + step.getPercentDone()+ "% Done)"
-						+ ((step instanceof ETLFileImportStep)? 
-								" (Processed " + ((ETLFileImportStep) step).getLinesProcessed() + " lines)": "")
-						+ ((step instanceof ETLStageToCubeStep)? 
-								" (Processed " + ((ETLStageToCubeStep) step).getRowsProcessed() + " rows)": "") 
-						+ ((step instanceof ETLCubeToStageStep)? 
-								" (Exported " + ((ETLCubeToStageStep) step).getRowsExported() + " rows)": "")
-				);
+				System.out.print("   - " + step.getStepNumber()
+						+ ". " + step.getName()
+						+ ": " + step.getStatus());
+				if (step.getStatus() != Status.NOT_STARTED) {
+					System.out.print(" (" + step.getPercentDone()+ "% Done)"
+							+ ((step instanceof ETLFileImportStep)? 
+									" (Processed " + ((ETLFileImportStep) step).getLinesProcessed() + " lines)": "")
+							+ ((step instanceof ETLStageToCubeStep)? 
+									" (Processed " + ((ETLStageToCubeStep) step).getRowsProcessed() + " rows)": "") 
+							+ ((step instanceof ETLCubeToStageStep)? 
+									" (Exported " + ((ETLCubeToStageStep) step).getRowsExported() + " rows)": "")
+					);
+				}
+				if (step.getStatus() == Status.ERROR || step.getStatus() == Status.CANCELLED || step.getStatus() == Status.WAITING) {
+					System.out.print(((step instanceof ETLFileImportStep)? 
+									" (Resume at " + ((ETLFileImportStep) step).getResumeLine() + " lines)": "")
+							+ ((step instanceof ETLStageToCubeStep)? 
+									" (Resume at " + ((ETLStageToCubeStep) step).getResumeRow() + " rows)": ""));
+				}
+				System.out.println();
 			}
 		}
 
