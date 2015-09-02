@@ -25,7 +25,6 @@ import org.vena.api.etl.ETLStageToCubeStep;
 import org.vena.api.etl.ETLStep;
 import org.vena.api.etl.ETLStep.DataType;
 import org.vena.api.etl.ETLStep.Status;
-import org.vena.api.etl.ETLTableStatus;
 import org.vena.api.etl.QueryDTO;
 import org.vena.api.etl.QueryDTO.Destination;
 import org.vena.api.etl.QueryExpressionDTO;
@@ -629,14 +628,6 @@ public class ETLClient {
 									" (Resume at " + ((ETLStageToCubeStep) step).getResumeRow() + " rows)": ""));
 				}
 				System.out.println();
-			}
-		}
-
-		if (metadata.getTables() != null) {
-			System.out.println("  Tables:");
-			for (ETLTableStatus table : metadata.getTables().values()) {
-				System.out.println("   - " + table.getTableName() + ":  " + 
-						(table.getDone() ? "Done!":"Not done") + " (Processed " + table.getRowsProcessed() + " rows)");
 			}
 		}
 
