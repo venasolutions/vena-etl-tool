@@ -589,6 +589,8 @@ public class ETLClient {
 		
     	System.out.println();
 		System.out.println("  Job Id: " + etlJob.getId());
+		System.out.println("  Job Name: " + (etlJob.getMetadata().getName() == null ? "-" : etlJob.getMetadata().getName()));
+		System.out.println("  Template Id: " + (etlJob.getTemplateId() == null ? "-" : etlJob.getTemplateId()));
 		System.out.println("  Model id: " + metadata.getModelId());
 		System.out.println("  Created: " + (etlJob.getCreatedDate() == null ? "-" : etlJob.getCreatedDate()));
 		System.out.println("  Updated: " + (etlJob.getUpdatedDate() == null ? "-" : etlJob.getUpdatedDate()));

@@ -71,7 +71,6 @@ public class Main {
 		ETLJobDTO etlJob = etlClient.uploadETL(metadata);
 		System.out.println("OK");
 		System.out.println("Job submitted. Your ETL Job Id is "+etlJob.getId());
-		System.out.println("Job status is " + etlJob.getStatus());
 		
 		/* If polling option was provided, poll until the task completes. */
 		if( etlClient.pollingRequested  ) {
