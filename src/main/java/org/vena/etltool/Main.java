@@ -559,19 +559,11 @@ public class Main {
 
 		String apiUser =  commandLine.getOptionValue("apiUser");
 
-		etlClient.apiUser = apiUser;
-
 		String apiKey =  commandLine.getOptionValue("apiKey");
-
-		etlClient.apiKey = apiKey;
 
 		String username =  commandLine.getOptionValue("username");
 
-		etlClient.username = username;
-
 		String password =  commandLine.getOptionValue("password");
-
-		etlClient.password = password;
 
 		String jobId =  commandLine.getOptionValue("jobId");
 
@@ -580,31 +572,30 @@ public class Main {
 		etlClient.templateId = templateId;
 
 		/* Cross validation for the authentication options. */
-		if( apiKey == null && username == null) {
-			System.err.println( "Error: You must specify either --username/--password options  or --apiUser/--apiKey to authenticate with the server.");
-
-			System.exit(1);
+		if (etlClient.verbose) {
+			System.out.print("Auth options found:");
+			if (username != null) System.out.print(" username");
+			if (password != null) System.out.print(" password");
+			if (apiUser != null) System.out.print(" apiUser");
+			if (apiKey != null) System.out.print(" apiKey");
+			System.out.println();
 		}
 
-		if( (apiKey != null || apiUser != null ) ) {
-			if(username !=null || password !=null) {
-				System.err.println( "Error: apiKey and username/password options cannot be combined.  Use either --username and --pasword together, or --apiUser and --apiKey together.");
-
-				System.exit(1);
-			}
-		}
-
-		if( (username != null || password != null ) ) {
-
-			if(apiKey !=null || apiUser !=null) {
-				System.err.println( "Error: apiKey and username/password options cannot be combined.  Use either --username and --pasword together, or --apiUser and --apiKey together.");
-
-				System.exit(1);
-			}
-
+		if( (username != null && password != null && apiUser == null && apiKey == null) ) {
 			System.out.print("Logging in... ");
+			etlClient.username = username;
+			etlClient.password = password;
 			etlClient.login();
 			System.out.println("OK");
+		}
+		else if( (username == null && password == null && apiUser != null && apiKey != null) ) {
+			// Use API key
+			etlClient.apiUser = apiUser;
+			etlClient.apiKey = apiKey;
+		}
+		else {
+			System.err.println( "Error: You must specify either --username/--password or --apiUser/--apiKey to authenticate with the server, but not both.");
+			System.exit(1);
 		}
 
 		// Options that work on a single job ID
