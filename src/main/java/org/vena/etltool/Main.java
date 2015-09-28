@@ -52,8 +52,8 @@ public class Main {
 			+ "\n| --setError --jobId <id>"
 			+ "\n| --status --jobId <id>"
 			+ "\n| --transformComplete --jobId <id>"
-			+ "\n| --delete <type> --deleteQuery <expr>"
-			+ "\n| --export <type>\n {--exportQuery <expr> | --exportWhere <clause>}\n {--exportToFile <name> [--excludeHeaders] | --exportToTable <name>}"
+			+ "\n| --delete <type> --deleteQuery <expr> [--nowait]"
+			+ "\n| --export <type>\n {--exportQuery <expr> | --exportWhere <clause>}\n {--exportToFile <name> [--excludeHeaders] | --exportToTable <name> [--nowait]}"
 			+ "\n}";
 	
 	/**
