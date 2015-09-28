@@ -368,7 +368,7 @@ public class Main {
 				.isRequired(false)
 				.hasArg()
 				.withArgName("name")
-				.withDescription("Name of table in staging DB to export to.")
+				.withDescription("Name of table in staging DB to export to. By default, waits for the job to complete unless --nowait is specified.")
 				.create();
 
 		options.addOption(exportStagingOption);
@@ -457,6 +457,15 @@ public class Main {
 
 		options.addOption(waitFullyOption);
 
+		Option noWaitOption = 
+				OptionBuilder
+				.withLongOpt("nowait")
+				.isRequired(false)
+				.withDescription("Do not wait for job to fully complete before returning. The command will return as soon as the job is submitted.")
+				.create();
+
+		options.addOption(noWaitOption);
+
 		Option verboseOption = 
 				OptionBuilder
 				.withLongOpt("verbose")
@@ -543,6 +552,18 @@ public class Main {
 			etlClient.protocol = "http";
 		}
 
+		if( commandLine.hasOption("nowait") && ( commandLine.hasOption("wait") || commandLine.hasOption("waitFully") ) ) { 
+			System.err.println( "Error: --wait/--waitFully and --nowait options cannot be combined.");
+
+			System.exit(1);
+		}
+
+		if (commandLine.hasOption("export") || commandLine.hasOption("delete")) {
+			// For these commands, default is wait
+			etlClient.pollingRequested = true;
+			etlClient.waitFully = true;
+		}
+
 		if( commandLine.hasOption("wait") ) { 
 			etlClient.pollingRequested = true;
 			etlClient.waitFully = false;
@@ -551,6 +572,11 @@ public class Main {
 		if( commandLine.hasOption("waitFully") ) { 
 			etlClient.pollingRequested = true;
 			etlClient.waitFully = true;
+		}
+
+		if( commandLine.hasOption("nowait") ) { 
+			etlClient.pollingRequested = false;
+			etlClient.waitFully = false;
 		}
 
 		if( commandLine.hasOption("verbose") ) { 
