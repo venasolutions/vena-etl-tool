@@ -52,8 +52,8 @@ public class Main {
 			+ "\n| --setError --jobId <id>"
 			+ "\n| --status --jobId <id>"
 			+ "\n| --transformComplete --jobId <id>"
-			+ "\n| --delete <type> --deleteQuery <expr>"
-			+ "\n| --export <type>\n {--exportQuery <expr> | --exportWhere <clause>}\n {--exportToFile <name> [--excludeHeaders] | --exportToTable <name> [--background]}"
+			+ "\n| --delete <type> --deleteQuery <expr> [--nowait]"
+			+ "\n| --export <type>\n {--exportQuery <expr> | --exportWhere <clause>}\n {--exportToFile <name> [--excludeHeaders] | --exportToTable <name> [--nowait]}"
 			+ "\n}";
 	
 	/**
@@ -368,7 +368,7 @@ public class Main {
 				.isRequired(false)
 				.hasArg()
 				.withArgName("name")
-				.withDescription("Name of table in staging DB to export to.")
+				.withDescription("Name of table in staging DB to export to. By default, waits for the job to complete unless --nowait is specified.")
 				.create();
 
 		options.addOption(exportStagingOption);
@@ -457,6 +457,15 @@ public class Main {
 
 		options.addOption(waitFullyOption);
 
+		Option noWaitOption = 
+				OptionBuilder
+				.withLongOpt("nowait")
+				.isRequired(false)
+				.withDescription("Do not wait for job to fully complete before returning. The command will return as soon as the job is submitted.")
+				.create();
+
+		options.addOption(noWaitOption);
+
 		Option verboseOption = 
 				OptionBuilder
 				.withLongOpt("verbose")
@@ -477,15 +486,6 @@ public class Main {
 
 		options.addOption(loadStepsOption);
 
-		Option backgroundOption = 
-				OptionBuilder
-				.withLongOpt("background")
-				.isRequired(false)
-				.withDescription("Use with --export command to run it in the background. Creates a job Id.")
-				.create('b');
-
-		options.addOption(backgroundOption);
-		
 		HelpFormatter helpFormatter = new HelpFormatter();
 
 		CommandLine commandLine = null;
@@ -543,6 +543,18 @@ public class Main {
 			etlClient.protocol = "http";
 		}
 
+		if( commandLine.hasOption("nowait") && ( commandLine.hasOption("wait") || commandLine.hasOption("waitFully") ) ) { 
+			System.err.println( "Error: --wait/--waitFully and --nowait options cannot be combined.");
+
+			System.exit(1);
+		}
+
+		if (commandLine.hasOption("export") || commandLine.hasOption("delete")) {
+			// For these commands, default is wait
+			etlClient.pollingRequested = true;
+			etlClient.waitFully = true;
+		}
+
 		if( commandLine.hasOption("wait") ) { 
 			etlClient.pollingRequested = true;
 			etlClient.waitFully = false;
@@ -551,6 +563,11 @@ public class Main {
 		if( commandLine.hasOption("waitFully") ) { 
 			etlClient.pollingRequested = true;
 			etlClient.waitFully = true;
+		}
+
+		if( commandLine.hasOption("nowait") ) { 
+			etlClient.pollingRequested = false;
+			etlClient.waitFully = false;
 		}
 
 		if( commandLine.hasOption("verbose") ) { 
@@ -725,7 +742,6 @@ public class Main {
 			String exportTypeStr = commandLine.getOptionValue("export");
 			String exportToTable = commandLine.getOptionValue("exportToTable");
 			String exportToFile = commandLine.getOptionValue("exportToFile");
-			boolean background = commandLine.hasOption("background");
 
 			if (exportToFile != null && exportToTable != null)  {
 				System.err.println( "Error: --exportToTable and --exportToFile options cannot be combined.");
@@ -734,11 +750,6 @@ public class Main {
 			
 			if (exportToFile == null && exportToTable == null) {
 				System.err.println( "Error: export option requires either --exportToTable <name> or --exportToFile <name>.");
-				System.exit(1);
-			}
-
-			if (exportToFile != null && background) {
-				System.err.println( "Error: --exportToFile does not support --background option.");
 				System.exit(1);
 			}
 
@@ -761,24 +772,19 @@ public class Main {
 
 			boolean excludeHeaders = commandLine.hasOption("excludeHeaders");
 
-			if (!background) {
-				if (exportToTable != null) {
-					System.out.println("WARNING: Running this command in the foreground is not recommended! Use the --background option to avoid potential timeout problems.");
-				}
+			if (exportToFile != null) {
 				System.out.print("Running export (this might take a while)... ");
 				InputStream in = etlClient.sendExport(type, exportToFile != null, exportToTable, whereClause, queryExpr, !excludeHeaders);
-				if (exportToFile != null) {
+				try {
+					Files.copy(in, new File(exportToFile).toPath(), StandardCopyOption.REPLACE_EXISTING);
+				} catch (IOException e) {
+					e.printStackTrace();
 					try {
-						Files.copy(in, new File(exportToFile).toPath(), StandardCopyOption.REPLACE_EXISTING);
-					} catch (IOException e) {
-						e.printStackTrace();
-						try {
-							in.close();
-						} catch (IOException e1) {
-							e1.printStackTrace();
-						}
-						System.exit(1);
+						in.close();
+					} catch (IOException e1) {
+						e1.printStackTrace();
 					}
+					System.exit(1);
 				}
 				System.out.print("OK.");
 				System.exit(0);
@@ -817,7 +823,6 @@ public class Main {
 		if (commandLine.hasOption("delete")) {
 			String deleteTypeStr = commandLine.getOptionValue("delete");
 			String expr = commandLine.getOptionValue("deleteQuery");
-			boolean background = commandLine.hasOption("background");
 
 			if (expr == null) {
 				System.err.println("Error: delete option requires --deleteQuery <expr>.");
@@ -834,32 +839,24 @@ public class Main {
 				System.err.println( "Error: The ETL file type \""+deleteTypeStr+"\" is not supported. The supported filetype is intersections.");
 				System.exit(1);
 			}
-			
-			if (!background) {
-				System.out.println("WARNING: Running this command in the foreground is not recommended! Use the --background option to avoid potential timeout problems.");
-				System.out.print("Running delete (this might take a while)... ");
-				etlClient.sendDelete(type, expr);
-				System.out.print("OK.");
-				System.exit(0);
-			} else {
-				System.out.println("Creating a new job.");
 
-				ETLMetadata metadata = new ETLMetadata();
+			System.out.println("Creating a new job.");
 
-				metadata.setSchemaVersion(2);
-				metadata.setModelId(etlClient.modelId);
+			ETLMetadata metadata = new ETLMetadata();
 
-				ETLDeleteIntersectionsStep step = new ETLDeleteIntersectionsStep();
-				step.setDataType(type);
-				step.setExpression(expr);
+			metadata.setSchemaVersion(2);
+			metadata.setModelId(etlClient.modelId);
 
-				metadata.addStep(step);
+			ETLDeleteIntersectionsStep step = new ETLDeleteIntersectionsStep();
+			step.setDataType(type);
+			step.setExpression(expr);
 
-				String jobName = commandLine.getOptionValue("jobName");
-				metadata.setName(jobName);
+			metadata.addStep(step);
 
-				return metadata;
-			}
+			String jobName = commandLine.getOptionValue("jobName");
+			metadata.setName(jobName);
+
+			return metadata;
 		}
 
 		// Do an Import
