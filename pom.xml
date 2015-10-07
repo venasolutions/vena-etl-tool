@@ -200,7 +200,7 @@
 		</pluginRepository>
 	</pluginRepositories>
 	<scm>
-		<developerConnection>scm:git:https://github.vena.io/development/etl-console.git</developerConnection>
+		<developerConnection>scm:git:http://github.vena.vpn/development/etl-console.git</developerConnection>
 	  <tag>HEAD</tag>
   </scm>
 </project>
