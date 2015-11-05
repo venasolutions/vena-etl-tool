@@ -11,7 +11,7 @@
 		<maven.compiler.source>1.7</maven.compiler.source>
 		<maven.compiler.target>1.7</maven.compiler.target>
 		<jackson.version>2.1.4</jackson.version>
-		<jersey.version>1.18</jersey.version>
+		<jersey.version>1.19</jersey.version>
 	</properties>
 
 	<dependencies>
@@ -53,7 +53,7 @@
 		<dependency>
 			<groupId>com.sun.jersey.contribs</groupId>
 			<artifactId>jersey-multipart</artifactId>
-			<version>1.18.1</version>
+			<version>${jersey.version}</version>
 		</dependency>
 
 		<!-- Jackson core, which includes Streaming API, shared low-level abstractions 
