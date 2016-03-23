@@ -67,7 +67,6 @@ public class ETLClient {
 
 	private Client uploadClient;
 	private Client apiClient;
-	private Client loginClient;
 
 	public ETLClient() {
 	}
@@ -243,14 +242,6 @@ public class ETLClient {
 		return apiClient;
 	}
 
-	private Client getLoginClient() {
-		if (loginClient == null) {
-			loginClient = Client.create();
-			loginClient.addFilter(new HTTPBasicAuthFilter(username, password));
-		}
-		return loginClient;
-	}
-
 	private WebResource buildWebResource(String path) {
 		return buildWebResource(path, Collections.<TwoTuple<String, String>> emptyList(), false);
 	}
@@ -277,7 +268,9 @@ public class ETLClient {
 
 	public void login()
 	{
-		Client client = getLoginClient();
+		Client client = Client.create();
+
+		client.addFilter(new HTTPBasicAuthFilter(username, password));
 
 		String uri = buildURI("/login");
 		
