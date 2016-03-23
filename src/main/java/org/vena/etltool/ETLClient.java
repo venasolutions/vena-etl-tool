@@ -65,6 +65,9 @@ public class ETLClient {
 	public boolean waitFully = false;
 	public boolean verbose;
 
+	private Client uploadClient;
+	private Client apiClient;
+
 	public ETLClient() {
 	}
 	 
@@ -219,6 +222,26 @@ public class ETLClient {
 		return urlBuf.toString();
 	}
 
+	private Client getUploadClient() {
+		if (uploadClient == null) {
+			ClientConfig jerseyClientConfig = new DefaultClientConfig();
+			jerseyClientConfig.getClasses().add(MultiPartWriter.class);
+
+			uploadClient = Client.create(jerseyClientConfig);
+			uploadClient.setChunkedEncodingSize(8192);
+			uploadClient.addFilter(new HTTPBasicAuthFilter(apiUser, apiKey));
+		}
+		return uploadClient;
+	}
+
+	private Client getAPIClient() {
+		if (apiClient == null) {
+			apiClient = Client.create();
+			apiClient.addFilter(new HTTPBasicAuthFilter(apiUser, apiKey));
+		}
+		return apiClient;
+	}
+
 	private WebResource buildWebResource(String path) {
 		return buildWebResource(path, Collections.<TwoTuple<String, String>> emptyList(), false);
 	}
@@ -229,16 +252,8 @@ public class ETLClient {
 
 	private WebResource buildWebResource(String path, Iterable<TwoTuple<String, String>> parameters, boolean chunked) {
 
-		ClientConfig jerseyClientConfig = new DefaultClientConfig();
-		jerseyClientConfig.getClasses().add(MultiPartWriter.class);
+		Client client = chunked ? getUploadClient() : getAPIClient();
 		
-		Client client = Client.create(jerseyClientConfig);
-
-		if (chunked)
-			client.setChunkedEncodingSize(8192);
-
-		client.addFilter(new HTTPBasicAuthFilter(apiUser, apiKey));
-
 		String uri = buildURI(path, parameters);
 		
 		if( verbose )
