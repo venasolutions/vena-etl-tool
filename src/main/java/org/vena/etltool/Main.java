@@ -615,7 +615,48 @@ public class Main {
 			System.exit(1);
 		}
 
-		// Options that work on a single job ID
+		String modelIdStr = commandLine.getOptionValue("modelId");
+		String modelNameStr = commandLine.getOptionValue("modelName");
+
+		if (commandLine.hasOption("validate")) {
+			etlClient.validationRequested = true;
+		}
+
+		/* Process model parameters. Create a new model if necessary. */
+		if( modelIdStr != null || modelNameStr != null) {
+
+			if(modelIdStr != null && modelNameStr != null)  {
+				System.err.println( "Error: You must specify either --modelId=<existing model Id> or --modelName=<model name>, but not both.");
+
+				System.exit(1);
+			}
+
+			//Lookup model by name.
+			if( modelNameStr != null ) {
+				System.out.print("Looking up model... ");
+				ModelResponseDTO searchResults = etlClient.lookupModel(modelNameStr);
+
+				if( searchResults == null) {
+					System.err.println( "Error: Could not find the model named \""+modelNameStr+"\".");
+
+					System.exit(1);
+				}
+
+				System.out.println("OK");
+				etlClient.modelId = searchResults.getId();
+			}
+			else {
+				etlClient.modelId = Id.valueOf(modelIdStr);
+			}
+		}
+		else if(commandLine.getOptionValue("createModel") !=null) {
+			System.out.print("Creating new model... ");
+			etlClient.createModel(commandLine.getOptionValue("createModel"));
+
+			System.out.println("OK");
+		}
+
+		// Options that work on a single job ID, model ID optional
 
 		if(commandLine.hasOption("status") || args.length == 0) {
 
@@ -679,53 +720,15 @@ public class Main {
 			System.out.println("OK");
 			System.exit(0);
 		}
-		
-		String modelIdStr = commandLine.getOptionValue("modelId");
-		String modelNameStr = commandLine.getOptionValue("modelName");
 
-		if (commandLine.hasOption("validate")) {
-			etlClient.validationRequested = true;
-		}
+		// After this point, model ID is required
 
-		/* Process model parameters. Create a new model if necessary. */
-		if( modelIdStr != null || modelNameStr != null) {
-
-			if(modelIdStr != null && modelNameStr != null)  {
-				System.err.println( "Error: You must specify either --modelId=<existing model Id> or --modelName=<model name>, but not both.");
-
-				System.exit(1);
-			}
-
-			//Lookup model by name.
-			if( modelNameStr != null ) {
-				System.out.print("Looking up model... ");
-				ModelResponseDTO searchResults = etlClient.lookupModel(modelNameStr);
-
-				if( searchResults == null) {
-					System.err.println( "Error: Could not find the model named \""+modelNameStr+"\".");
-
-					System.exit(1);
-				}
-
-				System.out.println("OK");
-				etlClient.modelId = searchResults.getId();
-			}
-			else {
-				etlClient.modelId = Id.valueOf(modelIdStr);
-			}
-		}
-		else if(commandLine.getOptionValue("createModel") !=null) {
-			System.out.print("Creating new model... ");
-			etlClient.createModel(commandLine.getOptionValue("createModel"));
-
-			System.out.println("OK");
-		}
-		else {
+		if (etlClient.modelId == null) {
 			System.err.println( "Error: You must specify one of --createModel=<model name> or --modelId or --modelName.");
 
 			System.exit(1);
 		}
-		
+
 		// ETL 2.0 option for providing multiple steps at a time
 		
 		if (commandLine.hasOption("loadSteps")) {
