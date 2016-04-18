@@ -16,7 +16,6 @@ import java.util.Properties;
 
 import javax.ws.rs.core.MediaType;
 
-import org.vena.api.customer.authentication.APILoginResult;
 import org.vena.api.etl.ETLCubeToStageStep;
 import org.vena.api.etl.ETLFileImportStep;
 import org.vena.api.etl.ETLJob.Phase;
@@ -30,6 +29,7 @@ import org.vena.api.etl.QueryDTO.Destination;
 import org.vena.api.etl.QueryExpressionDTO;
 import org.vena.etltool.entities.CreateModelRequestDTO;
 import org.vena.etltool.entities.ETLJobDTO;
+import org.vena.etltool.entities.LoginResultDTO;
 import org.vena.etltool.entities.ModelResponseDTO;
 import org.vena.etltool.util.TwoTuple;
 import org.vena.id.Id;
@@ -288,7 +288,7 @@ public class ETLClient {
 			handleErrorResponse(response, "Login failed.");
 		}
 
-		APILoginResult result = getEntity(response, APILoginResult.class);
+		LoginResultDTO result = getEntity(response, LoginResultDTO.class);
 
 		this.apiKey = result.getApiKey();
 		this.apiUser = result.getApiUser();
