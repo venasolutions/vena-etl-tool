@@ -1,0 +1,13 @@
+< Number of PRs:3 >
+#1 [achoi] Make waiting default for export/delete commands. Add --nowait option. (closed | 2015-08-04T21:51:13Z)
+	Commits:
+	 7385ccf10d4aaaf27d70abc6558681e59f7dc292 achoi
+#2 [achoi] Remove --nowait and add --background option (closed | 2015-08-10T17:21:31Z)
+	Commits:
+	 cbd3b0bb9cd09144c43873f90fbecc16f88213ca achoi
+	 0029f4ac051280c76bf69ae2d45154a0962cc217 achoi
+	 3577db8013f559fb2e58b062440e1d75641c1d1f achoi
+#3 [achoi] Fix foreground exportToTable not working. (closed | 2015-08-11T15:59:20Z)
+	Commits:
+	 f800a3ed736269e4eceb0bf6b06eb642a2d961f7 achoi
+< Done! Number of PRs with comments: 0. Json Output in etltool-production-history >
