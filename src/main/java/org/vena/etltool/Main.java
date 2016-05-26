@@ -501,6 +501,14 @@ public class Main {
 			System.exit(1);
 		}
 
+		if (commandLine.getArgList().size() > 0) {
+			System.err.print( "Error: Unrecognized argument(s):");
+			for (String str : commandLine.getArgs()) {
+				System.err.print(str + " ");
+			}
+			System.exit(1);
+		}
+
 		if(commandLine.hasOption("help") || args.length == 0) {
 
 			helpFormatter.printHelp(EXAMPLE_COMMANDLINE, options);
