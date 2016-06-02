@@ -284,6 +284,18 @@ public class ETLClient {
 
 		ClientResponse response = webResource.post(ClientResponse.class);
 
+		int retryCount = 5;
+		while (retryCount > 0 && response.getStatus() != 200 && response.getStatus() >= 500 ) {
+			try {
+				Thread.sleep(2000);
+			}
+			catch( InterruptedException e) {
+				break;
+			}
+			response = webResource.post(ClientResponse.class);
+			retryCount--;
+		}
+		
 		if (response.getStatus() != 200) {
 			handleErrorResponse(response, "Login failed.");
 		}
