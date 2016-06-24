@@ -534,6 +534,12 @@ public class ETLClient {
 		case intersections:
 			typePath = "intersections";
 			break;
+		case lids:
+			typePath = "lids";
+			break;
+		case values:
+			typePath = "values";
+			break;
 		default:
 			System.err.println("Type \""+type+"\" not supported for delete.");
 			return;
