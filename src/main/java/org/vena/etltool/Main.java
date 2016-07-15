@@ -22,6 +22,8 @@ import org.apache.commons.cli.ParseException;
 import org.vena.api.etl.ETLCubeToStageStep;
 import org.vena.api.etl.ETLCubeToStageStep.QueryType;
 import org.vena.api.etl.ETLDeleteIntersectionsStep;
+import org.vena.api.etl.ETLDeleteLidsStep;
+import org.vena.api.etl.ETLDeleteValuesStep;
 import org.vena.api.etl.ETLFileImportStep.FileFormat;
 import org.vena.api.etl.ETLFileOld;
 import org.vena.api.etl.ETLFileToCubeStep;
@@ -421,7 +423,7 @@ public class Main {
 				.isRequired(false)
 				.hasArg()
 				.withArgName("type")
-				.withDescription("Delete all <type> from the datamodel that matches --deleteQuery. <type> can be one of {intersections}.")
+				.withDescription("Delete all <type> from the datamodel that matches --deleteQuery. <type> can be one of {intersections, values, lids}.")
 				.create();
 
 		options.addOption(deleteOption);
@@ -841,28 +843,40 @@ public class Main {
 			}
 
 			DataType type = null;
+			ETLMetadata metadata = new ETLMetadata();
 			try {
 				type = DataType.valueOf(deleteTypeStr);
-				if (!type.equals(DataType.intersections)) 
+				if (type.equals(DataType.intersections)) {
+					ETLDeleteIntersectionsStep step = new ETLDeleteIntersectionsStep();
+					step.setDataType(type);
+					step.setExpression(expr);
+					metadata.addStep(step);
+				}
+				else if (type.equals(DataType.values)) {
+					ETLDeleteValuesStep step = new ETLDeleteValuesStep();
+					step.setDataType(type);
+					step.setExpression(expr);
+					metadata.addStep(step);
+				}
+				else if (type.equals(DataType.lids)) {
+					ETLDeleteLidsStep step = new ETLDeleteLidsStep();
+					step.setDataType(type);
+					step.setExpression(expr);
+					metadata.addStep(step);
+				}
+				else { 
 					throw new IllegalArgumentException();
+				}
 			}
 			catch(IllegalArgumentException e) {
-				System.err.println( "Error: The ETL file type \""+deleteTypeStr+"\" is not supported. The supported filetype is intersections.");
+				System.err.println( "Error: The ETL file type \""+deleteTypeStr+"\" is not supported. The supported filetypes are intersections, values, and lids.");
 				System.exit(1);
 			}
 
 			System.out.println("Creating a new job.");
 
-			ETLMetadata metadata = new ETLMetadata();
-
 			metadata.setSchemaVersion(2);
 			metadata.setModelId(etlClient.modelId);
-
-			ETLDeleteIntersectionsStep step = new ETLDeleteIntersectionsStep();
-			step.setDataType(type);
-			step.setExpression(expr);
-
-			metadata.addStep(step);
 
 			String jobName = commandLine.getOptionValue("jobName");
 			metadata.setName(jobName);
