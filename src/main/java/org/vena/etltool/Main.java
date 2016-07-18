@@ -19,21 +19,21 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.vena.api.etl.ETLCubeToStageStep;
-import org.vena.api.etl.ETLCubeToStageStep.QueryType;
-import org.vena.api.etl.ETLDeleteIntersectionsStep;
-import org.vena.api.etl.ETLDeleteLidsStep;
-import org.vena.api.etl.ETLDeleteValuesStep;
-import org.vena.api.etl.ETLFileImportStep.FileFormat;
-import org.vena.api.etl.ETLFileOld;
-import org.vena.api.etl.ETLFileToCubeStep;
-import org.vena.api.etl.ETLFileToStageStep;
-import org.vena.api.etl.ETLMetadata;
-import org.vena.api.etl.ETLMetadata.ETLLoadType;
-import org.vena.api.etl.ETLSQLTransformStep;
-import org.vena.api.etl.ETLStageToCubeStep;
-import org.vena.api.etl.ETLStep.DataType;
+import org.vena.etltool.entities.ETLFileImportStepDTO.FileFormat;
+import org.vena.etltool.entities.ETLCubeToStageStepDTO;
+import org.vena.etltool.entities.ETLCubeToStageStepDTO.QueryType;
+import org.vena.etltool.entities.ETLDeleteIntersectionsStepDTO;
+import org.vena.etltool.entities.ETLDeleteLidsStepDTO;
+import org.vena.etltool.entities.ETLDeleteValuesStepDTO;
+import org.vena.etltool.entities.ETLFileOldDTO;
+import org.vena.etltool.entities.ETLFileToCubeStepDTO;
+import org.vena.etltool.entities.ETLFileToStageStepDTO;
 import org.vena.etltool.entities.ETLJobDTO;
+import org.vena.etltool.entities.ETLMetadataDTO;
+import org.vena.etltool.entities.ETLMetadataDTO.ETLLoadType;
+import org.vena.etltool.entities.ETLSQLTransformStepDTO;
+import org.vena.etltool.entities.ETLStageToCubeStepDTO;
+import org.vena.etltool.entities.ETLStepDTO.DataType;
 import org.vena.etltool.entities.ModelResponseDTO;
 import org.vena.id.Id;
 
@@ -67,7 +67,7 @@ public class Main {
 
 		ETLClient etlClient = new ETLClient();
 
-		ETLMetadata metadata = parseCmdlineArgs(args, etlClient);
+		ETLMetadataDTO metadata = parseCmdlineArgs(args, etlClient);
 
 		System.out.print("Submitting job... ");
 		ETLJobDTO etlJob = etlClient.uploadETL(metadata);
@@ -84,7 +84,7 @@ public class Main {
 
 
 	@SuppressWarnings("static-access")
-	private  static ETLMetadata parseCmdlineArgs(String[] args, ETLClient etlClient) throws UnsupportedEncodingException {
+	private static ETLMetadataDTO parseCmdlineArgs(String[] args, ETLClient etlClient) throws UnsupportedEncodingException {
 		Options options  = new Options();
 
 		Option helpOption =  OptionBuilder
@@ -239,7 +239,7 @@ public class Main {
 				.withArgName("options")
 				.withDescription("A data file to import (multiple allowed)."
 						+ "\n -F \"[file=]<filename>; [type=]<filetype> [;[table=]<tableName>] [;format={CSV|TDF}] [;bulkInsert={true|false}]\""
-						+ "\n where <filetype> is one of {"+ETLFileOld.SUPPORTED_FILETYPES_LIST+"}>."
+						+ "\n where <filetype> is one of {"+ETLFileOldDTO.SUPPORTED_FILETYPES_LIST+"}>."
 						+ "\n Example: -F model.csv;hierarchy"
 						+ "\n Example: -F file=values.tdf;format=TDF;type=intersections")
 				.create('F');
@@ -359,7 +359,7 @@ public class Main {
 				.isRequired(false)
 				.hasArg()
 				.withArgName("type")
-				.withDescription("Export part of the datamodel to a staging table. <type> may be one of {"+ETLFileOld.SUPPORTED_FILETYPES_LIST+"}.")
+				.withDescription("Export part of the datamodel to a staging table. <type> may be one of {"+ETLFileOldDTO.SUPPORTED_FILETYPES_LIST+"}.")
 				.create();
 
 		options.addOption(exportOption);
@@ -771,7 +771,7 @@ public class Main {
 				type = DataType.valueOf(exportTypeStr);
 			}
 			catch(IllegalArgumentException e) {
-				System.err.println( "Error: The ETL file type \""+exportTypeStr+"\" does not exist. The known filetypes are ["+ETLFileOld.SUPPORTED_FILETYPES_LIST+"]");
+				System.err.println( "Error: The ETL file type \""+exportTypeStr+"\" does not exist. The known filetypes are ["+ETLFileOldDTO.SUPPORTED_FILETYPES_LIST+"]");
 				System.exit(1);
 			}
 
@@ -805,12 +805,12 @@ public class Main {
 			} else {
 				System.out.println("Creating a new job.");
 				
-				ETLMetadata metadata = new ETLMetadata();
+				ETLMetadataDTO metadata = new ETLMetadataDTO();
 					
 				metadata.setSchemaVersion(2);
 				metadata.setModelId(etlClient.modelId);
 				
-				ETLCubeToStageStep step = new ETLCubeToStageStep();
+				ETLCubeToStageStepDTO step = new ETLCubeToStageStepDTO();
 				
 				step.setDataType(type);
 				step.setTableName(exportToTable);
@@ -843,23 +843,23 @@ public class Main {
 			}
 
 			DataType type = null;
-			ETLMetadata metadata = new ETLMetadata();
+			ETLMetadataDTO metadata = new ETLMetadataDTO();
 			try {
 				type = DataType.valueOf(deleteTypeStr);
 				if (type.equals(DataType.intersections)) {
-					ETLDeleteIntersectionsStep step = new ETLDeleteIntersectionsStep();
+					ETLDeleteIntersectionsStepDTO step = new ETLDeleteIntersectionsStepDTO();
 					step.setDataType(type);
 					step.setExpression(expr);
 					metadata.addStep(step);
 				}
 				else if (type.equals(DataType.values)) {
-					ETLDeleteValuesStep step = new ETLDeleteValuesStep();
+					ETLDeleteValuesStepDTO step = new ETLDeleteValuesStepDTO();
 					step.setDataType(type);
 					step.setExpression(expr);
 					metadata.addStep(step);
 				}
 				else if (type.equals(DataType.lids)) {
-					ETLDeleteLidsStep step = new ETLDeleteLidsStep();
+					ETLDeleteLidsStepDTO step = new ETLDeleteLidsStepDTO();
 					step.setDataType(type);
 					step.setExpression(expr);
 					metadata.addStep(step);
@@ -888,11 +888,11 @@ public class Main {
 		return produceImportMetadata(commandLine, etlClient.modelId);
 	}
 
-	private static ETLMetadata produceStepsMetadata(ETLClient etlClient, CommandLine commandLine) {
+	private static ETLMetadataDTO produceStepsMetadata(ETLClient etlClient, CommandLine commandLine) {
 		
 		System.out.println("Creating a new job.");
 		
-		ETLMetadata metadata = new ETLMetadata();
+		ETLMetadataDTO metadata = new ETLMetadataDTO();
 
 		String jobName =  commandLine.getOptionValue("jobName");
 		metadata.setName(jobName);
@@ -909,61 +909,61 @@ public class Main {
 			    	String[] optionFields = line.trim().split(" ", 2);
 			    	String loadType = optionFields[0];
 			    	
-					ETLFileOld etlFile = null;
+			    	ETLFileOldDTO etlFile = null;
 			    	
 			    	switch (loadType.toUpperCase()) {
 			    	case "FILETOCUBE":
 			    	{
 			    		etlFile = prepareFilesToLoad(optionFields);
-						metadata.addStep(new ETLFileToCubeStep(etlFile));
+						metadata.addStep(new ETLFileToCubeStepDTO(etlFile));
 			    		break;
 			    	}
 			    	case "FILETOSTAGE":
 			    	{
 			    		etlFile = prepareFilesToLoad(optionFields);
-						metadata.addStep(new ETLFileToStageStep(etlFile));
+						metadata.addStep(new ETLFileToStageStepDTO(etlFile));
 			    		break;
 			    	}
 			    	case "SQLTRANSFORM":
 			    	{
-						metadata.addStep(new ETLSQLTransformStep());
+						metadata.addStep(new ETLSQLTransformStepDTO());
 			    		break;
 			    	}
 			    	case "STAGETOCUBE":
 			    	{
 			    		if (optionFields.length == 1) {
-							metadata.addStep(new ETLStageToCubeStep(DataType.hierarchy));
-							metadata.addStep(new ETLStageToCubeStep(DataType.attributes));
-							metadata.addStep(new ETLStageToCubeStep(DataType.intersections));
-							metadata.addStep(new ETLStageToCubeStep(DataType.lids));
+							metadata.addStep(new ETLStageToCubeStepDTO(DataType.hierarchy));
+							metadata.addStep(new ETLStageToCubeStepDTO(DataType.attributes));
+							metadata.addStep(new ETLStageToCubeStepDTO(DataType.intersections));
+							metadata.addStep(new ETLStageToCubeStepDTO(DataType.lids));
 			    		} else if (optionFields.length == 2) {
 			    			String[] parts = optionFields[1].split("=", 2);
 			    			String key = parts[0].trim();
 							String value = parts[1].trim();
 			    			if (key.equalsIgnoreCase("type")) {
 			    				try {
-									metadata.addStep(new ETLStageToCubeStep(DataType.valueOf(DataType.class, value)));
+									metadata.addStep(new ETLStageToCubeStepDTO(DataType.valueOf(DataType.class, value)));
 								} catch (IllegalArgumentException e) {
-									System.err.println( "Error: The ETL file type \""+value+"\" does not exist. The known filetypes are ["+ETLFileOld.SUPPORTED_FILETYPES_LIST+"]");
+									System.err.println( "Error: The ETL file type \""+value+"\" does not exist. The known filetypes are ["+ETLFileOldDTO.SUPPORTED_FILETYPES_LIST+"]");
 									System.exit(1);
 								}
 			    			} else {
-								System.err.println( "Error: stageToCube valid option is type=<type>. The known types are ["+ETLFileOld.SUPPORTED_FILETYPES_LIST+"]");
+								System.err.println( "Error: stageToCube valid option is type=<type>. The known types are ["+ETLFileOldDTO.SUPPORTED_FILETYPES_LIST+"]");
 								System.exit(1);
 			    			}
 			    		} else {
-							System.err.println( "Error: stageToCube valid option is type=<type>. The known types are ["+ETLFileOld.SUPPORTED_FILETYPES_LIST+"]");
+							System.err.println( "Error: stageToCube valid option is type=<type>. The known types are ["+ETLFileOldDTO.SUPPORTED_FILETYPES_LIST+"]");
 							System.exit(1);
 			    		}
 			    		break;
 			    	}
 			    	case "CUBETOSTAGE": 
 			    	{
-						ETLCubeToStageStep step = new ETLCubeToStageStep();
+						ETLCubeToStageStepDTO step = new ETLCubeToStageStepDTO();
 						
 						if (optionFields.length != 2)
 						{
-							System.err.println( "Error: cubeToStage step requires type=<type>;table=<name>. The known types are ["+ETLFileOld.SUPPORTED_FILETYPES_LIST+"]");
+							System.err.println( "Error: cubeToStage step requires type=<type>;table=<name>. The known types are ["+ETLFileOldDTO.SUPPORTED_FILETYPES_LIST+"]");
 							System.exit(1);
 						}
 						
@@ -985,7 +985,7 @@ public class Main {
 										step.setDataType(DataType.valueOf(DataType.class, value));
 										typeFound = true;
 									} catch (IllegalArgumentException e) {
-										throw new IllegalArgumentException("The ETL file type \""+value+"\" does not exist. The supported filetypes are ["+ETLFileOld.SUPPORTED_FILETYPES_LIST+"]");
+										throw new IllegalArgumentException("The ETL file type \""+value+"\" does not exist. The supported filetypes are ["+ETLFileOldDTO.SUPPORTED_FILETYPES_LIST+"]");
 									}
 									break;
 								case "table":
@@ -1009,7 +1009,7 @@ public class Main {
 						}
 						
 						if (!typeFound || !tableFound) {
-							System.err.println( "Error: cubeToStage step requires type=<type>;table=<name>. The known types are ["+ETLFileOld.SUPPORTED_FILETYPES_LIST+"]");
+							System.err.println( "Error: cubeToStage step requires type=<type>;table=<name>. The known types are ["+ETLFileOldDTO.SUPPORTED_FILETYPES_LIST+"]");
 							System.exit(1);
 						}
 						
@@ -1038,7 +1038,7 @@ public class Main {
 	}
 
 
-	private static ETLFileOld prepareFilesToLoad(String[] optionFields) {
+	private static ETLFileOldDTO prepareFilesToLoad(String[] optionFields) {
 		
 		if (optionFields.length < 2)
 		{
@@ -1050,7 +1050,7 @@ public class Main {
 			System.exit(1);
 		}
 		
-		ETLFileOld etlFile = null;
+		ETLFileOldDTO etlFile = null;
 		try {
 			etlFile = parseETLFileArgs(optionFields[1].replaceAll("\"", ""));
 			String key = "file" + (FIRST_FILE_INDEX++);			
@@ -1069,7 +1069,7 @@ public class Main {
 		return etlFile;
 	}
 
-	private static ETLMetadata produceImportMetadata(CommandLine commandLine, Id modelId) {
+	private static ETLMetadataDTO produceImportMetadata(CommandLine commandLine, Id modelId) {
 
 		ETLLoadType loadType = ETLLoadType.FILE_TO_CUBE;
 
@@ -1107,13 +1107,13 @@ public class Main {
 			System.exit(1);
 		}
 
-		List<ETLFileOld> etlFiles = new ArrayList<>();
+		List<ETLFileOldDTO> etlFiles = new ArrayList<>();
 
 		if (etlFileOptionValues != null) {
 			
 			for(String etlFileOption : etlFileOptionValues)  {
 				try {
-					ETLFileOld etlFile = parseETLFileArgs(etlFileOption);
+					ETLFileOldDTO etlFile = parseETLFileArgs(etlFileOption);
 					etlFiles.add(etlFile);
 				}
 				catch (IllegalArgumentException e) {
@@ -1127,7 +1127,7 @@ public class Main {
 				}
 			}
 			
-			for(ETLFileOld etlFile : etlFiles) {
+			for(ETLFileOldDTO etlFile : etlFiles) {
 				String key = "file" + (FIRST_FILE_INDEX++);			
 				etlFile.setMimePart(key);
 			}
@@ -1135,30 +1135,30 @@ public class Main {
 		
 		System.out.println("Creating a new job.");
 
-		ETLMetadata metadata = new ETLMetadata();
+		ETLMetadataDTO metadata = new ETLMetadataDTO();
 
 		switch(loadType) {
 		case FILE_TO_CUBE:
-			for(ETLFileOld file : etlFiles) {
-				metadata.addStep(new ETLFileToCubeStep(file));
+			for(ETLFileOldDTO file : etlFiles) {
+				metadata.addStep(new ETLFileToCubeStepDTO(file));
 			}
 			break;
 		case FILE_TO_STAGE:
-			for(ETLFileOld file : etlFiles) {
-				metadata.addStep(new ETLFileToStageStep(file));
+			for(ETLFileOldDTO file : etlFiles) {
+				metadata.addStep(new ETLFileToStageStepDTO(file));
 			}
 			break;
 		case FILE_TO_STAGE_TO_CUBE:
-			for(ETLFileOld file : etlFiles) {
-				metadata.addStep(new ETLFileToStageStep(file));
+			for(ETLFileOldDTO file : etlFiles) {
+				metadata.addStep(new ETLFileToStageStepDTO(file));
 			}
-			metadata.addStep(new ETLSQLTransformStep(etlFiles, null));
+			metadata.addStep(new ETLSQLTransformStepDTO(etlFiles, null));
 			// fall-through:
 		case STAGE_TO_CUBE:
-			metadata.addStep(new ETLStageToCubeStep(DataType.hierarchy));
-			metadata.addStep(new ETLStageToCubeStep(DataType.attributes));
-			metadata.addStep(new ETLStageToCubeStep(DataType.intersections));
-			metadata.addStep(new ETLStageToCubeStep(DataType.lids));
+			metadata.addStep(new ETLStageToCubeStepDTO(DataType.hierarchy));
+			metadata.addStep(new ETLStageToCubeStepDTO(DataType.attributes));
+			metadata.addStep(new ETLStageToCubeStepDTO(DataType.intersections));
+			metadata.addStep(new ETLStageToCubeStepDTO(DataType.lids));
 			break;
 		}
 		
@@ -1173,8 +1173,8 @@ public class Main {
 		
 	}
 
-	private static ETLFileOld parseETLFileArgs(String etlFileOption) {
-		ETLFileOld etlFile = new ETLFileOld();
+	private static ETLFileOldDTO parseETLFileArgs(String etlFileOption) {
+		ETLFileOldDTO etlFile = new ETLFileOldDTO();
 
 		String[] optionFields = etlFileOption.split(";");
 
@@ -1207,7 +1207,7 @@ public class Main {
 					try {
 						etlFile.setFileType(DataType.valueOf(DataType.class, value));
 					} catch (IllegalArgumentException e) {
-						throw new IllegalArgumentException("The ETL file type \""+value+"\" does not exist. The supported filetypes are ["+ETLFileOld.SUPPORTED_FILETYPES_LIST+"]");
+						throw new IllegalArgumentException("The ETL file type \""+value+"\" does not exist. The supported filetypes are ["+ETLFileOldDTO.SUPPORTED_FILETYPES_LIST+"]");
 					}
 					break;
 				default:
@@ -1235,7 +1235,7 @@ public class Main {
 			try {
 				etlFile.setFileType(DataType.valueOf(DataType.class, value));
 			} catch (IllegalArgumentException e) {
-				throw new IllegalArgumentException("The ETL file type \""+value+"\" does not exist. The supported filetypes are ["+ETLFileOld.SUPPORTED_FILETYPES_LIST+"]");
+				throw new IllegalArgumentException("The ETL file type \""+value+"\" does not exist. The supported filetypes are ["+ETLFileOldDTO.SUPPORTED_FILETYPES_LIST+"]");
 			}
 		}
 

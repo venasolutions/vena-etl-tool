@@ -3,7 +3,6 @@ package org.vena.etltool.entities;
 import java.util.Date;
 
 import org.vena.api.etl.ETLJob.Phase;
-import org.vena.api.etl.ETLMetadata;
 import org.vena.api.etl.ETLStep.Status;
 import org.vena.id.Id;
 
@@ -11,7 +10,7 @@ public class ETLJobDTO {
 
 	private Id id;
 	
-	private ETLMetadata metadata;
+	private ETLMetadataDTO metadata;
 
 	private Id requestId;
 
@@ -48,11 +47,11 @@ public class ETLJobDTO {
 		this.id = id;
 	}
 
-	public ETLMetadata getMetadata() {
+	public ETLMetadataDTO getMetadata() {
 		return metadata;
 	}
 
-	public void setMetadata(ETLMetadata metadata) {
+	public void setMetadata(ETLMetadataDTO metadata) {
 		this.metadata = metadata;
 	}
 
