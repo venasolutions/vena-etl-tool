@@ -1,9 +1,11 @@
 package org.vena.etltool.entities;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.SortedMap;
 
-import org.vena.api.etl.ETLFileToCubeStep;
 import org.vena.id.Id;
 
 public class ETLMetadataDTO {
@@ -13,6 +15,10 @@ public class ETLMetadataDTO {
 		FILE_TO_STAGE_TO_CUBE,
 		FILE_TO_STAGE,
 		STAGE_TO_CUBE
+	}
+
+	public static ETLLoadType stagingRequiredToLoadType(boolean stagingRequired) {
+		return stagingRequired ? ETLLoadType.FILE_TO_STAGE_TO_CUBE : ETLLoadType.FILE_TO_CUBE;
 	}
 	
 	public static String loadTypeToString(ETLLoadType loadType) {
@@ -41,10 +47,18 @@ public class ETLMetadataDTO {
 	private String name;
 	
 	private Id modelId;
+	
+	private Id processId;
 
 	private ETLLoadType loadType;
 
 	private List<ETLStepDTO> steps = new ArrayList<ETLStepDTO>();
+	
+	private SortedMap<String, ETLFileOldDTO> files = null;
+
+	private Map<String, ETLTableStatusDTO> tables;
+
+	private boolean stagingRequired;
 	
 	public String getName() {
 		return name;
@@ -61,7 +75,15 @@ public class ETLMetadataDTO {
 	public void setModelId(Id modelId) {
 		this.modelId = modelId;
 	}
-	
+
+	public Id getProcessId() {
+		return processId;
+	}
+
+	public void setProcessId(Id processId) {
+		this.processId = processId;
+	}
+
 	public ETLLoadType getLoadType() {
 		return loadType;
 	}
@@ -76,6 +98,59 @@ public class ETLMetadataDTO {
 
 	public void setSteps(List<ETLStepDTO> steps) {
 		this.steps = steps;
+		
+		resequenceSteps();
+	}
+	
+	public void resequenceSteps() {
+		int i=0;
+
+		for(ETLStepDTO step : this.steps) {
+			step.setStepNumber(i);
+			++i;
+		}
+	}
+	
+	public List<ETLFileImportStepDTO> getAllFileSteps()
+	{
+		List<ETLFileImportStepDTO> fileSteps = new ArrayList<>();
+
+		for (ETLStepDTO step : steps) {
+			if (step instanceof ETLFileImportStepDTO) {
+				fileSteps.add((ETLFileImportStepDTO) step);
+			}
+		}
+
+		return fileSteps;
+	}
+	
+	public SortedMap<String, ETLFileOldDTO> getFiles() {
+		return files;
+	}	
+
+	public void setFiles(SortedMap<String, ETLFileOldDTO> files) {
+		this.files = files;
+	}
+
+	public boolean isStagingRequired() {
+		return stagingRequired;
+	}
+
+	public void setStagingRequired(boolean staging) {
+		this.stagingRequired = staging;
+	}
+
+	public Map<String, ETLTableStatusDTO> getTables() {
+		return tables;
+	}
+
+	public void setTables(Map<String, ETLTableStatusDTO> tables) {
+		this.tables = tables;
+	}
+	
+	public void addTable(ETLTableStatusDTO table) {
+		if (tables == null) tables = new LinkedHashMap<>();
+		tables.put(table.getTableName(), table);
 	}
 	
 	public boolean addStep(ETLStepDTO step) {
@@ -90,10 +165,5 @@ public class ETLMetadataDTO {
 	
 	public void setSchemaVersion(Integer schemaVersion) {
 		this.schemaVersion = schemaVersion;
-	}
-
-	public void addStep(ETLFileToCubeStep etlFileToCubeStep) {
-		// TODO Auto-generated method stub
-		
 	}
 }

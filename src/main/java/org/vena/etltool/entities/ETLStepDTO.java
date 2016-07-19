@@ -1,5 +1,7 @@
 package org.vena.etltool.entities;
 
+import java.util.Date;
+
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
@@ -40,10 +42,39 @@ public abstract class ETLStepDTO {
 	
 	private int stepNumber;
 
+	private Date startedTS = null;
+
+	private Date completedTS = null;
+
 	protected int percentDone;
 	
 	public abstract String getName();
 
+	public Status changeStatus(Status newStatus) 
+	{
+		Status previousStatus = this.status;
+
+		switch(newStatus) {
+		case RUNNING:
+			if (previousStatus == Status.NOT_STARTED) startedTS = new Date();
+			break;
+		case COMPLETED:
+			percentDone = 100;
+			// intentional fall-through
+		case ERROR:
+		case CANCELLED:
+			completedTS = new Date();
+			break;
+		case NOT_STARTED:
+		case WAITING:
+			break;
+		}
+
+		this.status = newStatus;
+
+		return previousStatus;
+	}
+	
 	public Status getStatus() {
 		return status;
 	}
@@ -56,6 +87,14 @@ public abstract class ETLStepDTO {
 		this.stepNumber = stepNumber;
 	}
 	
+	public Date getStartedTS() {
+		return startedTS;
+	}
+
+	public Date getCompletedTS() {
+		return completedTS;
+	}
+	
 	public int getPercentDone() {
 		return percentDone;
 	}
@@ -64,4 +103,15 @@ public abstract class ETLStepDTO {
 		this.percentDone = percentDone;
 	}
 
+	public void setPercentDone(long n, long total) {
+		if (total > 0) {
+			this.percentDone = (int) (100 * n / total);
+		}
+	}
+
+	@Override
+	public String toString() {
+		return this.getClass().getSimpleName() + " [stepNumber=" + stepNumber + ", status=" + status + ", startedTS=" + startedTS
+				+ ", completedTS=" + completedTS + ", percentDone=" + percentDone + "]";
+	}
 }
