@@ -7,7 +7,11 @@ import org.vena.api.customer.datamodel.LIDLabel;
 import org.vena.api.customer.datamodel.Variable;
 import org.vena.id.Id;
 
+import com.fasterxml.jackson.annotation.JsonTypeName;
+
+@JsonTypeName(ETLAsyncSaveDataStepDTO.stepType)
 public class ETLAsyncSaveDataStepDTO extends ETLStepDTO {
+	protected final static String stepType = "ETLAsyncSaveDataStep";
 
 	List<Intersection> intersections;
 	List<Variable> newRefVars;

@@ -7,9 +7,6 @@ dependency-reduced-pom.xml
 *.war
 *.class
  
-## Intellij
-.idea/
-*.iml
  
 ## Eclipse
  
