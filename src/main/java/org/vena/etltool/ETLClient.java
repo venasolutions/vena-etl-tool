@@ -16,19 +16,18 @@ import java.util.Properties;
 
 import javax.ws.rs.core.MediaType;
 
-import org.vena.api.etl.ETLCubeToStageStep;
-import org.vena.api.etl.ETLFileImportStep;
 import org.vena.api.etl.ETLJob.Phase;
-import org.vena.api.etl.ETLMetadata;
-import org.vena.api.etl.ETLStageToCubeStep;
-import org.vena.api.etl.ETLStep;
-import org.vena.api.etl.ETLStep.DataType;
-import org.vena.api.etl.ETLStep.Status;
 import org.vena.api.etl.QueryDTO;
 import org.vena.api.etl.QueryDTO.Destination;
-import org.vena.api.etl.QueryExpressionDTO;
 import org.vena.etltool.entities.CreateModelRequestDTO;
+import org.vena.etltool.entities.ETLCubeToStageStepDTO;
+import org.vena.etltool.entities.ETLFileImportStepDTO;
 import org.vena.etltool.entities.ETLJobDTO;
+import org.vena.etltool.entities.ETLMetadataDTO;
+import org.vena.etltool.entities.ETLStageToCubeStepDTO;
+import org.vena.etltool.entities.ETLStepDTO;
+import org.vena.etltool.entities.ETLStepDTO.DataType;
+import org.vena.etltool.entities.ETLStepDTO.Status;
 import org.vena.etltool.entities.LoginResultDTO;
 import org.vena.etltool.entities.ModelResponseDTO;
 import org.vena.etltool.util.TwoTuple;
@@ -71,7 +70,7 @@ public class ETLClient {
 	public ETLClient() {
 	}
 	 
-	public ETLJobDTO uploadETL(ETLMetadata metadata)
+	public ETLJobDTO uploadETL(ETLMetadataDTO metadata)
 	{
 		try {
 			String resource;
@@ -99,11 +98,11 @@ public class ETLClient {
 			FormDataBodyPart metadataPart = new FormDataBodyPart("metadata",new ByteArrayInputStream(metadataBytes), MediaType.APPLICATION_JSON_TYPE);
 			form.bodyPart(metadataPart);
 			
-			for (ETLStep step :  metadata.getSteps()) {
-				if (step instanceof ETLFileImportStep)
+			for (ETLStepDTO step :  metadata.getSteps()) {
+				if (step instanceof ETLFileImportStepDTO)
 				{
-					String mimePart = ((ETLFileImportStep)step).getMimePart();
-					String fileName = ((ETLFileImportStep)step).getFileName();
+					String mimePart = ((ETLFileImportStepDTO)step).getMimePart();
+					String fileName = ((ETLFileImportStepDTO)step).getFileName();
 				
 					FormDataBodyPart filePart = new FormDataBodyPart(mimePart, new FileInputStream(fileName), MediaType.APPLICATION_OCTET_STREAM_TYPE);
 					form.bodyPart(filePart);
@@ -176,7 +175,7 @@ public class ETLClient {
 		return "/api/models/" + modelId + "/etl";
 	}
 	
-	private  String buildURI(String path) {
+	private String buildURI(String path) {
 		return buildURI(path, Collections.<TwoTuple<String, String>> emptyList());
 	}
 	
@@ -586,7 +585,7 @@ public class ETLClient {
 
 	static void printJobStatus(ETLJobDTO etlJob) {
 		
-		ETLMetadata metadata = etlJob.getMetadata();
+		ETLMetadataDTO metadata = etlJob.getMetadata();
 		
     	System.out.println();
 		System.out.println("  Job Id: " + etlJob.getId());
@@ -606,29 +605,29 @@ public class ETLClient {
 		}
 		System.out.println("  Created by user: " + userString);
 		System.out.println("  Load Type: " + (metadata.getLoadType() == null ? "-" :
-			ETLMetadata.loadTypeToString(metadata.getLoadType())));
+			ETLMetadataDTO.loadTypeToString(metadata.getLoadType())));
 		
 		if (metadata.getSteps() != null) {
 			System.out.println("  Steps:");
-			for (ETLStep step : metadata.getSteps()) {
+			for (ETLStepDTO step : metadata.getSteps()) {
 				System.out.print("   - " + step.getStepNumber()
 						+ ". " + step.getName()
 						+ ": " + step.getStatus());
 				if (step.getStatus() != Status.NOT_STARTED) {
 					System.out.print(" (" + step.getPercentDone()+ "% Done)"
-							+ ((step instanceof ETLFileImportStep)? 
-									" (Processed " + ((ETLFileImportStep) step).getLinesProcessed() + " lines)": "")
-							+ ((step instanceof ETLStageToCubeStep)? 
-									" (Processed " + ((ETLStageToCubeStep) step).getRowsProcessed() + " rows)": "") 
-							+ ((step instanceof ETLCubeToStageStep)? 
-									" (Exported " + ((ETLCubeToStageStep) step).getRowsExported() + " rows)": "")
+							+ ((step instanceof ETLFileImportStepDTO)? 
+									" (Processed " + ((ETLFileImportStepDTO) step).getLinesProcessed() + " lines)": "")
+							+ ((step instanceof ETLStageToCubeStepDTO)? 
+									" (Processed " + ((ETLStageToCubeStepDTO) step).getRowsProcessed() + " rows)": "") 
+							+ ((step instanceof ETLCubeToStageStepDTO)? 
+									" (Exported " + ((ETLCubeToStageStepDTO) step).getRowsExported() + " rows)": "")
 					);
 				}
 				if (step.getStatus() == Status.ERROR || step.getStatus() == Status.CANCELLED || step.getStatus() == Status.WAITING) {
-					System.out.print(((step instanceof ETLFileImportStep)? 
-									" (Resume at " + ((ETLFileImportStep) step).getResumeLine() + " lines)": "")
-							+ ((step instanceof ETLStageToCubeStep)? 
-									" (Resume at " + ((ETLStageToCubeStep) step).getResumeRow() + " rows)": ""));
+					System.out.print(((step instanceof ETLFileImportStepDTO)? 
+									" (Resume at " + ((ETLFileImportStepDTO) step).getResumeLine() + " lines)": "")
+							+ ((step instanceof ETLStageToCubeStepDTO)? 
+									" (Resume at " + ((ETLStageToCubeStepDTO) step).getResumeRow() + " rows)": ""));
 				}
 				System.out.println();
 			}
