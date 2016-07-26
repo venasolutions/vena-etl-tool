@@ -20,6 +20,7 @@ import org.vena.api.etl.ETLJob.Phase;
 import org.vena.api.etl.QueryDTO;
 import org.vena.api.etl.QueryDTO.Destination;
 import org.vena.etltool.entities.CreateModelRequestDTO;
+import org.vena.etltool.entities.ETLCalculationDeployStepDTO;
 import org.vena.etltool.entities.ETLCubeToStageStepDTO;
 import org.vena.etltool.entities.ETLFileImportStepDTO;
 import org.vena.etltool.entities.ETLJobDTO;
@@ -28,6 +29,7 @@ import org.vena.etltool.entities.ETLStageToCubeStepDTO;
 import org.vena.etltool.entities.ETLStepDTO;
 import org.vena.etltool.entities.ETLStepDTO.DataType;
 import org.vena.etltool.entities.ETLStepDTO.Status;
+import org.vena.etltool.entities.ETLVersioningStepDTO;
 import org.vena.etltool.entities.LoginResultDTO;
 import org.vena.etltool.entities.ModelResponseDTO;
 import org.vena.etltool.util.TwoTuple;
@@ -621,6 +623,10 @@ public class ETLClient {
 									" (Processed " + ((ETLStageToCubeStepDTO) step).getRowsProcessed() + " rows)": "") 
 							+ ((step instanceof ETLCubeToStageStepDTO)? 
 									" (Exported " + ((ETLCubeToStageStepDTO) step).getRowsExported() + " rows)": "")
+							+ ((step instanceof ETLVersioningStepDTO)? 
+									" (Processed " + ((ETLVersioningStepDTO) step).getSourceIntersectionsProcessed() + " source intersections)": "")
+							+ ((step instanceof ETLCalculationDeployStepDTO)? 
+									" (Processed " + ((ETLCalculationDeployStepDTO) step).getSourceIntersectionsProcessed() + " source intersections)": "")
 					);
 				}
 				if (step.getStatus() == Status.ERROR || step.getStatus() == Status.CANCELLED || step.getStatus() == Status.WAITING) {
