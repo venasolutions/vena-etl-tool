@@ -2,11 +2,11 @@ package org.vena.etltool.entities;
 
 import java.util.Date;
 
-import org.vena.api.etl.ETLJob.Phase;
-import org.vena.api.etl.ETLStep.Status;
-import org.vena.id.Id;
+import org.vena.etltool.entities.ETLStepDTO.Status;
 
 public class ETLJobDTO {
+	
+	public enum Phase { NOT_STARTED, LOAD_TO_STAGING, IN_STAGING, LOAD_TO_CUBE, COMPLETE, CLEARING, VERSIONING }
 
 	private Id id;
 	

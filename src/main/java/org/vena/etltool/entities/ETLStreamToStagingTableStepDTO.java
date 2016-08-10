@@ -2,9 +2,6 @@ package org.vena.etltool.entities;
 
 import java.util.List;
 
-import org.vena.api.customer.etl.load.StagingTableDestination;
-import org.vena.api.customer.etl.transform.RowSource;
-
 import com.fasterxml.jackson.annotation.JsonTypeName;
 
 @JsonTypeName(ETLStreamToStagingTableStepDTO.stepType)
@@ -32,12 +29,6 @@ public class ETLStreamToStagingTableStepDTO extends ETLTypedStreamStepDTO{
 
 	public ETLStreamToStagingTableStepDTO(){} // For Morphia
 	
-	public ETLStreamToStagingTableStepDTO(RowSource source, StagingTableDestination destination, MockMode mockMode) {
-		super(source, mockMode);
-		this.tableName = destination.getTableName();
-		this.columnNames = destination.getColumnNames();
-	}
-
 	@Override
 	public String getName() {
 		return "Streaming to staging table";

@@ -1,8 +1,5 @@
 package org.vena.etltool.entities;
 
-import org.vena.api.customer.etl.load.CubeDestination;
-import org.vena.api.customer.etl.transform.RowSource;
-
 import com.fasterxml.jackson.annotation.JsonTypeName;
 
 @JsonTypeName(ETLLimitedStreamToCubeStepDTO.stepType)
@@ -12,11 +9,6 @@ public class ETLLimitedStreamToCubeStepDTO extends ETLStreamToCubeStepDTO{
 
 	protected final static String stepType = "ETLLimitedStreamToCubeStep";
 
-	public ETLLimitedStreamToCubeStepDTO(RowSource source, CubeDestination destination, MockMode mockMode, Integer firstRow, Integer limit) {
-		super(source, destination, mockMode);
-		this.firstRow = firstRow;
-		this.limit = limit;
-	}
 
 	public ETLLimitedStreamToCubeStepDTO() { // For mongo
 		super();

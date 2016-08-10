@@ -1,7 +1,5 @@
 package org.vena.etltool.entities;
 
-import org.vena.id.Id;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
