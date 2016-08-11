@@ -2,6 +2,14 @@ package org.vena.etltool.entities;
 
 import java.io.Serializable;
 
+import org.vena.etltool.util.JsonIdDeserializer;
+import org.vena.etltool.util.JsonIdSerializer;
+
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
+@JsonSerialize(using = JsonIdSerializer.class)
+@JsonDeserialize(using = JsonIdDeserializer.class)
 public class Id implements Serializable, Comparable<Id> {
 
 	private static final long serialVersionUID = 2169865468343288369L;
