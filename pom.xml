@@ -14,29 +14,8 @@
 		<jersey.version>1.19</jersey.version>
 	</properties>
 
-	<dependencies>
-		<dependency>
-			<groupId>org.vena</groupId>
-			<artifactId>mt-api</artifactId>
-			<version>0.383</version>
-			<!-- mt-parent includes way too many dependencies that should either be 
-				removed outright or moved to mt-server. All this project needs from mt-api 
-				are the entity classes, so for now, apply a blanket exclusion for every transitive 
-				dependency of mt-api. -->
-			<exclusions>
-				<exclusion>
-					<groupId>*</groupId>
-					<artifactId>*</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
+	<dependencies>	
 		
-		<dependency>
-			<groupId>org.vena</groupId>
-			<artifactId>mt-cluster</artifactId>
-			<version>0.383</version>
-		</dependency>
-
 		<!-- We don't use it, but IdGenerator needs it. -->
 		<dependency>
 			<groupId>log4j</groupId>

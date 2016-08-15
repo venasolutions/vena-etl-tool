@@ -2,8 +2,6 @@ package org.vena.etltool.entities;
 
 import java.util.List;
 
-import org.vena.id.Id;
-
 import com.fasterxml.jackson.annotation.JsonTypeName;
 
 @JsonTypeName(ETLFileMigrationStepDTO.stepType)
