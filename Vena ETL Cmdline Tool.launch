@@ -12,7 +12,7 @@
 </listAttribute>
 <stringAttribute key="org.eclipse.jdt.launching.CLASSPATH_PROVIDER" value="org.eclipse.m2e.launchconfig.classpathProvider"/>
 <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="org.vena.etltool.Main"/>
-<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="-host=localhost -port=8080 --username=admin@vena.io --password=&quot;&amp;EIoF{U$5i9?0PN8&quot; --nossl --modelId=386684569283198976 --export staging --exportToFile /home/greg/blank.csv --exportFromTable xyz_table --exportQuery &quot;fart&quot;"/>
+<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="-host=localhost -port=8080 --username=admin@vena.io --password=&quot;&amp;EIoF{U$5i9?0PN8&quot; --nossl --modelId=386684569283198976 --export staging --exportToFile /home/greg/blank.csv --exportFromTable xyz_table --exportQuery &quot;lol&quot;"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="cmdline-etl-tool"/>
 <stringAttribute key="org.eclipse.jdt.launching.SOURCE_PATH_PROVIDER" value="org.eclipse.m2e.launchconfig.sourcepathProvider"/>
 <stringAttribute key="org.eclipse.jdt.launching.WORKING_DIRECTORY" value="${workspace_loc:mt-service/Attic/etl/model}"/>

@@ -49,7 +49,7 @@ import com.sun.jersey.multipart.impl.MultiPartWriter;
 
 public class ETLClient {
 	private static final int POLL_INTERVAL = 5000;
-
+	
 	protected Integer port = null;
 	protected String host = "vena.io";
 	protected String apiUser;
@@ -478,6 +478,7 @@ public class ETLClient {
 		else if (queryExpr != null) {
 			switch (type) {
 			case attributes:
+			case staging:
 			case hierarchy:
 				System.err.println("Type \""+type+"\" doesn't support query expression. Use where clause instead.");
 				break;
@@ -486,9 +487,6 @@ public class ETLClient {
 				break;
 			case intersections:
 				typePath = "intersections2";
-				break;
-			case staging:
-				System.err.println("Type \""+type+"\" doesn't support where clause. Use query expression instead.");
 				break;
 			default:
 				System.err.println("Type \""+type+"\" not supported for export.");
