@@ -374,6 +374,18 @@ public class Main {
 				.create();
 
 		options.addOption(exportStagingOption);
+		
+		Option exportFromOption = 
+				OptionBuilder
+				.withLongOpt("exportFromTable")
+				.isRequired(false)
+				.hasArg()
+				.withArgName("name")
+				.withDescription("Name of table in staging DB to export from. By default, waits for the job to complete unless --nowait is specified.")
+				.create();
+
+		options.addOption(exportFromOption);
+
 
 		Option exportFileOption = 
 				OptionBuilder
@@ -385,6 +397,7 @@ public class Main {
 				.create();
 
 		options.addOption(exportFileOption);
+		
 
 		Option exportWhereOption = 
 				OptionBuilder
@@ -752,7 +765,9 @@ public class Main {
 		// Options that require a data model
 
 		if (commandLine.hasOption("export")) {
+			String queryExpr = commandLine.getOptionValue("exportQuery");
 			String exportTypeStr = commandLine.getOptionValue("export");
+			String exportFromTable = commandLine.getOptionValue("exportFromTable");
 			String exportToTable = commandLine.getOptionValue("exportToTable");
 			String exportToFile = commandLine.getOptionValue("exportToFile");
 
@@ -765,7 +780,17 @@ public class Main {
 				System.err.println( "Error: export option requires either --exportToTable <name> or --exportToFile <name>.");
 				System.exit(1);
 			}
-
+			
+			if (exportFromTable != null && exportToTable != null){
+				System.err.println( "Error: cannot export from table to another table.");
+				System.exit(1);
+			}
+			
+			if(exportFromTable != null && queryExpr != null){
+				System.err.println("Error: cannot use --exportQuery with --exportFromTable. Use --exportWhere \"<HQL Query>\" instead. ");
+				System.exit(1);
+			}
+					
 			DataType type = null;
 			try {
 				type = DataType.valueOf(exportTypeStr);
@@ -776,7 +801,7 @@ public class Main {
 			}
 
 			String whereClause = commandLine.getOptionValue("exportWhere");
-			String queryExpr = commandLine.getOptionValue("exportQuery");
+			
 			
 			if (whereClause != null && queryExpr != null) {
 				System.err.println( "Error: exportWhere and exportQuery options cannot be combined.");
@@ -787,7 +812,7 @@ public class Main {
 
 			if (exportToFile != null) {
 				System.out.print("Running export (this might take a while)... ");
-				InputStream in = etlClient.sendExport(type, exportToFile != null, exportToTable, whereClause, queryExpr, !excludeHeaders);
+				InputStream in = etlClient.sendExport(type, exportFromTable, exportToFile != null, exportToTable, whereClause, queryExpr, !excludeHeaders);
 				try {
 					Files.copy(in, new File(exportToFile).toPath(), StandardCopyOption.REPLACE_EXISTING);
 				} catch (IOException e) {
