@@ -42,12 +42,13 @@ import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.config.ClientConfig;
 import com.sun.jersey.api.client.config.DefaultClientConfig;
+import com.sun.jersey.api.client.filter.GZIPContentEncodingFilter;
 import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
 import com.sun.jersey.multipart.FormDataBodyPart;
 import com.sun.jersey.multipart.FormDataMultiPart;
 import com.sun.jersey.multipart.impl.MultiPartWriter;
 
-public class ETLClient {
+public class ETLClient extends Client {
 	private static final int POLL_INTERVAL = 5000;
 	
 	protected Integer port = null;
@@ -231,6 +232,7 @@ public class ETLClient {
 			uploadClient = Client.create(jerseyClientConfig);
 			uploadClient.setChunkedEncodingSize(8192);
 			uploadClient.addFilter(new HTTPBasicAuthFilter(apiUser, apiKey));
+			uploadClient.addFilter(new GZIPContentEncodingFilter(false));
 		}
 		return uploadClient;
 	}
@@ -239,6 +241,7 @@ public class ETLClient {
 		if (apiClient == null) {
 			apiClient = Client.create();
 			apiClient.addFilter(new HTTPBasicAuthFilter(apiUser, apiKey));
+			apiClient.addFilter(new GZIPContentEncodingFilter(false));
 		}
 		return apiClient;
 	}
@@ -254,7 +257,7 @@ public class ETLClient {
 	private WebResource buildWebResource(String path, Iterable<TwoTuple<String, String>> parameters, boolean chunked) {
 
 		Client client = chunked ? getUploadClient() : getAPIClient();
-		
+		client.addFilter(new GZIPContentEncodingFilter(false));
 		String uri = buildURI(path, parameters);
 		
 		if( verbose )
@@ -272,6 +275,7 @@ public class ETLClient {
 		Client client = Client.create();
 
 		client.addFilter(new HTTPBasicAuthFilter(username, password));
+		client.addFilter(new GZIPContentEncodingFilter(false));
 
 		String uri = buildURI("/login");
 		
@@ -488,6 +492,9 @@ public class ETLClient {
 			case intersections:
 				typePath = "intersections2";
 				break;
+			case staging:
+				typePath = "staging";
+				break;
 			default:
 				System.err.println("Type \""+type+"\" not supported for export.");
 			}
@@ -521,7 +528,6 @@ public class ETLClient {
 		}
 
 		WebResource webResource = buildWebResource(getETLBasePath() + "/query/" + typePath);
-
 		QueryDTO query = new QueryDTO();
 		if (!toFile) {
 			query.setDestination(Destination.ToStaging);
@@ -538,11 +544,9 @@ public class ETLClient {
 		query.setShowHeaders(showHeaders);
 
 		ClientResponse response = webResource.type(MediaType.APPLICATION_JSON_TYPE).post(ClientResponse.class, query);
-
 		if ((response.getStatus() != 204) && (response.getStatus() != 200)) {
 			handleErrorResponse(response, "Request to export failed.");
 		}
-
 		if (toFile) return response.getEntityInputStream();
 		else return null;
 	}

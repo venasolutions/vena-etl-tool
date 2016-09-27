@@ -38,6 +38,8 @@ import org.vena.etltool.entities.ETLStepDTO.DataType;
 import org.vena.etltool.entities.Id;
 import org.vena.etltool.entities.ModelResponseDTO;
 
+import com.sun.jersey.api.client.filter.GZIPContentEncodingFilter;
+
 public class Main {
 	
 	public static int FIRST_FILE_INDEX = 1;
@@ -67,7 +69,7 @@ public class Main {
 		System.getProperties().setProperty("datacenterId", "1");
 
 		ETLClient etlClient = new ETLClient();
-
+		etlClient.addFilter(new GZIPContentEncodingFilter(false));
 		ETLMetadataDTO metadata = parseCmdlineArgs(args, etlClient);
 
 		System.out.print("Submitting job... ");
@@ -361,6 +363,7 @@ public class Main {
 				.isRequired(false)
 				.hasArg()
 				.withArgName("type")
+				.isRequired(false)
 				.withDescription("Export part of the datamodel to a staging table. <type> may be one of {"+ETLFileOldDTO.SUPPORTED_FILETYPES_LIST+"}.")
 				.create();
 
@@ -399,7 +402,17 @@ public class Main {
 				.create();
 
 		options.addOption(exportFileOption);
-		
+
+		Option exportStageOption = 
+				OptionBuilder
+				.withLongOpt("exportToStaging")
+				.isRequired(false)
+				.hasArg()
+				.withArgName("tableName")
+				.withDescription("Name of staging table to export to.")
+				.create();
+
+		options.addOption(exportStageOption);
 
 		Option exportWhereOption = 
 				OptionBuilder
