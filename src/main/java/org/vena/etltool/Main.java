@@ -9,6 +9,7 @@ import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.cli.CommandLine;
@@ -238,8 +239,9 @@ public class Main {
 				.hasArg()
 				.withArgName("options")
 				.withDescription("A data file to import (multiple allowed)."
-						+ "\n -F \"[file=]<filename>; [type=]<filetype> [;[table=]<tableName>] [;format={CSV|TDF}] [;bulkInsert={true|false}]\""
+						+ "\n -F \"[file=]<filename>; [type=]<filetype> [;[table=]<tableName>] [;format={CSV|TDF}] [;bulkInsert={true|false}] [;clearSlices=<expr>]\""
 						+ "\n where <filetype> is one of {"+ETLFileOldDTO.SUPPORTED_FILETYPES_LIST+"}>."
+						+ "\n and <expr> is the expression specifying the slice of the cube to clear intersections from. Multiple expressions separated by a comma are supported."
 						+ "\n Example: -F model.csv;hierarchy"
 						+ "\n Example: -F file=values.tdf;format=TDF;type=intersections")
 				.create('F');
@@ -439,6 +441,17 @@ public class Main {
 
 		options.addOption(deleteQueryOption);
 
+		Option clearSlicesOption =
+				OptionBuilder
+				.withLongOpt("clearSlices")
+				.isRequired(false)
+				.hasArg()
+				.withArgName("expr")
+				.withDescription("The expression specifying the slice of the cube to clear intersections from. Multiple expressions separated by a comma are supported.")
+				.create();
+
+		options.addOption(clearSlicesOption);
+		
 		Option waitOption = 
 				OptionBuilder
 				.withLongOpt("wait")
@@ -1106,6 +1119,16 @@ public class Main {
 
 			System.exit(1);
 		}
+		
+		if(commandLine.hasOption("clearSlices")) {
+			if (loadType == ETLLoadType.FILE_TO_STAGE) {
+				System.err.println("Error: --clearSlices and --stageOnly options cannot be combined.");
+				System.exit(1);
+			} else if (loadType == ETLLoadType.FILE_TO_CUBE) {
+				System.err.println("Error: --clearSlices and --file options cannot be combined. Instead use the suboption clearSlices for the --file option");
+				System.exit(1);
+			}
+		}
 
 		List<ETLFileOldDTO> etlFiles = new ArrayList<>();
 
@@ -1137,6 +1160,14 @@ public class Main {
 
 		ETLMetadataDTO metadata = new ETLMetadataDTO();
 
+		List<String> clearSlicesExprs = null;
+		if (commandLine.hasOption("clearSlices")) {
+			String clearSlicesExpr = commandLine.getOptionValue("clearSlices");
+			if (clearSlicesExpr != null) {
+				clearSlicesExprs = Arrays.asList(clearSlicesExpr.split(","));
+			}
+		}
+		
 		switch(loadType) {
 		case FILE_TO_CUBE:
 			for(ETLFileOldDTO file : etlFiles) {
@@ -1157,7 +1188,7 @@ public class Main {
 		case STAGE_TO_CUBE:
 			metadata.addStep(new ETLStageToCubeStepDTO(DataType.hierarchy));
 			metadata.addStep(new ETLStageToCubeStepDTO(DataType.attributes));
-			metadata.addStep(new ETLStageToCubeStepDTO(DataType.intersections));
+			metadata.addStep(new ETLStageToCubeStepDTO(DataType.intersections, clearSlicesExprs));
 			metadata.addStep(new ETLStageToCubeStepDTO(DataType.lids));
 			break;
 		}
@@ -1210,6 +1241,11 @@ public class Main {
 						throw new IllegalArgumentException("The ETL file type \""+value+"\" does not exist. The supported filetypes are ["+ETLFileOldDTO.SUPPORTED_FILETYPES_LIST+"]");
 					}
 					break;
+				case "clearSlices":
+					if (value != null) {
+						etlFile.setClearSlicesExpressions(Arrays.asList(value.split(",")));
+					}
+					break;
 				default:
 					throw new IllegalArgumentException("Unsupported key " + key);
 				}
@@ -1257,6 +1293,10 @@ public class Main {
 
 		if (etlFile.getFileType() == DataType.user_defined && etlFile.getTableName() == null) {
 			throw new IllegalArgumentException("Table name is required for user-defined type.");
+		}
+		
+		if (etlFile.getClearSlicesExpressions() != null && etlFile.getFileType() != DataType.intersections) {
+			throw new IllegalArgumentException("The types supported for the clearSlices option are: {intersections}");
 		}
 
 		return etlFile;
