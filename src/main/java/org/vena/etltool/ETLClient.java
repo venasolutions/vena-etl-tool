@@ -451,7 +451,7 @@ public class ETLClient {
 		return etlJob;
 	}	
 
-	public InputStream sendExport(DataType type, boolean toFile, String tableName, String whereClause, String queryExpr, boolean showHeaders) {
+	public InputStream sendExport(DataType type, String tableFromName, boolean toFile, String tableToName, String whereClause, String queryExpr, boolean showHeaders){
 		
 		String typePath = null;
 
@@ -462,6 +462,9 @@ public class ETLClient {
 				break;
 			case hierarchy:
 				typePath = "hierarchies";
+				break;
+			case staging:
+				typePath = "staging";
 				break;
 			case intersections:
 			case lids:
@@ -475,6 +478,7 @@ public class ETLClient {
 		else if (queryExpr != null) {
 			switch (type) {
 			case attributes:
+			case staging:
 			case hierarchy:
 				System.err.println("Type \""+type+"\" doesn't support query expression. Use where clause instead.");
 				break;
@@ -503,6 +507,9 @@ public class ETLClient {
 			case lids:
 				typePath = "lids2";
 				break;
+			case staging:
+				typePath = "staging";
+				break;
 			default:
 				System.err.println("Type \""+type+"\" not supported for export.");
 			}
@@ -518,9 +525,10 @@ public class ETLClient {
 		QueryDTO query = new QueryDTO();
 		if (!toFile) {
 			query.setDestination(Destination.ToStaging);
-			query.setTableName(tableName);
+			query.setTableName(tableToName);
 		} else {
 			query.setDestination(Destination.ToCSV);
+			query.setTableName(tableFromName);
 		}
 		if (whereClause != null) {
 			query.setQueryString(whereClause);
