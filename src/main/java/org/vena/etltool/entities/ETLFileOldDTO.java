@@ -42,6 +42,8 @@ public class ETLFileOldDTO {
 
 	private boolean bulkInsert;
 
+	private List<String> clearSlicesExpressions = null;
+	
 	public ETLFileOldDTO() {
 		super();
 		this.linesProcessed=0;
@@ -129,6 +131,14 @@ public class ETLFileOldDTO {
 
 	public void setBulkInsert(boolean bulkInsert) {
 		this.bulkInsert = bulkInsert;
+	}
+	
+	public void setClearSlicesExpressions(List<String> clearSlicesExpressions) {
+		this.clearSlicesExpressions = clearSlicesExpressions;
+	}
+	
+	public List<String> getClearSlicesExpressions() {
+		return this.clearSlicesExpressions;
 	}
 
 }
