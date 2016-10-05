@@ -57,6 +57,7 @@ public class ETLMetadataDTO {
 	private Map<String, ETLTableStatusDTO> tables;
 
 	private boolean stagingRequired;
+
 	
 	public String getName() {
 		return name;

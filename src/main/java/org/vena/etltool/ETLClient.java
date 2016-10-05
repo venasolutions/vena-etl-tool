@@ -13,9 +13,9 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
+import java.util.zip.*;
 
 import javax.ws.rs.core.MediaType;
-
 import org.vena.etltool.entities.CreateModelRequestDTO;
 import org.vena.etltool.entities.ETLCalculationDeployStepDTO;
 import org.vena.etltool.entities.ETLCubeToStageStepDTO;
@@ -42,13 +42,12 @@ import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.config.ClientConfig;
 import com.sun.jersey.api.client.config.DefaultClientConfig;
-import com.sun.jersey.api.client.filter.GZIPContentEncodingFilter;
 import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
 import com.sun.jersey.multipart.FormDataBodyPart;
 import com.sun.jersey.multipart.FormDataMultiPart;
 import com.sun.jersey.multipart.impl.MultiPartWriter;
 
-public class ETLClient extends Client {
+public class ETLClient {
 	private static final int POLL_INTERVAL = 5000;
 	
 	protected Integer port = null;
@@ -100,14 +99,12 @@ public class ETLClient extends Client {
 
 			FormDataBodyPart metadataPart = new FormDataBodyPart("metadata",new ByteArrayInputStream(metadataBytes), MediaType.APPLICATION_JSON_TYPE);
 			form.bodyPart(metadataPart);
-			
 			for (ETLStepDTO step :  metadata.getSteps()) {
-				if (step instanceof ETLFileImportStepDTO)
-				{
-					String mimePart = ((ETLFileImportStepDTO)step).getMimePart();
-					String fileName = ((ETLFileImportStepDTO)step).getFileName();
-				
-					FormDataBodyPart filePart = new FormDataBodyPart(mimePart, new FileInputStream(fileName), MediaType.APPLICATION_OCTET_STREAM_TYPE);
+				if (step instanceof ETLFileImportStepDTO) {
+					String mimePart = ((ETLFileImportStepDTO) step).getMimePart();
+					String fileName = ((ETLFileImportStepDTO) step).getFileName();
+					InputStream stream = new DeflaterInputStream(new FileInputStream(fileName));
+					FormDataBodyPart filePart = new FormDataBodyPart(mimePart, stream, MediaType.APPLICATION_OCTET_STREAM_TYPE);
 					form.bodyPart(filePart);
 				}
 			}
@@ -232,7 +229,6 @@ public class ETLClient extends Client {
 			uploadClient = Client.create(jerseyClientConfig);
 			uploadClient.setChunkedEncodingSize(8192);
 			uploadClient.addFilter(new HTTPBasicAuthFilter(apiUser, apiKey));
-			uploadClient.addFilter(new GZIPContentEncodingFilter(false));
 		}
 		return uploadClient;
 	}
@@ -241,7 +237,6 @@ public class ETLClient extends Client {
 		if (apiClient == null) {
 			apiClient = Client.create();
 			apiClient.addFilter(new HTTPBasicAuthFilter(apiUser, apiKey));
-			apiClient.addFilter(new GZIPContentEncodingFilter(false));
 		}
 		return apiClient;
 	}
@@ -257,7 +252,6 @@ public class ETLClient extends Client {
 	private WebResource buildWebResource(String path, Iterable<TwoTuple<String, String>> parameters, boolean chunked) {
 
 		Client client = chunked ? getUploadClient() : getAPIClient();
-		client.addFilter(new GZIPContentEncodingFilter(false));
 		String uri = buildURI(path, parameters);
 		
 		if( verbose )
@@ -275,7 +269,6 @@ public class ETLClient extends Client {
 		Client client = Client.create();
 
 		client.addFilter(new HTTPBasicAuthFilter(username, password));
-		client.addFilter(new GZIPContentEncodingFilter(false));
 
 		String uri = buildURI("/login");
 		
@@ -491,9 +484,6 @@ public class ETLClient extends Client {
 				break;
 			case intersections:
 				typePath = "intersections2";
-				break;
-			case staging:
-				typePath = "staging";
 				break;
 			default:
 				System.err.println("Type \""+type+"\" not supported for export.");
