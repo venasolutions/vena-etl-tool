@@ -764,9 +764,19 @@ public class Main {
 
 		// Options that require a data model
 
-		if (commandLine.hasOption("export")) {
+		if (commandLine.hasOption("export") || commandLine.hasOption("exportFromTable")) {
+			String exportTypeStr;
+			if (commandLine.hasOption("export") && commandLine.hasOption("exportFromTable")){
+				System.err.println("Error: Do not use both --export and --exportFromTable. Only use --exportFromTable");
+				System.exit(1);
+			}
+			if (commandLine.hasOption("exportFromTable")){
+				exportTypeStr = "staging";
+			}
+			else {
+				exportTypeStr = commandLine.getOptionValue("export");
+			}
 			String queryExpr = commandLine.getOptionValue("exportQuery");
-			String exportTypeStr = commandLine.getOptionValue("export");
 			String exportFromTable = commandLine.getOptionValue("exportFromTable");
 			String exportToTable = commandLine.getOptionValue("exportToTable");
 			String exportToFile = commandLine.getOptionValue("exportToFile");
