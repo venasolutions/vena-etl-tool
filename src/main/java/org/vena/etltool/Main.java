@@ -975,20 +975,34 @@ public class Main {
 							metadata.addStep(new ETLStageToCubeStepDTO(DataType.intersections));
 							metadata.addStep(new ETLStageToCubeStepDTO(DataType.lids));
 			    		} else if (optionFields.length == 2) {
-			    			String[] parts = optionFields[1].split("=", 2);
-			    			String key = parts[0].trim();
-							String value = parts[1].trim();
-			    			if (key.equalsIgnoreCase("type")) {
-			    				try {
-									metadata.addStep(new ETLStageToCubeStepDTO(DataType.valueOf(DataType.class, value)));
-								} catch (IllegalArgumentException e) {
-									System.err.println( "Error: The ETL file type \""+value+"\" does not exist. The known filetypes are ["+ETLFileOldDTO.SUPPORTED_FILETYPES_LIST+"]");
-									System.exit(1);
-								}
-			    			} else {
-								System.err.println( "Error: stageToCube valid option is type=<type>. The known types are ["+ETLFileOldDTO.SUPPORTED_FILETYPES_LIST+"]");
-								System.exit(1);
+			    			ETLStageToCubeStepDTO step = new ETLStageToCubeStepDTO();
+			    			
+			    			String[] subOptionFields = optionFields[1].split(";");
+			    			for (String field: subOptionFields) {
+			    				String[] parts = field.split("=", 2);
+				    			String key = parts[0].trim();
+				    			String value = parts[1].replaceAll("\"", "").trim();
+				    			if (key.equalsIgnoreCase("type")) {
+				    				try {
+				    					step.setDataType(DataType.valueOf(DataType.class, value));
+				    				} catch (IllegalArgumentException e) {
+				    					System.err.println( "Error: The ETL file type \""+value+"\" does not exist. The known filetypes are ["+ETLFileOldDTO.SUPPORTED_FILETYPES_LIST+"]");
+				    					System.exit(1);
+				    				}
+				    			} else if (key.equalsIgnoreCase("clearSlices")) {
+				    				if (step.getDataType() == DataType.intersections && value != null) {
+				    					step.setClearSlicesExpressions(Arrays.asList(value.split(",")));
+				    				} else {
+				    					System.err.println("Error: The clearSlices option can only be combined with the type: {intersections}. Please specify the type first.");
+				    					System.exit(1);
+				    				}
+				    			} else {
+				    				System.err.println( "Error: stageToCube valid options are type=<type> and clearSlices=<expr>"
+				    						+ "\nwhere the known types are ["+ETLFileOldDTO.SUPPORTED_FILETYPES_LIST+"] and expression is a model query defining one or multiple slices separated by a comma");
+				    				System.exit(1);
+				    			}
 			    			}
+			    			metadata.addStep(step);
 			    		} else {
 							System.err.println( "Error: stageToCube valid option is type=<type>. The known types are ["+ETLFileOldDTO.SUPPORTED_FILETYPES_LIST+"]");
 							System.exit(1);
@@ -1176,6 +1190,13 @@ public class Main {
 			}
 			
 			for(ETLFileOldDTO etlFile : etlFiles) {
+				if (etlFile.getClearSlicesExpressions() != null) {
+					if (loadType != ETLLoadType.FILE_TO_CUBE) {
+						System.err.println("Error: the --file option clearSlices is only available for ETL File to Cube imports."
+								+"\n For Stage operations, use the stand alone --clearSlices option instead.");
+					}
+				}
+				
 				String key = "file" + (FIRST_FILE_INDEX++);			
 				etlFile.setMimePart(key);
 			}
