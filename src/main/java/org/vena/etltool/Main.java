@@ -765,21 +765,33 @@ public class Main {
 		// Options that require a data model
 
 		if (commandLine.hasOption("export") || commandLine.hasOption("exportFromTable")) {
-			String exportTypeStr;
-			if (commandLine.hasOption("export") && commandLine.hasOption("exportFromTable")){
-				System.err.println("Error: Do not use both --export and --exportFromTable. Only use --exportFromTable");
-				System.exit(1);
-			}
-			if (commandLine.hasOption("exportFromTable")){
-				exportTypeStr = "staging";
-			}
-			else {
-				exportTypeStr = commandLine.getOptionValue("export");
-			}
+			String exportTypeStr = commandLine.getOptionValue("export");
 			String queryExpr = commandLine.getOptionValue("exportQuery");
 			String exportFromTable = commandLine.getOptionValue("exportFromTable");
 			String exportToTable = commandLine.getOptionValue("exportToTable");
 			String exportToFile = commandLine.getOptionValue("exportToFile");
+			if (commandLine.hasOption("export") && commandLine.hasOption("exportFromTable")){
+				if (exportTypeStr.equals("staging")) {
+					System.err.println("Error: Do not use both --export and --exportFromTable. Only use --exportFromTable");
+					System.exit(1);
+				}
+				else{
+					System.err.println("Error: --export <"+exportTypeStr+"> is not supported with --exportFromTable");
+					System.exit(1);
+				}
+			}
+
+			DataType type = null;
+
+			if (commandLine.hasOption("exportFromTable")){
+				try {
+					type = DataType.valueOf("staging");
+				}
+				catch(IllegalArgumentException e) {
+					System.err.println( "Error: The ETL file type \"staging\" does not exist. The known filetypes are ["+ETLFileOldDTO.SUPPORTED_FILETYPES_LIST+"]");
+					System.exit(1);
+				}
+			}
 
 			if (exportToFile != null && exportToTable != null)  {
 				System.err.println( "Error: --exportToTable and --exportToFile options cannot be combined.");
@@ -800,8 +812,7 @@ public class Main {
 				System.err.println("Error: cannot use --exportQuery with --exportFromTable. Use --exportWhere \"<HQL Query>\" instead. ");
 				System.exit(1);
 			}
-					
-			DataType type = null;
+
 			try {
 				type = DataType.valueOf(exportTypeStr);
 			}
