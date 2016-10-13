@@ -770,17 +770,12 @@ public class Main {
 			String exportFromTable = commandLine.getOptionValue("exportFromTable");
 			String exportToTable = commandLine.getOptionValue("exportToTable");
 			String exportToFile = commandLine.getOptionValue("exportToFile");
-			if (commandLine.hasOption("export") && commandLine.hasOption("exportFromTable")){
-				if (exportTypeStr.equals("staging")) {
-					System.err.println("Error: Do not use both --export and --exportFromTable. Only use --exportFromTable");
-					System.exit(1);
-				}
-				else{
-					System.err.println("Error: --export <"+exportTypeStr+"> is not supported with --exportFromTable");
+			if (commandLine.hasOption("export") && commandLine.hasOption("exportFromTable")) {
+				if (!exportTypeStr.equals("staging")) {
+					System.err.println("Error: --export <" + exportTypeStr + "> is not supported with --exportFromTable");
 					System.exit(1);
 				}
 			}
-
 			DataType type = null;
 
 			if (commandLine.hasOption("exportFromTable")){
@@ -808,7 +803,9 @@ public class Main {
 			}
 
 			try {
-				type = DataType.valueOf(exportTypeStr);
+				if (type == null) {
+					type = DataType.valueOf(exportTypeStr);
+				}
 			}
 			catch(IllegalArgumentException e) {
 				System.err.println( "Error: The ETL file type \""+exportTypeStr+"\" does not exist. The known filetypes are ["+ETLFileOldDTO.SUPPORTED_FILETYPES_LIST+"]");
