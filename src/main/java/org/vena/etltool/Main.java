@@ -784,13 +784,7 @@ public class Main {
 			DataType type = null;
 
 			if (commandLine.hasOption("exportFromTable")){
-				try {
-					type = DataType.valueOf("staging");
-				}
-				catch(IllegalArgumentException e) {
-					System.err.println( "Error: The ETL file type \"staging\" does not exist. The known filetypes are ["+ETLFileOldDTO.SUPPORTED_FILETYPES_LIST+"]");
-					System.exit(1);
-				}
+				type = DataType.staging;
 			}
 
 			if (exportToFile != null && exportToTable != null)  {
