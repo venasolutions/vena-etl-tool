@@ -13,7 +13,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
-import java.util.zip.*;
+import java.util.zip.DeflaterInputStream;
 
 import javax.ws.rs.core.MediaType;
 import org.vena.etltool.entities.CreateModelRequestDTO;

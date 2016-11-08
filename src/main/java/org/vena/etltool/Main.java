@@ -400,17 +400,6 @@ public class Main {
 
 		options.addOption(exportFileOption);
 
-		Option exportStageOption = 
-				OptionBuilder
-				.withLongOpt("exportToStaging")
-				.isRequired(false)
-				.hasArg()
-				.withArgName("tableName")
-				.withDescription("Name of staging table to export to.")
-				.create();
-
-		options.addOption(exportStageOption);
-
 		Option exportWhereOption = 
 				OptionBuilder
 				.withLongOpt("exportWhere")
