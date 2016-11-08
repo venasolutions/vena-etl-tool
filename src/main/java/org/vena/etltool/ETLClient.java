@@ -13,9 +13,9 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
+import java.util.zip.DeflaterInputStream;
 
 import javax.ws.rs.core.MediaType;
-
 import org.vena.etltool.entities.CreateModelRequestDTO;
 import org.vena.etltool.entities.ETLCalculationDeployStepDTO;
 import org.vena.etltool.entities.ETLCubeToStageStepDTO;
@@ -99,14 +99,12 @@ public class ETLClient {
 
 			FormDataBodyPart metadataPart = new FormDataBodyPart("metadata",new ByteArrayInputStream(metadataBytes), MediaType.APPLICATION_JSON_TYPE);
 			form.bodyPart(metadataPart);
-			
 			for (ETLStepDTO step :  metadata.getSteps()) {
-				if (step instanceof ETLFileImportStepDTO)
-				{
-					String mimePart = ((ETLFileImportStepDTO)step).getMimePart();
-					String fileName = ((ETLFileImportStepDTO)step).getFileName();
-				
-					FormDataBodyPart filePart = new FormDataBodyPart(mimePart, new FileInputStream(fileName), MediaType.APPLICATION_OCTET_STREAM_TYPE);
+				if (step instanceof ETLFileImportStepDTO) {
+					String mimePart = ((ETLFileImportStepDTO) step).getMimePart();
+					String fileName = ((ETLFileImportStepDTO) step).getFileName();
+					InputStream stream = new DeflaterInputStream(new FileInputStream(fileName));
+					FormDataBodyPart filePart = new FormDataBodyPart(mimePart, stream, MediaType.APPLICATION_OCTET_STREAM_TYPE);
 					form.bodyPart(filePart);
 				}
 			}
@@ -254,7 +252,6 @@ public class ETLClient {
 	private WebResource buildWebResource(String path, Iterable<TwoTuple<String, String>> parameters, boolean chunked) {
 
 		Client client = chunked ? getUploadClient() : getAPIClient();
-		
 		String uri = buildURI(path, parameters);
 		
 		if( verbose )
@@ -521,7 +518,6 @@ public class ETLClient {
 		}
 
 		WebResource webResource = buildWebResource(getETLBasePath() + "/query/" + typePath);
-
 		QueryDTO query = new QueryDTO();
 		if (!toFile) {
 			query.setDestination(Destination.ToStaging);
@@ -538,11 +534,9 @@ public class ETLClient {
 		query.setShowHeaders(showHeaders);
 
 		ClientResponse response = webResource.type(MediaType.APPLICATION_JSON_TYPE).post(ClientResponse.class, query);
-
 		if ((response.getStatus() != 204) && (response.getStatus() != 200)) {
 			handleErrorResponse(response, "Request to export failed.");
 		}
-
 		if (toFile) return response.getEntityInputStream();
 		else return null;
 	}

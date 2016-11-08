@@ -30,6 +30,8 @@ public abstract class ETLFileImportStepDTO extends ETLStepDTO {
 
 	private int numInvalidLines;
 
+	private boolean compressed = true;
+
 	public ETLFileImportStepDTO() {
 	}
 
@@ -150,4 +152,8 @@ public abstract class ETLFileImportStepDTO extends ETLStepDTO {
 	public void setNumInvalidLines(int numErrors) {
 		this.numInvalidLines = numErrors;
 	}
+
+	public boolean isCompressed() { return compressed; }
+
+	public void setCompressed(boolean compressed) { this.compressed = compressed; }
 }

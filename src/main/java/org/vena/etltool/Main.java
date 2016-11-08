@@ -38,6 +38,7 @@ import org.vena.etltool.entities.ETLStepDTO.DataType;
 import org.vena.etltool.entities.Id;
 import org.vena.etltool.entities.ModelResponseDTO;
 
+
 public class Main {
 	
 	public static int FIRST_FILE_INDEX = 1;
@@ -67,7 +68,6 @@ public class Main {
 		System.getProperties().setProperty("datacenterId", "1");
 
 		ETLClient etlClient = new ETLClient();
-
 		ETLMetadataDTO metadata = parseCmdlineArgs(args, etlClient);
 
 		System.out.print("Submitting job... ");
@@ -399,7 +399,6 @@ public class Main {
 				.create();
 
 		options.addOption(exportFileOption);
-		
 
 		Option exportWhereOption = 
 				OptionBuilder
