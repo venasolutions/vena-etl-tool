@@ -50,7 +50,7 @@ public class Main {
 			+ "\n{ --modelName <name> | --modelId <id> "
 			+ "\n}"
 			+ "\n{ --loadFromStaging [--wait|--waitFully]"
-			+ "\n| [--stage|--stageOnly] [--wait|--waitFully] [--validate] [--templateId <id>] [--jobName <name>] --file \"[file=]<filename>; [type=]<filetype> [;[table=]<tableName>] [;format={CSV|TDF}] [;bulkInsert={true|false}]\""
+			+ "\n| [--stage|--stageOnly] [--wait|--waitFully] [--validate] [--templateId <id>] [--jobName <name>] --file \"[file=]<filename>; [type=]<filetype> [;[table=]<tableName>] [;format={CSV|PSV|TDF}] [;bulkInsert={true|false}]\""
 			+ "\n| --cancel --jobId <id>"
 			+ "\n| --setError --jobId <id>"
 			+ "\n| --status --jobId <id>"
@@ -239,7 +239,7 @@ public class Main {
 				.hasArg()
 				.withArgName("options")
 				.withDescription("A data file to import (multiple allowed)."
-						+ "\n -F \"[file=]<filename>; [type=]<filetype> [;[table=]<tableName>] [;format={CSV|TDF}] [;bulkInsert={true|false}] [;clearSlices=<expr>]\""
+						+ "\n -F \"[file=]<filename>; [type=]<filetype> [;[table=]<tableName>] [;format={CSV|PSV|TDF}] [;bulkInsert={true|false}] [;clearSlices=<expr>]\""
 						+ "\n where <filetype> is one of {"+ETLFileOldDTO.SUPPORTED_FILETYPES_LIST+"}>."
 						+ "\n and <expr> is the expression specifying the slice of the cube to clear intersections from. Multiple expressions separated by a comma are supported."
 						+ "\n Example: -F model.csv;hierarchy"
