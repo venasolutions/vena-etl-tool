@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 public class ETLMetadataDTO {
 	
 	public enum ETLLoadType {
@@ -110,6 +112,7 @@ public class ETLMetadataDTO {
 		}
 	}
 	
+	@JsonIgnore
 	public List<ETLFileImportStepDTO> getAllFileSteps()
 	{
 		List<ETLFileImportStepDTO> fileSteps = new ArrayList<>();

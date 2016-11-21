@@ -2,7 +2,7 @@ package org.vena.etltool.entities;
 
 public abstract class ETLFileImportStepDTO extends ETLStepDTO {
 
-	public enum FileFormat {CSV, TDF}
+	public enum FileFormat {CSV, TDF, PSV}
 
 	private DataType dataType;
 
