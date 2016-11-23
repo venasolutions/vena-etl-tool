@@ -13,9 +13,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
 		@Type(value = ETLFileToStageStepDTO.class),
 		@Type(value = ETLCubeToStageStepDTO.class),
 		@Type(value = ETLStageToCubeStepDTO.class),
-		@Type(value = ETLStreamToCubeStepDTO.class),
-		@Type(value = ETLStreamToFileStepDTO.class),
-		@Type(value = ETLStreamToStagingTableStepDTO.class),
+		@Type(value = ETLStreamChannelStepDTO.class),
 		@Type(value = ETLSQLTransformStepDTO.class),
 		@Type(value = ETLDeleteIntersectionsStepDTO.class),
 		@Type(value = ETLDeleteZeroIntersectionsStepDTO.class),
@@ -30,8 +28,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
 		@Type(value = ETLAsyncSaveDataStepDTO.class),
 		@Type(value = ETLVersioningCopyStepDTO.class),
 		@Type(value = ETLVersioningClearStepDTO.class),
-		@Type(value = ETLCalculationDeployStepDTO.class),
-		@Type(value = ETLLimitedStreamToCubeStepDTO.class)
+		@Type(value = ETLCalculationDeployStepDTO.class)
 })
 
 public abstract class ETLStepDTO {
