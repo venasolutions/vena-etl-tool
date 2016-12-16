@@ -9,7 +9,8 @@ import org.junit.runners.Suite.SuiteClasses;
 	ETLToolDeleteTest.class,
 	ETLToolAuthenticationTest.class,
 	ETLToolSSLTest.class,
-	ETLToolFileToCubeTest.class
+	ETLToolFileToCubeTest.class,
+	ETLToolTransformCompleteTest.class
 })
 public class ETLToolTestSuite {
 
