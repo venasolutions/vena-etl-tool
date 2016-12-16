@@ -9,7 +9,9 @@ import java.util.Arrays;
 import java.util.Random;
 
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.mockito.invocation.*;
 import org.mockito.stubbing.Answer;
 import org.vena.etltool.ETLClient;
@@ -21,14 +23,26 @@ import org.vena.etltool.entities.ModelResponseDTO;
 
 public abstract class ETLToolTest {
 	
-	Id modelId;
+	protected Id modelId;
 	
-	protected PrintStream originalSystemErr = System.err;
-	protected PrintStream originalSystemOut = System.out;
+	protected static final SecurityManager originalManager = System.getSecurityManager();
+	
+	protected final PrintStream originalSystemErr = System.err;
+	protected final PrintStream originalSystemOut = System.out;
 	
 	protected final ByteArrayOutputStream out = new ByteArrayOutputStream();
 	protected final ByteArrayOutputStream err = new ByteArrayOutputStream();
-
+	
+    @BeforeClass
+    public static void setNoExitSecurityManager() {
+    	System.setSecurityManager(new NoExitSecurityManager());
+    }
+    
+    @AfterClass
+    public static void tearDown() {
+    	System.setSecurityManager(originalManager);
+    }
+    
 	@Before
 	public void setUpStreams() {
 	    System.setOut(new PrintStream(out));
@@ -99,10 +113,6 @@ public abstract class ETLToolTest {
             super.checkExit(status);
             throw new ExitException(status);
         }
-    }
-    
-    protected void setNoExitSecurityManager() {
-    	System.setSecurityManager(new NoExitSecurityManager());
     }
     
     protected Id uniqueId() {

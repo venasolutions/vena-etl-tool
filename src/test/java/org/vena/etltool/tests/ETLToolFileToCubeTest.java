@@ -18,7 +18,6 @@ public class ETLToolFileToCubeTest extends ETLToolTest {
 
 	@Test
 	public void testFileToCube() throws UnsupportedEncodingException {
-		setNoExitSecurityManager();
 		ETLClient etlClient = buildETLClient();
 		String[] args = buildCommand(new String[] {"--jobName", "Loading LIDs file", "--file", "lidsFile.csv;type=lids;format=CSV;"});
 		
@@ -38,7 +37,6 @@ public class ETLToolFileToCubeTest extends ETLToolTest {
 	
 	@Test
 	public void testFileToCubeWithClear() throws UnsupportedEncodingException {
-		setNoExitSecurityManager();
 		ETLClient etlClient = buildETLClient();
 		String[] args = buildCommand(new String[] {"--jobName", "Loading intersections file", "--file", "intersectionsFile.csv;type=intersections;format=CSV;clearSlices=dimension('Accounts':'Sales'),dimension('Accounts':'Expense')"});
 		
@@ -59,7 +57,6 @@ public class ETLToolFileToCubeTest extends ETLToolTest {
 	
 	@Test
 	public void testFileToCubeWithIncorrectClear() throws UnsupportedEncodingException {
-		setNoExitSecurityManager();
 		ETLClient etlClient = buildETLClient();
 		String[] args = buildCommand(new String[] {"--jobName", "Loading intersections file", "--file", "intersectionsFile.csv;type=intersections;format=CSV", "--clearSlices","dimension('Accounts':'Sales'),dimension('Accounts':'Expense')"});
 		

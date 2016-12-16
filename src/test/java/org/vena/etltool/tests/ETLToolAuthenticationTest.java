@@ -13,7 +13,6 @@ public class ETLToolAuthenticationTest extends ETLToolTest {
 	@Test
 	public void testUsernameAndPwd() throws UnsupportedEncodingException {
 		ETLClient etlClient = buildETLClient();
-		setNoExitSecurityManager();
 		try {
 			Main.parseCmdlineArgs(buildCommandArgs(), etlClient);
 		} catch (ExitException e) {
