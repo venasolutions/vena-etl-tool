@@ -85,7 +85,7 @@ public class Main {
 
 
 	@SuppressWarnings("static-access")
-	private static ETLMetadataDTO parseCmdlineArgs(String[] args, ETLClient etlClient) throws UnsupportedEncodingException {
+	public static ETLMetadataDTO parseCmdlineArgs(String[] args, ETLClient etlClient) throws UnsupportedEncodingException {
 		Options options  = new Options();
 
 		Option helpOption =  OptionBuilder
