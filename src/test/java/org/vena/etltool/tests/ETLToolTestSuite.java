@@ -10,6 +10,7 @@ import org.junit.runners.Suite.SuiteClasses;
 	ETLToolAuthenticationTest.class,
 	ETLToolSSLTest.class,
 	ETLToolFileToCubeTest.class,
+	ETLToolFileToStageTest.class,
 	ETLToolStageToCubeTest.class,
 	ETLToolTransformCompleteTest.class,
 	ETLToolCancelTest.class,
