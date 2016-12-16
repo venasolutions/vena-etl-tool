@@ -7,7 +7,8 @@ import org.junit.runners.Suite.SuiteClasses;
 @RunWith(Suite.class)
 @SuiteClasses({ 
 	ETLToolDeleteTest.class,
-	ETLToolAuthenticationTest.class
+	ETLToolAuthenticationTest.class,
+	ETLToolSSLTest.class
 })
 public class ETLToolTestSuite {
 
