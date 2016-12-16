@@ -18,6 +18,7 @@ public class ETLToolDeleteTest extends ETLToolTest {
 
 	@Test
 	public void testDeleteLids() throws UnsupportedEncodingException {
+		setNoExitSecurityManager();
 		ETLClient etlClient = buildETLClient();
 		String[] args = buildCommand(new String[] {"--delete", "lids", "--deleteQuery", "dimension('Accounts': 'Expense')"});
 		
@@ -36,6 +37,7 @@ public class ETLToolDeleteTest extends ETLToolTest {
 	
 	@Test
 	public void testDeleteValues() throws UnsupportedEncodingException {
+		setNoExitSecurityManager();
 		ETLClient etlClient = buildETLClient();
 		String[] args = buildCommand(new String[] {"--delete", "values", "--deleteQuery", "dimension('Accounts': 'Expense')"});
 		
@@ -54,6 +56,7 @@ public class ETLToolDeleteTest extends ETLToolTest {
 	
 	@Test
 	public void testDeleteIntersections() throws UnsupportedEncodingException {
+		setNoExitSecurityManager();
 		ETLClient etlClient = buildETLClient();
 		String[] args = buildCommand(new String[] {"--delete", "intersections", "--deleteQuery", "dimension('Accounts': 'Expense')"});
 		

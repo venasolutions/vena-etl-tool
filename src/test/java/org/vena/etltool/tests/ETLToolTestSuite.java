@@ -8,7 +8,8 @@ import org.junit.runners.Suite.SuiteClasses;
 @SuiteClasses({ 
 	ETLToolDeleteTest.class,
 	ETLToolAuthenticationTest.class,
-	ETLToolSSLTest.class
+	ETLToolSSLTest.class,
+	ETLToolFileToCubeTest.class
 })
 public class ETLToolTestSuite {
 
