@@ -22,4 +22,16 @@ public class ETLToolAuthenticationTest extends ETLToolTest {
 			assertEquals("admin@vena.io", etlClient.username);
 		}
 	}
+	
+	@Test
+	public void testUsernameAndApiKeyError() throws UnsupportedEncodingException {
+		ETLClient etlClient = buildETLClient();
+		String[] args = buildCommand(new String[] {"--apiUser", "user", "--apiKey", "key"});
+		try {
+			Main.parseCmdlineArgs(args, etlClient);
+		} catch (ExitException e) {
+			assertEquals(1, e.status);
+			assertEquals("Error: You must specify either --username/--password or --apiUser/--apiKey to authenticate with the server, but not both.\n", err.toString());
+		}
+	}
 }
