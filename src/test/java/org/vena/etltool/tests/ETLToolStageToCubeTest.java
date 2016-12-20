@@ -59,4 +59,17 @@ public class ETLToolStageToCubeTest extends ETLToolTest {
 			}
 		}
 	}
+	
+	@Test
+	public void testMultipleStageOperations() throws UnsupportedEncodingException {
+		ETLClient etlClient = buildETLClient();
+		String[] args = buildCommand(new String[] {"--jobName", "Hello world", "--loadFromStaging", "--stageOnly"});
+		
+		try {
+			Main.parseCmdlineArgs(args, etlClient);
+		} catch (ExitException e) {
+			assertEquals(1, e.status);
+			assertEquals("Error: --stage, --stageAndTransform, --stageOnly, and --loadFromStaging options cannot be combined. At most one of these options can be used at a time.\n", err.toString());
+		}
+	}
 }
