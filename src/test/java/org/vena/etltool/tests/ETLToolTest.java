@@ -80,15 +80,6 @@ public abstract class ETLToolTest {
 		searchResults.setId(modelId);
 		
 		when(mockedETLClient.lookupModel("myModel")).thenReturn(searchResults);
-		when(mockedETLClient.uploadETL(any(ETLMetadataDTO.class))).thenAnswer(new Answer<ETLJobDTO>() {
-		     public ETLJobDTO answer(InvocationOnMock invocation) {
-		         Object[] args = invocation.getArguments();
-		         ETLJobDTO job = new ETLJobDTO();
-		         job.setMetadata((ETLMetadataDTO) args[0]);
-		         job.setId(uniqueId());
-		         return job;
-		     }
-		});
 		
 		return mockedETLClient;
 	}

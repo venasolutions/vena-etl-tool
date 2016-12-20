@@ -30,9 +30,11 @@ public class ETLToolFileToCubeTest extends ETLToolTest {
 		ETLStepDTO step = metadata.getSteps().get(0);
 		
 		assertEquals(ETLFileToCubeStepDTO.class, step.getClass());
-		assertEquals(DataType.lids, ((ETLFileToCubeStepDTO)step).getDataType());
-		assertEquals("lidsFile.csv", ((ETLFileToCubeStepDTO)step).getFileName());
-		assertEquals(FileFormat.CSV, ((ETLFileToCubeStepDTO)step).getFileFormat());
+		
+		ETLFileToCubeStepDTO fileToCubeStep = (ETLFileToCubeStepDTO)step;
+		assertEquals(DataType.lids, fileToCubeStep.getDataType());
+		assertEquals("lidsFile.csv", fileToCubeStep.getFileName());
+		assertEquals(FileFormat.CSV, fileToCubeStep.getFileFormat());
 	}
 	
 	@Test
@@ -49,9 +51,11 @@ public class ETLToolFileToCubeTest extends ETLToolTest {
 		ETLStepDTO step = metadata.getSteps().get(0);
 		
 		assertEquals(ETLFileToCubeStepDTO.class, step.getClass());
-		assertEquals(DataType.intersections, ((ETLFileToCubeStepDTO)step).getDataType());
-		assertEquals("intersectionsFile.csv", ((ETLFileToCubeStepDTO)step).getFileName());
-		assertEquals(FileFormat.CSV, ((ETLFileToCubeStepDTO)step).getFileFormat());
+		
+		ETLFileToCubeStepDTO fileToCubeStep = (ETLFileToCubeStepDTO)step;
+		assertEquals(DataType.intersections, fileToCubeStep.getDataType());
+		assertEquals("intersectionsFile.csv", fileToCubeStep.getFileName());
+		assertEquals(FileFormat.CSV, fileToCubeStep.getFileFormat());
 		assertEquals(Arrays.asList("dimension('Accounts':'Sales')","dimension('Accounts':'Expense')"),((ETLFileToCubeStepDTO)step).getClearSlicesExpressions());
 	}
 	

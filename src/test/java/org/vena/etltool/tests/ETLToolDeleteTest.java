@@ -30,8 +30,10 @@ public class ETLToolDeleteTest extends ETLToolTest {
 		assertEquals(true, etlClient.pollingRequested);
 		assertEquals(true, etlClient.waitFully);
 		assertEquals(step.getClass(), ETLDeleteLidsStepDTO.class);
-		assertEquals(((ETLDeleteLidsStepDTO)step).getDataType(), DataType.lids);
-		assertEquals(((ETLDeleteLidsStepDTO)step).getExpression(), "dimension('Accounts': 'Expense')");
+		
+		ETLDeleteLidsStepDTO deleteLidsStep = (ETLDeleteLidsStepDTO)step;
+		assertEquals(deleteLidsStep.getDataType(), DataType.lids);
+		assertEquals(deleteLidsStep.getExpression(), "dimension('Accounts': 'Expense')");
 	}
 	
 	@Test
@@ -48,8 +50,10 @@ public class ETLToolDeleteTest extends ETLToolTest {
 		assertEquals(true, etlClient.pollingRequested);
 		assertEquals(true, etlClient.waitFully);
 		assertEquals(step.getClass(), ETLDeleteValuesStepDTO.class);
-		assertEquals(((ETLDeleteValuesStepDTO)step).getDataType(), DataType.values);
-		assertEquals(((ETLDeleteValuesStepDTO)step).getExpression(), "dimension('Accounts': 'Expense')");
+		
+		ETLDeleteValuesStepDTO deleteValuesStep = (ETLDeleteValuesStepDTO)step;
+		assertEquals(deleteValuesStep.getDataType(), DataType.values);
+		assertEquals(deleteValuesStep.getExpression(), "dimension('Accounts': 'Expense')");
 	}
 	
 	@Test
@@ -66,21 +70,21 @@ public class ETLToolDeleteTest extends ETLToolTest {
 		assertEquals(true, etlClient.pollingRequested);
 		assertEquals(true, etlClient.waitFully);
 		assertEquals(step.getClass(), ETLDeleteIntersectionsStepDTO.class);
-		assertEquals(((ETLDeleteIntersectionsStepDTO)step).getDataType(), DataType.intersections);
-		assertEquals(((ETLDeleteIntersectionsStepDTO)step).getExpression(), "dimension('Accounts': 'Expense')");
+		
+		ETLDeleteIntersectionsStepDTO deleteIntStep = (ETLDeleteIntersectionsStepDTO)step;
+		assertEquals(deleteIntStep.getDataType(), DataType.intersections);
+		assertEquals(deleteIntStep.getExpression(), "dimension('Accounts': 'Expense')");
 	}
 	
 	@Test
 	public void testDeleteNoQuery() throws UnsupportedEncodingException {
 		ETLClient etlClient = buildETLClient();
 		String[] args = buildCommand(new String[] {"--delete", "intersections"});
-		ETLMetadataDTO metadata = null;
 		try {
-			metadata = Main.parseCmdlineArgs(args, etlClient);
+			Main.parseCmdlineArgs(args, etlClient);
 		} catch (ExitException e) {
 			assertEquals(1, e.status);
 			assertEquals("Error: delete option requires --deleteQuery <expr>.\n", err.toString());
-			assertEquals(null, metadata);
 		}
 	}
 	
@@ -88,13 +92,11 @@ public class ETLToolDeleteTest extends ETLToolTest {
 	public void testInvalidDataType() throws UnsupportedEncodingException {
 		ETLClient etlClient = buildETLClient();
 		String[] args = buildCommand(new String[] {"--delete", "invalid", "--deleteQuery", "dimension('Accounts': 'Expense')"});
-		ETLMetadataDTO metadata = null;
 		try {
-			metadata = Main.parseCmdlineArgs(args, etlClient);
+			Main.parseCmdlineArgs(args, etlClient);
 		} catch (ExitException e) {
 			assertEquals(1, e.status);
 			assertEquals("Error: The ETL file type \"invalid\" is not supported. The supported filetypes are intersections, values, and lids.\n", err.toString());
-			assertEquals(null, metadata);
 		}
 	}
 	
