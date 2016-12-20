@@ -20,7 +20,8 @@ import org.junit.runners.Suite.SuiteClasses;
 	ETLToolLoadStepsTest.class,
 	ETLToolVersionTest.class,
 	ETLToolValidateTest.class,
-	ETLToolVerboseTest.class
+	ETLToolVerboseTest.class,
+	ETLToolTemplateIdTest.class
 })
 public class ETLToolTestSuite {
 
