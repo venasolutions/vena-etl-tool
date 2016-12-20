@@ -17,7 +17,8 @@ import org.junit.runners.Suite.SuiteClasses;
 	ETLToolCancelTest.class,
 	ETLToolSetErrorTest.class,
 	ETLToolStatusTest.class,
-	ETLToolLoadStepsTest.class
+	ETLToolLoadStepsTest.class,
+	ETLToolVersionTest.class
 })
 public class ETLToolTestSuite {
 
