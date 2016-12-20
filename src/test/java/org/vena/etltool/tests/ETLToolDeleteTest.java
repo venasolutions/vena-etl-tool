@@ -29,11 +29,11 @@ public class ETLToolDeleteTest extends ETLToolTest {
 		
 		assertEquals(true, etlClient.pollingRequested);
 		assertEquals(true, etlClient.waitFully);
-		assertEquals(step.getClass(), ETLDeleteLidsStepDTO.class);
+		assertEquals(ETLDeleteLidsStepDTO.class, step.getClass());
 		
 		ETLDeleteLidsStepDTO deleteLidsStep = (ETLDeleteLidsStepDTO)step;
-		assertEquals(deleteLidsStep.getDataType(), DataType.lids);
-		assertEquals(deleteLidsStep.getExpression(), "dimension('Accounts': 'Expense')");
+		assertEquals(DataType.lids, deleteLidsStep.getDataType());
+		assertEquals("dimension('Accounts': 'Expense')", deleteLidsStep.getExpression());
 	}
 	
 	@Test
@@ -42,18 +42,18 @@ public class ETLToolDeleteTest extends ETLToolTest {
 		String[] args = buildCommand(new String[] {"--delete", "values", "--deleteQuery", "dimension('Accounts': 'Expense')"});
 		
 		ETLMetadataDTO metadata = Main.parseCmdlineArgs(args, etlClient);
-		assertEquals(metadata.getModelId(), modelId);
-		assertEquals(metadata.getSteps().size(), 1);
+		assertEquals(modelId, metadata.getModelId());
+		assertEquals(1, metadata.getSteps().size());
 		
 		ETLStepDTO step = metadata.getSteps().get(0);
 		
 		assertEquals(true, etlClient.pollingRequested);
 		assertEquals(true, etlClient.waitFully);
-		assertEquals(step.getClass(), ETLDeleteValuesStepDTO.class);
+		assertEquals(ETLDeleteValuesStepDTO.class, step.getClass());
 		
 		ETLDeleteValuesStepDTO deleteValuesStep = (ETLDeleteValuesStepDTO)step;
-		assertEquals(deleteValuesStep.getDataType(), DataType.values);
-		assertEquals(deleteValuesStep.getExpression(), "dimension('Accounts': 'Expense')");
+		assertEquals(DataType.values, deleteValuesStep.getDataType());
+		assertEquals("dimension('Accounts': 'Expense')", deleteValuesStep.getExpression());
 	}
 	
 	@Test
@@ -69,11 +69,11 @@ public class ETLToolDeleteTest extends ETLToolTest {
 		
 		assertEquals(true, etlClient.pollingRequested);
 		assertEquals(true, etlClient.waitFully);
-		assertEquals(step.getClass(), ETLDeleteIntersectionsStepDTO.class);
+		assertEquals(ETLDeleteIntersectionsStepDTO.class, step.getClass());
 		
 		ETLDeleteIntersectionsStepDTO deleteIntStep = (ETLDeleteIntersectionsStepDTO)step;
-		assertEquals(deleteIntStep.getDataType(), DataType.intersections);
-		assertEquals(deleteIntStep.getExpression(), "dimension('Accounts': 'Expense')");
+		assertEquals(DataType.intersections, deleteIntStep.getDataType());
+		assertEquals("dimension('Accounts': 'Expense')", deleteIntStep.getExpression());
 	}
 	
 	@Test
@@ -85,6 +85,19 @@ public class ETLToolDeleteTest extends ETLToolTest {
 		} catch (ExitException e) {
 			assertEquals(1, e.status);
 			assertEquals("Error: delete option requires --deleteQuery <expr>.\n", err.toString());
+		}
+	}
+	
+	@Test
+	public void testDeleteMissingDeleteQuery() throws UnsupportedEncodingException {
+		ETLClient etlClient = buildETLClient();
+		String[] args = buildCommand(new String[] {"--delete", "--intersections", "--deleteQuery"});
+		
+		try {
+			Main.parseCmdlineArgs(args, etlClient);
+		} catch (ExitException e) {
+			assertEquals(1, e.status);
+			assertEquals("Error: Missing argument for option: deleteQuery\n", err.toString());
 		}
 	}
 	
