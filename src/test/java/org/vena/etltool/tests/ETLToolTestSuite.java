@@ -19,7 +19,8 @@ import org.junit.runners.Suite.SuiteClasses;
 	ETLToolStatusTest.class,
 	ETLToolLoadStepsTest.class,
 	ETLToolVersionTest.class,
-	ETLToolValidateTest.class
+	ETLToolValidateTest.class,
+	ETLToolVerboseTest.class
 })
 public class ETLToolTestSuite {
 
