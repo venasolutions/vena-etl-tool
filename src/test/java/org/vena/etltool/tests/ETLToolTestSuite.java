@@ -22,7 +22,8 @@ import org.junit.runners.Suite.SuiteClasses;
 	ETLToolValidateTest.class,
 	ETLToolVerboseTest.class,
 	ETLToolTemplateIdTest.class,
-	ETLToolExportTest.class
+	ETLToolExportTest.class,
+	ETLToolCreateModelTest.class
 })
 public class ETLToolTestSuite {
 
