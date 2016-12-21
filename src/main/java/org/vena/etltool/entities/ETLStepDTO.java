@@ -36,7 +36,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
 
 public abstract class ETLStepDTO {
 
-	public enum Status { NOT_STARTED, RUNNING, COMPLETED, ERROR, CANCELLED, WAITING };
+	public enum Status { NOT_STARTED, RUNNING, COMPLETED, ERROR, CANCELLED, WAITING, QUEUED };
 	
 	public enum DataType { intersections, values, lids, hierarchy, dimensions, attributes, user_defined, intersection_members, lid_members, variables, setexpressions, staging}
 
@@ -51,31 +51,6 @@ public abstract class ETLStepDTO {
 	protected int percentDone;
 	
 	public abstract String getName();
-
-	public Status changeStatus(Status newStatus) 
-	{
-		Status previousStatus = this.status;
-
-		switch(newStatus) {
-		case RUNNING:
-			if (previousStatus == Status.NOT_STARTED) startedTS = new Date();
-			break;
-		case COMPLETED:
-			percentDone = 100;
-			// intentional fall-through
-		case ERROR:
-		case CANCELLED:
-			completedTS = new Date();
-			break;
-		case NOT_STARTED:
-		case WAITING:
-			break;
-		}
-
-		this.status = newStatus;
-
-		return previousStatus;
-	}
 	
 	public Status getStatus() {
 		return status;
