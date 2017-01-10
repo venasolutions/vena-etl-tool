@@ -17,6 +17,8 @@ public class ETLStageToCubeStepDTO extends ETLImportToCubeStepDTO {
 	
 	private List<String> clearSlicesExpressions = null;
 	
+	private List<String> clearSlicesDimensions = null;
+	
 	private long seqNum;
 	
 	private long numDeleted;
@@ -31,9 +33,10 @@ public class ETLStageToCubeStepDTO extends ETLImportToCubeStepDTO {
 		this.rowsProcessed = 0;
 	}
 	
-	public ETLStageToCubeStepDTO(DataType type, List<String> clearSlicesExpressions) {
+	public ETLStageToCubeStepDTO(DataType type, List<String> clearSlicesExpressions, List<String> clearSlicesDimensions) {
 		this.dataType = type;
 		this.clearSlicesExpressions = clearSlicesExpressions;
+		this.clearSlicesDimensions = clearSlicesDimensions;
 	}
 
 	public ETLStageToCubeStepDTO(ETLTableStatusDTO table) {
@@ -96,6 +99,14 @@ public class ETLStageToCubeStepDTO extends ETLImportToCubeStepDTO {
 	
 	public List<String> getClearSlicesExpressions() {
 		return clearSlicesExpressions;
+	}
+	
+	public void setClearSlicesDimensions(List<String> clearSlicesDimensions) {
+		this.clearSlicesDimensions = clearSlicesDimensions;
+	}
+	
+	public List<String> getClearSlicesDimensions() {
+		return clearSlicesDimensions;
 	}
 	
 	public long getSeqNum() {

@@ -44,6 +44,8 @@ public class ETLFileOldDTO {
 
 	private List<String> clearSlicesExpressions = null;
 	
+	private List<String> clearSlicesDimensions = null;
+	
 	public ETLFileOldDTO() {
 		super();
 		this.linesProcessed=0;
@@ -139,6 +141,14 @@ public class ETLFileOldDTO {
 	
 	public List<String> getClearSlicesExpressions() {
 		return this.clearSlicesExpressions;
+	}
+	
+	public void setClearSlicesDimensions(List<String> clearSlicesDimensions) {
+		this.clearSlicesDimensions = clearSlicesDimensions;
+	}
+	
+	public List<String> getClearSlicesDimensions() {
+		return clearSlicesDimensions;
 	}
 
 }
