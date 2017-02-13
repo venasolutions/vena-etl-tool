@@ -13,7 +13,7 @@ public class ETLFileToCubeStepDTO extends ETLFileImportStepDTO{
 	
 	private List<String> clearSlicesExpressions = null;
 	
-	private List<String> clearSlicesDimensions = null;
+	private List<Integer> clearSlicesDimensions = null;
 	
 	private long seqNum;
 	
@@ -51,11 +51,11 @@ public class ETLFileToCubeStepDTO extends ETLFileImportStepDTO{
 		return clearSlicesExpressions;
 	}
 	
-	public void setClearSlicesDimensions(List<String> clearSlicesDimensions) {
+	public void setClearSlicesDimensions(List<Integer> clearSlicesDimensions) {
 		this.clearSlicesDimensions = clearSlicesDimensions;
 	}
 	
-	public List<String> getClearSlicesDimensions() {
+	public List<Integer> getClearSlicesDimensions() {
 		return clearSlicesDimensions;
 	}
 	

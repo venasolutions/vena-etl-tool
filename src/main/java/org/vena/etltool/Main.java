@@ -1062,7 +1062,12 @@ public class Main {
 				    				}
 				    			} else if (key.equalsIgnoreCase("clearSlicesByDim")) {
 				    				if (step.getDataType() == DataType.intersections && value != null) {
-				    					step.setClearSlicesDimensions(Arrays.asList(value.split(",")));
+				    					List<String> dimNumbers = Arrays.asList(value.split(","));
+				    					List<Integer> clearSlicesDimNums = new ArrayList<Integer>(dimNumbers.size());
+				    					for (String num: dimNumbers) {
+				    						clearSlicesDimNums.add(Integer.parseInt(num.trim()));
+				    					}
+				    					step.setClearSlicesDimensions(clearSlicesDimNums);
 			    					} else {
 				    					System.err.println("Error: The clearSlicesByDim option can only be combined with the type: {intersections}. Please specify the type first.");
 				    					System.exit(1);
@@ -1303,12 +1308,13 @@ public class Main {
 			}
 		}
 		
-		List<String> clearSlicesDims = null;
+		List<Integer> clearSlicesDimNums = null;
 		if (commandLine.hasOption("clearSlicesByDim")) {
-			String clearSlicesDim = commandLine.getOptionValue("clearSlicesByDim");
-			if (clearSlicesDim != null) {
-				clearSlicesDims = Arrays.asList(clearSlicesDim.split(","));
-			}
+			List<String> dimNumbers = Arrays.asList(commandLine.getOptionValue("clearSlicesByDim").split(","));
+			clearSlicesDimNums = new ArrayList<Integer>(dimNumbers.size());
+				for (String num: dimNumbers) {
+					clearSlicesDimNums.add(Integer.parseInt(num.trim()));
+				}
 		}
 		
 		switch(loadType) {
@@ -1331,7 +1337,7 @@ public class Main {
 		case STAGE_TO_CUBE:
 			metadata.addStep(new ETLStageToCubeStepDTO(DataType.hierarchy));
 			metadata.addStep(new ETLStageToCubeStepDTO(DataType.attributes));
-			metadata.addStep(new ETLStageToCubeStepDTO(DataType.intersections, clearSlicesExprs, clearSlicesDims));
+			metadata.addStep(new ETLStageToCubeStepDTO(DataType.intersections, clearSlicesExprs, clearSlicesDimNums));
 			metadata.addStep(new ETLStageToCubeStepDTO(DataType.lids));
 			break;
 		}
@@ -1391,7 +1397,12 @@ public class Main {
 					break;
 				case "clearSlicesByDim":
 					if (value != null) {
-						etlFile.setClearSlicesDimensions(Arrays.asList(value.split(",")));
+						List<String> dimNumbers = Arrays.asList(value.split(","));
+						List<Integer> clearSlicesDimNums = new ArrayList<Integer>(dimNumbers.size());
+							for (String num: dimNumbers) {
+								clearSlicesDimNums.add(Integer.parseInt(num.trim()));
+							}
+						etlFile.setClearSlicesDimensions(clearSlicesDimNums);
 					}
 					break;
 				default:
