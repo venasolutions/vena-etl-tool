@@ -23,7 +23,7 @@ public class ETLToolLoadStepsTest extends ETLToolTest {
 	public void testLoadSteps() throws UnsupportedEncodingException {
 		String testFile = "src" + File.separatorChar + "test" + File.separatorChar + "resources" + File.separatorChar + "steps.txt";
 		String[] args = buildCommand(new String[] {"--jobName", "Loading job with multiple steps", "--loadSteps", testFile});
-		ETLClient etlClient = buildETLClient();
+		ETLClient etlClient = mockETLClient();
 		
 		ETLMetadataDTO metadata = Main.parseCmdlineArgs(args, etlClient);
 		assertEquals(3, metadata.getSteps().size());
@@ -51,7 +51,7 @@ public class ETLToolLoadStepsTest extends ETLToolTest {
 	@Test
 	public void testLoadStepsMissingFile() throws UnsupportedEncodingException {
 		String[] args = buildCommand(new String[] {"--jobName", "Loading job with multiple steps", "--loadSteps"});
-		ETLClient etlClient = buildETLClient();
+		ETLClient etlClient = mockETLClient();
 		
 		try {
 			Main.parseCmdlineArgs(args, etlClient);

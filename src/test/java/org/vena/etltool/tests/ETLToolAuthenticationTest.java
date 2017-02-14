@@ -12,7 +12,7 @@ public class ETLToolAuthenticationTest extends ETLToolTest {
 	
 	@Test
 	public void testUsernameAndPwd() throws UnsupportedEncodingException {
-		ETLClient etlClient = buildETLClient();
+		ETLClient etlClient = mockETLClient();
 		try {
 			Main.parseCmdlineArgs(buildCommandArgs(), etlClient);
 		} catch (ExitException e) {
@@ -25,7 +25,7 @@ public class ETLToolAuthenticationTest extends ETLToolTest {
 	
 	@Test
 	public void testUsernameAndApiKeyError() throws UnsupportedEncodingException {
-		ETLClient etlClient = buildETLClient();
+		ETLClient etlClient = mockETLClient();
 		String[] args = buildCommand(new String[] {"--apiUser", "user", "--apiKey", "key"});
 		try {
 			Main.parseCmdlineArgs(args, etlClient);

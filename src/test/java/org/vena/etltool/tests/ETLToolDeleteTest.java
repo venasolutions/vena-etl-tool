@@ -18,7 +18,7 @@ public class ETLToolDeleteTest extends ETLToolTest {
 
 	@Test
 	public void testDeleteLids() throws UnsupportedEncodingException {
-		ETLClient etlClient = buildETLClient();
+		ETLClient etlClient = mockETLClient();
 		String[] args = buildCommand(new String[] {"--delete", "lids", "--deleteQuery", "dimension('Accounts': 'Expense')"});
 		
 		ETLMetadataDTO metadata = Main.parseCmdlineArgs(args, etlClient);
@@ -38,7 +38,7 @@ public class ETLToolDeleteTest extends ETLToolTest {
 	
 	@Test
 	public void testDeleteValues() throws UnsupportedEncodingException {
-		ETLClient etlClient = buildETLClient();
+		ETLClient etlClient = mockETLClient();
 		String[] args = buildCommand(new String[] {"--delete", "values", "--deleteQuery", "dimension('Accounts': 'Expense')"});
 		
 		ETLMetadataDTO metadata = Main.parseCmdlineArgs(args, etlClient);
@@ -58,7 +58,7 @@ public class ETLToolDeleteTest extends ETLToolTest {
 	
 	@Test
 	public void testDeleteIntersections() throws UnsupportedEncodingException {
-		ETLClient etlClient = buildETLClient();
+		ETLClient etlClient = mockETLClient();
 		String[] args = buildCommand(new String[] {"--delete", "intersections", "--deleteQuery", "dimension('Accounts': 'Expense')"});
 		
 		ETLMetadataDTO metadata = Main.parseCmdlineArgs(args, etlClient);
@@ -78,7 +78,7 @@ public class ETLToolDeleteTest extends ETLToolTest {
 	
 	@Test
 	public void testDeleteNoQuery() throws UnsupportedEncodingException {
-		ETLClient etlClient = buildETLClient();
+		ETLClient etlClient = mockETLClient();
 		String[] args = buildCommand(new String[] {"--delete", "intersections"});
 		try {
 			Main.parseCmdlineArgs(args, etlClient);
@@ -90,7 +90,7 @@ public class ETLToolDeleteTest extends ETLToolTest {
 	
 	@Test
 	public void testDeleteMissingDeleteQuery() throws UnsupportedEncodingException {
-		ETLClient etlClient = buildETLClient();
+		ETLClient etlClient = mockETLClient();
 		String[] args = buildCommand(new String[] {"--delete", "--intersections", "--deleteQuery"});
 		
 		try {
@@ -103,7 +103,7 @@ public class ETLToolDeleteTest extends ETLToolTest {
 	
 	@Test
 	public void testInvalidDataType() throws UnsupportedEncodingException {
-		ETLClient etlClient = buildETLClient();
+		ETLClient etlClient = mockETLClient();
 		String[] args = buildCommand(new String[] {"--delete", "invalid", "--deleteQuery", "dimension('Accounts': 'Expense')"});
 		try {
 			Main.parseCmdlineArgs(args, etlClient);

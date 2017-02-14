@@ -67,7 +67,7 @@ public abstract class ETLToolTest {
 		return args;
 	}
 	
-	protected ETLClient buildETLClient() {
+	protected ETLClient mockETLClient() {
 		ETLClient mockedETLClient = mock(ETLClient.class);
 		
 		ModelResponseDTO searchResults = new ModelResponseDTO();

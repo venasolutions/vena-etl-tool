@@ -20,7 +20,7 @@ public class ETLToolCreateModelTest extends ETLToolTest {
 	@Test
 	public void testCreateModel() throws UnsupportedEncodingException {
 		newModelId = uniqueId();
-		etlClient = buildETLClient();
+		etlClient = mockETLClient();
 		when(etlClient.createModel("newModel")).then(setModelId);
 		String[] args = new String[] {"--username","user@vena.io","--password","Vena123","--createModel","newModel"};
 		

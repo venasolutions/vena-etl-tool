@@ -16,7 +16,7 @@ public class ETLToolStatusTest extends ETLToolTest {
 
 	@Test
 	public void testStatus() throws UnsupportedEncodingException {
-		ETLClient etlClient = buildETLClient();
+		ETLClient etlClient = mockETLClient();
 		ETLJobDTO job = new ETLJobDTO();
 		job.setMetadata(new ETLMetadataDTO());
 		job.setId(uniqueId());
@@ -35,7 +35,7 @@ public class ETLToolStatusTest extends ETLToolTest {
 	
 	@Test
 	public void testStatusMissingJobId() throws UnsupportedEncodingException {
-		ETLClient etlClient = buildETLClient();
+		ETLClient etlClient = mockETLClient();
 		String[] args = buildCommand(new String[] {"--cancel"});
 		try {
 			Main.parseCmdlineArgs(args, etlClient);

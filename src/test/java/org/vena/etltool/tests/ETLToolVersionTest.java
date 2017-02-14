@@ -12,7 +12,7 @@ public class ETLToolVersionTest extends ETLToolTest {
 	
 	@Test
 	public void testRequestVersion() throws UnsupportedEncodingException {
-		ETLClient etlClient = buildETLClient();
+		ETLClient etlClient = mockETLClient();
 		String[] args = new String[] {"--version"};
 		
 		try {

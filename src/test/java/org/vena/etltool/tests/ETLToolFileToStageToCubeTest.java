@@ -21,7 +21,7 @@ public class ETLToolFileToStageToCubeTest extends ETLToolTest {
 	
 	@Test
 	public void testFileToStageToCube() throws UnsupportedEncodingException {
-		ETLClient etlClient = buildETLClient();
+		ETLClient etlClient = mockETLClient();
 		String[] args = buildCommand(new String[] {"--jobName", "Loading intersections file with transform", "--file", "intersectionsFile.csv;type=intersections;format=CSV;table=values_table", "--stageAndTransform"});
 
 		ETLMetadataDTO metadata = Main.parseCmdlineArgs(args, etlClient);
@@ -55,7 +55,7 @@ public class ETLToolFileToStageToCubeTest extends ETLToolTest {
 	
 	@Test
 	public void testFileToStageToCubeWithClear() throws UnsupportedEncodingException {
-		ETLClient etlClient = buildETLClient();
+		ETLClient etlClient = mockETLClient();
 		String[] args = buildCommand(new String[] {"--jobName", "Loading intersections file with transform", "--file", "intersectionsFile.csv;type=intersections;format=CSV;table=values_table", "--stage", "--clearSlices", "dimension('Accounts':'Expense'),dimension('Accounts':'Sale')"});
 
 		ETLMetadataDTO metadata = Main.parseCmdlineArgs(args, etlClient);

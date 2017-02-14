@@ -12,7 +12,7 @@ public class ETLToolVerboseTest extends ETLToolTest {
 	
 	@Test
 	public void testVerbose() throws UnsupportedEncodingException {
-		ETLClient etlClient = buildETLClient();
+		ETLClient etlClient = mockETLClient();
 		String[] args = buildCommand(new String[] {"--verbose"});
 		try {
 			Main.parseCmdlineArgs(args, etlClient);

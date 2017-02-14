@@ -12,7 +12,7 @@ public class ETLToolValidateTest extends ETLToolTest {
 	
 	@Test
 	public void testValidate() throws UnsupportedEncodingException {
-		ETLClient etlClient = buildETLClient();
+		ETLClient etlClient = mockETLClient();
 		String[] args = buildCommand(new String[] {"--validate"});
 		try {
 			Main.parseCmdlineArgs(args, etlClient);

@@ -13,7 +13,7 @@ public class ETLToolSSLTest extends ETLToolTest {
 	@Test
 	public void testSsl() throws UnsupportedEncodingException {
 		String[] args = buildCommand(new String[] {"--ssl"});
-		ETLClient etlClient = buildETLClient();
+		ETLClient etlClient = mockETLClient();
 		try {
 			Main.parseCmdlineArgs(args, etlClient);
 		} catch (ExitException e) {
@@ -26,7 +26,7 @@ public class ETLToolSSLTest extends ETLToolTest {
 	@Test
 	public void testNoSsl() throws UnsupportedEncodingException {
 		String[] args = buildCommand(new String[] {"--nossl"});
-		ETLClient etlClient = buildETLClient();
+		ETLClient etlClient = mockETLClient();
 		try {
 			Main.parseCmdlineArgs(args, etlClient);
 		} catch (ExitException e) {
@@ -39,7 +39,7 @@ public class ETLToolSSLTest extends ETLToolTest {
 	@Test
 	public void testErrBothOptions() throws UnsupportedEncodingException {
 		String[] args = buildCommand(new String[] {"--nossl", "--ssl"});
-		ETLClient etlClient = buildETLClient();
+		ETLClient etlClient = mockETLClient();
 		try {
 			Main.parseCmdlineArgs(args, etlClient);
 		} catch (ExitException e) {

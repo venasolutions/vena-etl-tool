@@ -13,7 +13,7 @@ public class ETLToolTemplateIdTest extends ETLToolTest {
 	
 	@Test
 	public void testTemplateId() throws UnsupportedEncodingException {
-		ETLClient etlClient = buildETLClient();
+		ETLClient etlClient = mockETLClient();
 		Id templateId = uniqueId();
 		String[] args = buildCommand(new String[] {"--templateId", templateId.toString()});
 		
@@ -28,7 +28,7 @@ public class ETLToolTemplateIdTest extends ETLToolTest {
 	
 	@Test
 	public void testTemplateIdMissingId() throws UnsupportedEncodingException {
-		ETLClient etlClient = buildETLClient();
+		ETLClient etlClient = mockETLClient();
 		String[] args = buildCommand(new String[] {"--templateId"});
 		
 		try {

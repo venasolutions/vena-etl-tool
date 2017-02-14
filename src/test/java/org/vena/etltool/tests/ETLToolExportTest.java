@@ -25,7 +25,7 @@ public class ETLToolExportTest extends ETLToolTest {
 	
 	@Test
 	public void testExportToFile() throws IOException {
-		ETLClient etlClient = buildETLClient();
+		ETLClient etlClient = mockETLClient();
 		InputStream intersection_data = getClass().getClassLoader().getResourceAsStream("exportIntersectionsSource.csv");
 		when(etlClient.sendExport(DataType.intersections, null, true, null, null, null, true)).thenReturn(intersection_data);
 	
@@ -52,7 +52,7 @@ public class ETLToolExportTest extends ETLToolTest {
 	
 	@Test
 	public void testExportToTable() throws UnsupportedEncodingException {
-		ETLClient etlClient = buildETLClient();
+		ETLClient etlClient = mockETLClient();
 		String[] args = buildCommand(new String[] {"--jobName","Stage to cube job","--export","intersections","--exportToTable", "export_table","--exportQuery","dimension('Accounts':'Sale')"});
 		
 		ETLMetadataDTO metadata = Main.parseCmdlineArgs(args, etlClient);
@@ -77,7 +77,7 @@ public class ETLToolExportTest extends ETLToolTest {
 	
 	@Test
 	public void testInvalidExportType() throws UnsupportedEncodingException {
-		ETLClient etlClient = buildETLClient();
+		ETLClient etlClient = mockETLClient();
 		String[] args = buildCommand(new String[] {"--export","invalidType", "--exportToFile", "intersectionsFile.csv"});
 		
 		try {
@@ -92,7 +92,7 @@ public class ETLToolExportTest extends ETLToolTest {
 	
 	@Test
 	public void testExportQueryWithExportWhere() throws UnsupportedEncodingException {
-		ETLClient etlClient = buildETLClient();
+		ETLClient etlClient = mockETLClient();
 		String[] args = buildCommand(new String[] {"--export","intersections","--exportQuery","query", "--exportWhere","whereQueyr","--exportToFile","intersectionsFile.csv"});
 		
 		try {
@@ -105,7 +105,7 @@ public class ETLToolExportTest extends ETLToolTest {
 	
 	@Test
 	public void testExportQueryWithExportFromTable() throws UnsupportedEncodingException {
-		ETLClient etlClient = buildETLClient();
+		ETLClient etlClient = mockETLClient();
 		String[] args = buildCommand(new String[] {"--exportFromTable","intersections_table","--exportQuery","query", "--exportToFile","intersectionsFile.csv"});
 		
 		try {
@@ -118,7 +118,7 @@ public class ETLToolExportTest extends ETLToolTest {
 	
 	@Test
 	public void testExportToTableFromTable() throws UnsupportedEncodingException {
-		ETLClient etlClient = buildETLClient();
+		ETLClient etlClient = mockETLClient();
 		String[] args = buildCommand(new String[] {"--exportFromTable","intersections_table","--exportToTable","out_table"});
 		
 		try {
@@ -131,7 +131,7 @@ public class ETLToolExportTest extends ETLToolTest {
 	
 	@Test
 	public void testExportMissingDestination() throws UnsupportedEncodingException {
-		ETLClient etlClient = buildETLClient();
+		ETLClient etlClient = mockETLClient();
 		String[] args = buildCommand(new String[] {"--export","intersections"});
 		
 		try {
@@ -146,7 +146,7 @@ public class ETLToolExportTest extends ETLToolTest {
 	
 	@Test
 	public void testExportAndExportFromTable() throws UnsupportedEncodingException {
-		ETLClient etlClient = buildETLClient();
+		ETLClient etlClient = mockETLClient();
 		String[] args = buildCommand(new String[] {"--export","intersections","--exportFromTable", "values_table"});
 		
 		try {
@@ -161,7 +161,7 @@ public class ETLToolExportTest extends ETLToolTest {
 	
 	@Test
 	public void testExportToError() throws UnsupportedEncodingException {
-		ETLClient etlClient = buildETLClient();
+		ETLClient etlClient = mockETLClient();
 		String[] args = buildCommand(new String[] {"--export","intersections","--exportToFile", "intersectionsFile.csv", "--exportToTable", "values_table"});
 		
 		try {

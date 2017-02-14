@@ -14,7 +14,7 @@ public class ETLToolTransformCompleteTest extends ETLToolTest {
 	
 	@Test
 	public void testTransformComplete() throws UnsupportedEncodingException {
-		ETLClient etlClient = buildETLClient();
+		ETLClient etlClient = mockETLClient();
 		Id jobId = uniqueId();
 		String[] args = buildCommand(new String[] {"--transformComplete", "--jobId", jobId.toString()});
 		
@@ -28,7 +28,7 @@ public class ETLToolTransformCompleteTest extends ETLToolTest {
 	
 	@Test
 	public void testTransformCompleteMissingJobId() throws UnsupportedEncodingException {
-		ETLClient etlClient = buildETLClient();
+		ETLClient etlClient = mockETLClient();
 		String[] args = buildCommand(new String[] {"--transformComplete"});
 		try {
 			Main.parseCmdlineArgs(args, etlClient);

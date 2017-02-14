@@ -18,7 +18,7 @@ public class ETLToolStageToCubeTest extends ETLToolTest {
 	
 	@Test
 	public void testStageToCube() throws UnsupportedEncodingException {
-		ETLClient etlClient = buildETLClient();
+		ETLClient etlClient = mockETLClient();
 		String[] args = buildCommand(new String[] {"--jobName", "Loading to stage", "--loadFromStaging"});
 		
 		ETLMetadataDTO metadata = Main.parseCmdlineArgs(args, etlClient);
@@ -38,7 +38,7 @@ public class ETLToolStageToCubeTest extends ETLToolTest {
 	
 	@Test
 	public void testStageToCubeWithClear() throws UnsupportedEncodingException {
-		ETLClient etlClient = buildETLClient();
+		ETLClient etlClient = mockETLClient();
 		String[] args = buildCommand(new String[] {"--jobName", "Loading to stage with clear", "--loadFromStaging", "--clearSlices", "dimension('Accounts':'Expense'),dimension('Accounts':'Sale')"});
 		
 		ETLMetadataDTO metadata = Main.parseCmdlineArgs(args, etlClient);
@@ -62,7 +62,7 @@ public class ETLToolStageToCubeTest extends ETLToolTest {
 	
 	@Test
 	public void testMultipleStageOperations() throws UnsupportedEncodingException {
-		ETLClient etlClient = buildETLClient();
+		ETLClient etlClient = mockETLClient();
 		String[] args = buildCommand(new String[] {"--jobName", "Hello world", "--loadFromStaging", "--stageOnly"});
 		
 		try {

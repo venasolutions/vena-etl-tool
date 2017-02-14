@@ -18,7 +18,7 @@ public class ETLToolFileToCubeTest extends ETLToolTest {
 
 	@Test
 	public void testFileToCube() throws UnsupportedEncodingException {
-		ETLClient etlClient = buildETLClient();
+		ETLClient etlClient = mockETLClient();
 		String[] args = buildCommand(new String[] {"--jobName", "Loading LIDs file", "--file", "lidsFile.csv;type=lids;format=CSV;"});
 		
 		ETLMetadataDTO metadata = Main.parseCmdlineArgs(args, etlClient);
@@ -39,7 +39,7 @@ public class ETLToolFileToCubeTest extends ETLToolTest {
 	
 	@Test
 	public void testFileToCubeWithClear() throws UnsupportedEncodingException {
-		ETLClient etlClient = buildETLClient();
+		ETLClient etlClient = mockETLClient();
 		String[] args = buildCommand(new String[] {"--jobName", "Loading intersections file", "--file", "intersectionsFile.csv;type=intersections;format=CSV;clearSlices=dimension('Accounts':'Sales'),dimension('Accounts':'Expense')"});
 		
 		ETLMetadataDTO metadata = Main.parseCmdlineArgs(args, etlClient);
@@ -61,7 +61,7 @@ public class ETLToolFileToCubeTest extends ETLToolTest {
 	
 	@Test
 	public void testFileToCubeWithIncorrectClear() throws UnsupportedEncodingException {
-		ETLClient etlClient = buildETLClient();
+		ETLClient etlClient = mockETLClient();
 		String[] args = buildCommand(new String[] {"--jobName", "Loading intersections file", "--file", "intersectionsFile.csv;type=intersections;format=CSV", "--clearSlices","dimension('Accounts':'Sales'),dimension('Accounts':'Expense')"});
 		
 		try {

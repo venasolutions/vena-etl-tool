@@ -14,7 +14,7 @@ public class ETLToolCancelTest extends ETLToolTest {
 
 	@Test
 	public void testCancelJob() throws UnsupportedEncodingException {
-		ETLClient etlClient = buildETLClient();
+		ETLClient etlClient = mockETLClient();
 		Id jobId = uniqueId();
 		String[] args = buildCommand(new String[] {"--cancel", "--jobId", jobId.toString()});
 		
@@ -28,7 +28,7 @@ public class ETLToolCancelTest extends ETLToolTest {
 	
 	@Test
 	public void testCancelMissingJobId() throws UnsupportedEncodingException {
-		ETLClient etlClient = buildETLClient();
+		ETLClient etlClient = mockETLClient();
 		String[] args = buildCommand(new String[] {"--cancel"});
 		try {
 			Main.parseCmdlineArgs(args, etlClient);
