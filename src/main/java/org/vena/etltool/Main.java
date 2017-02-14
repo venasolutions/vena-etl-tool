@@ -962,7 +962,7 @@ public class Main {
 				ETLStreamChannelStepDTO step = new ETLStreamChannelStepDTO(Id.valueOf(channelId), MockMode.LIVE);
 				metadata.addStep(step);
 			} catch (NumberFormatException e) {
-    			System.err.println( "Error: channelId could not be parsed as a number.");
+				System.err.println("Error: channelId could not be parsed as a number.");
 				System.exit(1);
 			}
 			
