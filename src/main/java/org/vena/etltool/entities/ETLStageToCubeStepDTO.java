@@ -1,6 +1,7 @@
 package org.vena.etltool.entities;
 
 import java.util.List;
+import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
 
@@ -17,7 +18,7 @@ public class ETLStageToCubeStepDTO extends ETLImportToCubeStepDTO {
 	
 	private List<String> clearSlicesExpressions = null;
 	
-	private List<Integer> clearSlicesDimensions = null;
+	private Set<Integer> clearSlicesDimensions = null;
 	
 	private long seqNum;
 	
@@ -33,7 +34,7 @@ public class ETLStageToCubeStepDTO extends ETLImportToCubeStepDTO {
 		this.rowsProcessed = 0;
 	}
 	
-	public ETLStageToCubeStepDTO(DataType type, List<String> clearSlicesExpressions, List<Integer> clearSlicesDimensions) {
+	public ETLStageToCubeStepDTO(DataType type, List<String> clearSlicesExpressions, Set<Integer> clearSlicesDimensions) {
 		this.dataType = type;
 		this.clearSlicesExpressions = clearSlicesExpressions;
 		this.clearSlicesDimensions = clearSlicesDimensions;
@@ -101,11 +102,11 @@ public class ETLStageToCubeStepDTO extends ETLImportToCubeStepDTO {
 		return clearSlicesExpressions;
 	}
 	
-	public void setClearSlicesDimensions(List<Integer> clearSlicesDimensions) {
+	public void setClearSlicesDimensions(Set<Integer> clearSlicesDimensions) {
 		this.clearSlicesDimensions = clearSlicesDimensions;
 	}
 	
-	public List<Integer> getClearSlicesDimensions() {
+	public Set<Integer> getClearSlicesDimensions() {
 		return clearSlicesDimensions;
 	}
 	

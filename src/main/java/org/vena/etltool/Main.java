@@ -10,7 +10,9 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -1063,7 +1065,7 @@ public class Main {
 				    			} else if (key.equalsIgnoreCase("clearSlicesByDim")) {
 				    				if (step.getDataType() == DataType.intersections && value != null) {
 				    					List<String> dimNumbers = Arrays.asList(value.split(","));
-				    					List<Integer> clearSlicesDimNums = new ArrayList<Integer>(dimNumbers.size());
+				    					Set<Integer> clearSlicesDimNums = new HashSet<Integer>(dimNumbers.size());
 				    					for (String num: dimNumbers) {
 				    						clearSlicesDimNums.add(Integer.parseInt(num.trim()));
 				    					}
@@ -1308,10 +1310,10 @@ public class Main {
 			}
 		}
 		
-		List<Integer> clearSlicesDimNums = null;
+		Set<Integer> clearSlicesDimNums = null;
 		if (commandLine.hasOption("clearSlicesByDim")) {
 			List<String> dimNumbers = Arrays.asList(commandLine.getOptionValue("clearSlicesByDim").split(","));
-			clearSlicesDimNums = new ArrayList<Integer>(dimNumbers.size());
+			clearSlicesDimNums = new HashSet<Integer>(dimNumbers.size());
 				for (String num: dimNumbers) {
 					clearSlicesDimNums.add(Integer.parseInt(num.trim()));
 				}
@@ -1398,7 +1400,7 @@ public class Main {
 				case "clearSlicesByDim":
 					if (value != null) {
 						List<String> dimNumbers = Arrays.asList(value.split(","));
-						List<Integer> clearSlicesDimNums = new ArrayList<Integer>(dimNumbers.size());
+						Set<Integer> clearSlicesDimNums = new HashSet<Integer>(dimNumbers.size());
 							for (String num: dimNumbers) {
 								clearSlicesDimNums.add(Integer.parseInt(num.trim()));
 							}
