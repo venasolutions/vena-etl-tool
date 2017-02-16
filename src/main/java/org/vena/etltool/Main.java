@@ -35,6 +35,8 @@ import org.vena.etltool.entities.ETLMetadataDTO.ETLLoadType;
 import org.vena.etltool.entities.ETLSQLTransformStepDTO;
 import org.vena.etltool.entities.ETLStageToCubeStepDTO;
 import org.vena.etltool.entities.ETLStepDTO.DataType;
+import org.vena.etltool.entities.ETLStreamChannelStepDTO;
+import org.vena.etltool.entities.ETLStreamStepDTO.MockMode;
 import org.vena.etltool.entities.Id;
 import org.vena.etltool.entities.ModelResponseDTO;
 
@@ -512,6 +514,17 @@ public class Main {
 				.create();
 
 		options.addOption(loadStepsOption);
+		
+		Option runChannelOption =
+				OptionBuilder
+				.withLongOpt("runChannel")
+				.isRequired(false)
+				.hasArg()
+				.withArgName("channelId")
+				.withDescription("Id of integrations channel to run")
+				.create();
+		
+		options.addOption(runChannelOption);
 
 		HelpFormatter helpFormatter = new HelpFormatter();
 
@@ -932,6 +945,35 @@ public class Main {
 
 			return metadata;
 		}
+		
+		if (commandLine.hasOption("runChannel")) {
+			String channelId = commandLine.getOptionValue("runChannel");
+			
+			if (channelId == null) {
+				System.err.println("Error: runChannel option requires channelId: --runChannel <channelId>");
+				System.exit(1);
+			}
+			
+			ETLMetadataDTO metadata = new ETLMetadataDTO();
+
+			System.out.println("Creating a new streaming job.");
+			
+			try {
+				ETLStreamChannelStepDTO step = new ETLStreamChannelStepDTO(Id.valueOf(channelId), MockMode.LIVE);
+				metadata.addStep(step);
+			} catch (NumberFormatException e) {
+				System.err.println("Error: channelId could not be parsed as a number.");
+				System.exit(1);
+			}
+			
+			metadata.setSchemaVersion(2);
+			metadata.setModelId(etlClient.modelId);
+
+			String jobName = commandLine.getOptionValue("jobName");
+			metadata.setName(jobName);
+
+			return metadata;
+		}
 
 		// Do an Import
 		return produceImportMetadata(commandLine, etlClient.modelId);
@@ -1084,11 +1126,27 @@ public class Main {
 						metadata.addStep(step);
 						break;
 			    	}
+			    	case "INTEGRATIONCHANNEL":
+			    		
+			    		if (optionFields.length != 2) {
+							System.err.println( "Error: integrationChannel step requires channelId=<channelId>.");
+							System.exit(1);
+			    		}
+			    		
+			    		try {
+			    			ETLStreamChannelStepDTO step = new ETLStreamChannelStepDTO(Id.valueOf(optionFields[1].trim()), MockMode.LIVE);
+			    			metadata.addStep(step);
+			    		} catch (NumberFormatException e) {
+			    			System.err.println( "Error: channelId could not be parsed as a number.");
+			    			System.exit(1);
+			    		}
+			    		
+			    		break;
 			    	case "":
 			    		break;
 			    	default:
 						System.err.println("Error: loadType " + loadType + " not supported. "
-								+ "Supported options are { fileToCube, fileToStage, SQLTransform, stageToCube, cubeToStage }.");
+								+ "Supported options are { fileToCube, fileToStage, SQLTransform, stageToCube, cubeToStage, integrationChannel }.");
 						System.exit(1);	
 			    	}
 			    }
