@@ -526,6 +526,24 @@ public class Main {
 		
 		options.addOption(runChannelOption);
 
+		Option enableQueuingOption =
+				OptionBuilder
+				.withLongOpt("enableQueuing")
+				.isRequired(false)
+				.withDescription("Queue this ETL job if another job is already running under this data model.")
+				.create();
+
+		options.addOption(enableQueuingOption);
+
+		Option disableQueuingOption =
+				OptionBuilder
+				.withLongOpt("disableQueuing")
+				.isRequired(false)
+				.withDescription("Do not queue this ETL job if another job is already running under this data model.")
+				.create();
+
+		options.addOption(disableQueuingOption);
+
 		HelpFormatter helpFormatter = new HelpFormatter();
 
 		CommandLine commandLine = null;
@@ -777,6 +795,11 @@ public class Main {
 			System.exit(1);
 		}
 
+		if (commandLine.hasOption("enableQueuing") && commandLine.hasOption("disableQueuing")) {
+			System.err.println( "Error: --enableQueuing and --disableQueuing options cannot be combined.");
+			System.exit(1);
+		}
+
 		// ETL 2.0 option for providing multiple steps at a time
 		
 		if (commandLine.hasOption("loadSteps")) {
@@ -871,7 +894,15 @@ public class Main {
 					
 				metadata.setSchemaVersion(2);
 				metadata.setModelId(etlClient.modelId);
-				
+
+				if (commandLine.hasOption("enableQueuing")) {
+					metadata.setQueuingEnabled(true);
+				}
+
+				if (commandLine.hasOption("disableQueuing")) {
+					metadata.setQueuingEnabled(false);
+				}
+
 				ETLCubeToStageStepDTO step = new ETLCubeToStageStepDTO();
 				
 				step.setDataType(type);
@@ -906,6 +937,15 @@ public class Main {
 
 			DataType type = null;
 			ETLMetadataDTO metadata = new ETLMetadataDTO();
+
+			if (commandLine.hasOption("enableQueuing")) {
+				metadata.setQueuingEnabled(true);
+			}
+
+			if (commandLine.hasOption("disableQueuing")) {
+				metadata.setQueuingEnabled(false);
+			}
+
 			try {
 				type = DataType.valueOf(deleteTypeStr);
 				if (type.equals(DataType.intersections)) {
@@ -989,7 +1029,15 @@ public class Main {
 		metadata.setName(jobName);
 		metadata.setSchemaVersion(2);
 		metadata.setModelId(etlClient.modelId);
-		
+
+		if (commandLine.hasOption("enableQueuing")) {
+			metadata.setQueuingEnabled(true);
+		}
+
+		if (commandLine.hasOption("disableQueuing")) {
+			metadata.setQueuingEnabled(false);
+		}
+
 		String stepsFile = commandLine.getOptionValue("loadSteps");
 		
 		try (BufferedReader br = new BufferedReader(new FileReader(new File(stepsFile).getPath()))) {
@@ -1274,6 +1322,14 @@ public class Main {
 		System.out.println("Creating a new job.");
 
 		ETLMetadataDTO metadata = new ETLMetadataDTO();
+
+		if (commandLine.hasOption("enableQueuing")) {
+			metadata.setQueuingEnabled(true);
+		}
+
+		if (commandLine.hasOption("disableQueuing")) {
+			metadata.setQueuingEnabled(false);
+		}
 
 		List<String> clearSlicesExprs = null;
 		if (commandLine.hasOption("clearSlices")) {

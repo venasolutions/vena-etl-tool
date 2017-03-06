@@ -60,7 +60,8 @@ public class ETLMetadataDTO {
 
 	private boolean stagingRequired;
 
-	
+	private Boolean queuingEnabled = null;
+
 	public String getName() {
 		return name;
 	}
@@ -167,5 +168,13 @@ public class ETLMetadataDTO {
 	
 	public void setSchemaVersion(Integer schemaVersion) {
 		this.schemaVersion = schemaVersion;
+	}
+
+	public Boolean getQueuingEnabled() {
+		return queuingEnabled;
+	}
+
+	public void setQueuingEnabled(Boolean queuingEnabled) {
+		this.queuingEnabled = queuingEnabled;
 	}
 }
