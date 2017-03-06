@@ -23,7 +23,8 @@ import org.junit.runners.Suite.SuiteClasses;
 	ETLToolVerboseTest.class,
 	ETLToolTemplateIdTest.class,
 	ETLToolExportTest.class,
-	ETLToolCreateModelTest.class
+	ETLToolCreateModelTest.class,
+	ETLToolEnableQueuingTest.class
 })
 public class ETLToolTestSuite {
 
