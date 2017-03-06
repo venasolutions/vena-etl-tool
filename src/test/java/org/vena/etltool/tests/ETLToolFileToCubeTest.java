@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
+import java.util.HashSet;
 
 import org.junit.Test;
 import org.vena.etltool.ETLClient;
@@ -38,7 +39,7 @@ public class ETLToolFileToCubeTest extends ETLToolTest {
 	}
 	
 	@Test
-	public void testFileToCubeWithClear() throws UnsupportedEncodingException {
+	public void testFileToCubeWithClearSlices() throws UnsupportedEncodingException {
 		ETLClient etlClient = mockETLClient();
 		String[] args = buildCommand(new String[] {"--jobName", "Loading intersections file", "--file", "intersectionsFile.csv;type=intersections;format=CSV;clearSlices=dimension('Accounts':'Sales'),dimension('Accounts':'Expense')"});
 		
@@ -60,7 +61,7 @@ public class ETLToolFileToCubeTest extends ETLToolTest {
 	}
 	
 	@Test
-	public void testFileToCubeWithIncorrectClear() throws UnsupportedEncodingException {
+	public void testFileToCubeWithIncorrectClearSlices() throws UnsupportedEncodingException {
 		ETLClient etlClient = mockETLClient();
 		String[] args = buildCommand(new String[] {"--jobName", "Loading intersections file", "--file", "intersectionsFile.csv;type=intersections;format=CSV", "--clearSlices","dimension('Accounts':'Sales'),dimension('Accounts':'Expense')"});
 		
@@ -68,7 +69,29 @@ public class ETLToolFileToCubeTest extends ETLToolTest {
 			Main.parseCmdlineArgs(args, etlClient);
 		} catch (ExitException e) {
 			assertEquals(1, e.status);
-			assertEquals("Error: --clearSlices and --file options cannot be combined. Instead use the suboption clearSlices for the --file option\n", err.toString());
+			assertEquals("Error: --clearSlices and --clearSlicesByDimNums options cannot be combined with the --file option. Instead use the suboptions clearSlices and clearSlicesByDimNums for the --file option\n", err.toString());
 		}
+	}
+
+	@Test
+	public void testFileToCubeWithClearSlicesByDimNums() throws UnsupportedEncodingException {
+		ETLClient etlClient = mockETLClient();
+		String[] args = buildCommand(new String[] {"--jobName", "Loading intersections file", "--file", "intersectionsFile.csv;type=intersections;format=CSV;clearSlicesByDimNums=1,2,5"});
+
+		ETLMetadataDTO metadata = Main.parseCmdlineArgs(args, etlClient);
+
+		assertEquals(modelId, metadata.getModelId());
+		assertEquals("Loading intersections file", metadata.getName());
+		assertEquals(1, metadata.getSteps().size());
+
+		ETLStepDTO step = metadata.getSteps().get(0);
+
+		assertEquals(ETLFileToCubeStepDTO.class, step.getClass());
+
+		ETLFileToCubeStepDTO fileToCubeStep = (ETLFileToCubeStepDTO)step;
+		assertEquals(DataType.intersections, fileToCubeStep.getDataType());
+		assertEquals("intersectionsFile.csv", fileToCubeStep.getFileName());
+		assertEquals(FileFormat.CSV, fileToCubeStep.getFileFormat());
+		assertEquals(new HashSet<Integer>(Arrays.asList(1, 2, 5)),((ETLFileToCubeStepDTO)step).getClearSlicesDimensions());
 	}
 }

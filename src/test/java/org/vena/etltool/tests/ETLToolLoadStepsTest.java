@@ -5,6 +5,7 @@ import static org.junit.Assert.assertEquals;
 import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
+import java.util.HashSet;
 
 import org.junit.Test;
 import org.vena.etltool.ETLClient;
@@ -26,8 +27,8 @@ public class ETLToolLoadStepsTest extends ETLToolTest {
 		ETLClient etlClient = mockETLClient();
 		
 		ETLMetadataDTO metadata = Main.parseCmdlineArgs(args, etlClient);
-		assertEquals(3, metadata.getSteps().size());
-		
+		assertEquals(4, metadata.getSteps().size());
+
 		ETLStepDTO firstStep = metadata.getSteps().get(0);
 		assertEquals(ETLFileToStageStepDTO.class, firstStep.getClass());
 
@@ -42,10 +43,17 @@ public class ETLToolLoadStepsTest extends ETLToolTest {
 		
 		ETLStepDTO thirdStep = metadata.getSteps().get(2);
 		assertEquals(ETLStageToCubeStepDTO.class, thirdStep.getClass());
-		
-		ETLStageToCubeStepDTO stageToCubeStep = (ETLStageToCubeStepDTO)thirdStep;
-		assertEquals(DataType.intersections, stageToCubeStep.getDataType());
-		assertEquals(Arrays.asList("dimension('Accounts':'Expense')","dimension('Accounts':'Sale')"), stageToCubeStep.getClearSlicesExpressions());
+
+		ETLStageToCubeStepDTO stageToCubeThirdStep = (ETLStageToCubeStepDTO)thirdStep;
+		assertEquals(DataType.intersections, stageToCubeThirdStep.getDataType());
+		assertEquals(Arrays.asList("dimension('Accounts':'Expense')","dimension('Accounts':'Sale')"), stageToCubeThirdStep.getClearSlicesExpressions());
+
+		ETLStepDTO fourthStep = metadata.getSteps().get(3);
+		assertEquals(ETLStageToCubeStepDTO.class, fourthStep.getClass());
+
+		ETLStageToCubeStepDTO stageToCubeFourthStep = (ETLStageToCubeStepDTO)fourthStep;
+		assertEquals(DataType.intersections, stageToCubeFourthStep.getDataType());
+		assertEquals(new HashSet<Integer>(Arrays.asList(1, 3, 4)), stageToCubeFourthStep.getClearSlicesDimensions());
 	}
 	
 	@Test
