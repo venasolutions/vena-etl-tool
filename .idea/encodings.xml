@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="Encoding">
+    <file url="file://$USER_HOME$/mt-server/mt-parent/mt-api" charset="UTF-8" />
+    <file url="file://$USER_HOME$/mt-server/mt-parent/mt-cluster" charset="UTF-8" />
+    <file url="file://$USER_HOME$/mt-server/mt-parent/mt-service" charset="UTF-8" />
+    <file url="file://$USER_HOME$/mt-server/mt-parent/mt-test" charset="UTF-8" />
+  </component>
+</project>

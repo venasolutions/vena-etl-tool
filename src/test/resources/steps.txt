@@ -1,0 +1,3 @@
+fileToStage file=intersectionsFile.csv;type=intersections;format=CSV;table=values_table
+sqlTransform
+stageToCube type=intersections;clearSlices="dimension('Accounts':'Expense'),dimension('Accounts':'Sale')"
