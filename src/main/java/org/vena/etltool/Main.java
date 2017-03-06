@@ -1073,10 +1073,9 @@ public class Main {
 								} else {
 									System.err.println(
 											"Error: stageToCube valid options are type=<type>, clearSlices=<expr>, and clearSlicesByDimNums=<dimensions>"
-													+ "\nwhere the known types are ["
-													+ ETLFileOldDTO.SUPPORTED_FILETYPES_LIST + "], "
-													+ "expression is a model query defining one or multiple slices separated by commas, "
-													+ "and dimensions is a list of dimension numbers separated by commas.");
+											+ "\nwhere the known types are [" + ETLFileOldDTO.SUPPORTED_FILETYPES_LIST + "], "
+											+ "expression is a model query defining one or multiple slices separated by commas, "
+											+ "and dimensions is a list of dimension numbers separated by commas.");
 									System.exit(1);
 								}
 			    			}
