@@ -50,7 +50,9 @@ public class Main {
 			+ "\n{ --apiUser=<uid.cid> --apiKey=<key> "
 			+ "\n| --user=<email> --password=<password>"
 			+ "\n}"
-			+ "\n{ --modelName <name> | --modelId <id> "
+			+ "\n{ --modelName <name> | --modelId <id>"
+			+ "\n}"
+			+ "\n{ [--queue|--noqueue]"
 			+ "\n}"
 			+ "\n{ --loadFromStaging [--wait|--waitFully]"
 			+ "\n| [--stage|--stageOnly] [--wait|--waitFully] [--validate] [--templateId <id>] [--jobName <name>] --file \"[file=]<filename>; [type=]<filetype> [;[table=]<tableName>] [;format={CSV|PSV|TDF}] [;bulkInsert={true|false}]\""
@@ -60,6 +62,7 @@ public class Main {
 			+ "\n| --transformComplete --jobId <id>"
 			+ "\n| --delete <type> --deleteQuery <expr> [--nowait]"
 			+ "\n| --export <type>\n {--exportQuery <expr> | --exportWhere <clause>}\n {--exportToFile <name> [--excludeHeaders] | --exportToTable <name> [--nowait]}"
+			+ "\n| --loadSteps <file>"
 			+ "\n}";
 	
 	/**
@@ -526,23 +529,23 @@ public class Main {
 		
 		options.addOption(runChannelOption);
 
-		Option enableQueuingOption =
+		Option queueOption =
 				OptionBuilder
-				.withLongOpt("enableQueuing")
+				.withLongOpt("queue")
 				.isRequired(false)
 				.withDescription("Queue this ETL job if another job is already running under this data model.")
 				.create();
 
-		options.addOption(enableQueuingOption);
+		options.addOption(queueOption);
 
-		Option disableQueuingOption =
+		Option noQueueOption =
 				OptionBuilder
-				.withLongOpt("disableQueuing")
+				.withLongOpt("noqueue")
 				.isRequired(false)
 				.withDescription("Do not queue this ETL job if another job is already running under this data model.")
 				.create();
 
-		options.addOption(disableQueuingOption);
+		options.addOption(noQueueOption);
 
 		HelpFormatter helpFormatter = new HelpFormatter();
 
@@ -795,8 +798,8 @@ public class Main {
 			System.exit(1);
 		}
 
-		if (commandLine.hasOption("enableQueuing") && commandLine.hasOption("disableQueuing")) {
-			System.err.println( "Error: --enableQueuing and --disableQueuing options cannot be combined.");
+		if (commandLine.hasOption("queue") && commandLine.hasOption("noqueue")) {
+			System.err.println( "Error: --queue and --noqueue options cannot be combined.");
 			System.exit(1);
 		}
 
@@ -895,11 +898,11 @@ public class Main {
 				metadata.setSchemaVersion(2);
 				metadata.setModelId(etlClient.modelId);
 
-				if (commandLine.hasOption("enableQueuing")) {
+				if (commandLine.hasOption("queue")) {
 					metadata.setQueuingEnabled(true);
 				}
 
-				if (commandLine.hasOption("disableQueuing")) {
+				if (commandLine.hasOption("noqueue")) {
 					metadata.setQueuingEnabled(false);
 				}
 
@@ -938,11 +941,11 @@ public class Main {
 			DataType type = null;
 			ETLMetadataDTO metadata = new ETLMetadataDTO();
 
-			if (commandLine.hasOption("enableQueuing")) {
+			if (commandLine.hasOption("queue")) {
 				metadata.setQueuingEnabled(true);
 			}
 
-			if (commandLine.hasOption("disableQueuing")) {
+			if (commandLine.hasOption("noqueue")) {
 				metadata.setQueuingEnabled(false);
 			}
 
@@ -1030,11 +1033,11 @@ public class Main {
 		metadata.setSchemaVersion(2);
 		metadata.setModelId(etlClient.modelId);
 
-		if (commandLine.hasOption("enableQueuing")) {
+		if (commandLine.hasOption("queue")) {
 			metadata.setQueuingEnabled(true);
 		}
 
-		if (commandLine.hasOption("disableQueuing")) {
+		if (commandLine.hasOption("noqueue")) {
 			metadata.setQueuingEnabled(false);
 		}
 
@@ -1323,11 +1326,11 @@ public class Main {
 
 		ETLMetadataDTO metadata = new ETLMetadataDTO();
 
-		if (commandLine.hasOption("enableQueuing")) {
+		if (commandLine.hasOption("queue")) {
 			metadata.setQueuingEnabled(true);
 		}
 
-		if (commandLine.hasOption("disableQueuing")) {
+		if (commandLine.hasOption("noqueue")) {
 			metadata.setQueuingEnabled(false);
 		}
 

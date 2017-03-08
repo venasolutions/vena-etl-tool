@@ -24,7 +24,7 @@ import org.junit.runners.Suite.SuiteClasses;
 	ETLToolTemplateIdTest.class,
 	ETLToolExportTest.class,
 	ETLToolCreateModelTest.class,
-	ETLToolEnableQueuingTest.class
+	ETLToolQueuingTest.class
 })
 public class ETLToolTestSuite {
 
