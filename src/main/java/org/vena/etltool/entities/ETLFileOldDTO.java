@@ -1,6 +1,7 @@
 package org.vena.etltool.entities;
 
 import java.util.List;
+import java.util.Set;
 
 import org.vena.etltool.entities.ETLFileImportStepDTO.FileFormat;
 import org.vena.etltool.entities.ETLStepDTO.DataType;
@@ -43,6 +44,8 @@ public class ETLFileOldDTO {
 	private boolean bulkInsert;
 
 	private List<String> clearSlicesExpressions = null;
+	
+	private Set<Integer> clearSlicesDimensions = null;
 	
 	public ETLFileOldDTO() {
 		super();
@@ -139,6 +142,14 @@ public class ETLFileOldDTO {
 	
 	public List<String> getClearSlicesExpressions() {
 		return this.clearSlicesExpressions;
+	}
+	
+	public void setClearSlicesDimensions(Set<Integer> clearSlicesDimensions) {
+		this.clearSlicesDimensions = clearSlicesDimensions;
+	}
+	
+	public Set<Integer> getClearSlicesDimensions() {
+		return clearSlicesDimensions;
 	}
 
 }

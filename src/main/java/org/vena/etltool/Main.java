@@ -10,7 +10,9 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -465,6 +467,17 @@ public class Main {
 				.create();
 
 		options.addOption(clearSlicesOption);
+		
+		Option clearSlicesByDimNumsOption =
+				OptionBuilder
+				.withLongOpt("clearSlicesByDimNums")
+				.isRequired(false)
+				.hasArg()
+				.withArgName("dimensions")
+				.withDescription("A list of dimension numbers separated by commas to be used to compute slices to clear.")
+				.create();
+		
+		options.addOption(clearSlicesByDimNumsOption);
 		
 		Option waitOption = 
 				OptionBuilder
@@ -1049,11 +1062,22 @@ public class Main {
 				    					System.err.println("Error: The clearSlices option can only be combined with the type: {intersections}. Please specify the type first.");
 				    					System.exit(1);
 				    				}
-				    			} else {
-				    				System.err.println( "Error: stageToCube valid options are type=<type> and clearSlices=<expr>"
-				    						+ "\nwhere the known types are ["+ETLFileOldDTO.SUPPORTED_FILETYPES_LIST+"] and expression is a model query defining one or multiple slices separated by a comma");
-				    				System.exit(1);
-				    			}
+								} else if (key.equalsIgnoreCase("clearSlicesByDimNums")) {
+									if (step.getDataType() == DataType.intersections && value != null) {
+										step.setClearSlicesDimensions(parseClearSlicesByDimNumsArgs(value));
+									} else {
+										System.err.println(
+												"Error: The clearSlicesByDimNums option can only be combined with the type: {intersections}. Please specify the type first.");
+										System.exit(1);
+									}
+								} else {
+									System.err.println(
+											"Error: stageToCube valid options are type=<type>, clearSlices=<expr>, and clearSlicesByDimNums=<dimensions>"
+											+ "\nwhere the known types are [" + ETLFileOldDTO.SUPPORTED_FILETYPES_LIST + "], "
+											+ "expression is a model query defining one or multiple slices separated by commas, "
+											+ "and dimensions is a list of dimension numbers separated by commas.");
+									System.exit(1);
+								}
 			    			}
 			    			metadata.addStep(step);
 			    		} else {
@@ -1228,12 +1252,12 @@ public class Main {
 			System.exit(1);
 		}
 		
-		if(commandLine.hasOption("clearSlices")) {
+		if(commandLine.hasOption("clearSlices") || commandLine.hasOption("clearSlicesByDimNums")) {
 			if (loadType == ETLLoadType.FILE_TO_STAGE) {
-				System.err.println("Error: --clearSlices and --stageOnly options cannot be combined.");
+				System.err.println("Error: --clearSlices and --clearSlicesByDimNums options cannot be combined with the --stageOnly option.");
 				System.exit(1);
 			} else if (loadType == ETLLoadType.FILE_TO_CUBE) {
-				System.err.println("Error: --clearSlices and --file options cannot be combined. Instead use the suboption clearSlices for the --file option");
+				System.err.println("Error: --clearSlices and --clearSlicesByDimNums options cannot be combined with the --file option. Instead use the suboptions clearSlices and clearSlicesByDimNums for the --file option");
 				System.exit(1);
 			}
 		}
@@ -1259,10 +1283,10 @@ public class Main {
 			}
 			
 			for(ETLFileOldDTO etlFile : etlFiles) {
-				if (etlFile.getClearSlicesExpressions() != null) {
+				if (etlFile.getClearSlicesExpressions() != null || etlFile.getClearSlicesDimensions() != null) {
 					if (loadType != ETLLoadType.FILE_TO_CUBE) {
-						System.err.println("Error: the --file option clearSlices is only available for ETL File to Cube imports."
-								+"\n For Stage operations, use the stand alone --clearSlices option instead.");
+						System.err.println("Error: the --file options clearSlices and clearSlicesByDimNums are only available for ETL File to Cube imports."
+								+"\n For Stage operations, use the stand alone --clearSlices and --clearSlicesByDimNums options instead.");
 					}
 				}
 				
@@ -1281,6 +1305,11 @@ public class Main {
 			if (clearSlicesExpr != null) {
 				clearSlicesExprs = Arrays.asList(clearSlicesExpr.split(","));
 			}
+		}
+		
+		Set<Integer> clearSlicesDimNums = null;
+		if (commandLine.hasOption("clearSlicesByDimNums")) {
+			clearSlicesDimNums = parseClearSlicesByDimNumsArgs(commandLine.getOptionValue("clearSlicesByDimNums"));
 		}
 		
 		switch(loadType) {
@@ -1303,7 +1332,7 @@ public class Main {
 		case STAGE_TO_CUBE:
 			metadata.addStep(new ETLStageToCubeStepDTO(DataType.hierarchy));
 			metadata.addStep(new ETLStageToCubeStepDTO(DataType.attributes));
-			metadata.addStep(new ETLStageToCubeStepDTO(DataType.intersections, clearSlicesExprs));
+			metadata.addStep(new ETLStageToCubeStepDTO(DataType.intersections, clearSlicesExprs, clearSlicesDimNums));
 			metadata.addStep(new ETLStageToCubeStepDTO(DataType.lids));
 			break;
 		}
@@ -1361,6 +1390,11 @@ public class Main {
 						etlFile.setClearSlicesExpressions(Arrays.asList(value.split(",")));
 					}
 					break;
+				case "clearSlicesByDimNums":
+					if (value != null) {
+						etlFile.setClearSlicesDimensions(parseClearSlicesByDimNumsArgs(value));
+					}
+					break;
 				default:
 					throw new IllegalArgumentException("Unsupported key " + key);
 				}
@@ -1415,5 +1449,17 @@ public class Main {
 		}
 
 		return etlFile;
+	}
+
+	private static Set<Integer> parseClearSlicesByDimNumsArgs(String clearSlicesByDimNumsOption) {
+		if (clearSlicesByDimNumsOption != null && !clearSlicesByDimNumsOption.isEmpty()) {
+			List<String> dimNumbers = Arrays.asList(clearSlicesByDimNumsOption.split(","));
+			Set<Integer> clearSlicesDimNums = new HashSet<Integer>(dimNumbers.size());
+				for (String num: dimNumbers) {
+					clearSlicesDimNums.add(Integer.parseInt(num.trim()));
+				}
+			return clearSlicesDimNums;
+		}
+		return null;
 	}
 }

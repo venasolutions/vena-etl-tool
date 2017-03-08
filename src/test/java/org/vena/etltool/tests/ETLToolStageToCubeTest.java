@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 
 import org.junit.Test;
@@ -37,7 +38,7 @@ public class ETLToolStageToCubeTest extends ETLToolTest {
 	}
 	
 	@Test
-	public void testStageToCubeWithClear() throws UnsupportedEncodingException {
+	public void testStageToCubeWithClearSlices() throws UnsupportedEncodingException {
 		ETLClient etlClient = mockETLClient();
 		String[] args = buildCommand(new String[] {"--jobName", "Loading to stage with clear", "--loadFromStaging", "--clearSlices", "dimension('Accounts':'Expense'),dimension('Accounts':'Sale')"});
 		
@@ -59,7 +60,31 @@ public class ETLToolStageToCubeTest extends ETLToolTest {
 			}
 		}
 	}
-	
+
+	@Test
+	public void testStageToCubeWithClearSlicesByDimNums() throws UnsupportedEncodingException {
+		ETLClient etlClient = mockETLClient();
+		String[] args = buildCommand(new String[] {"--jobName", "Loading to stage with clear", "--loadFromStaging", "--clearSlicesByDimNums", "3, 4"});
+
+		ETLMetadataDTO metadata = Main.parseCmdlineArgs(args, etlClient);
+
+		assertEquals(modelId, metadata.getModelId());
+		assertEquals("Loading to stage with clear", metadata.getName());
+		assertEquals(4, metadata.getSteps().size());
+
+		List<ETLStepDTO> steps = metadata.getSteps();
+		List<DataType> types = Arrays.asList(DataType.hierarchy, DataType.attributes, DataType.intersections, DataType.lids);
+
+		for (int i=0; i<steps.size(); i++) {
+			assertEquals(ETLStageToCubeStepDTO.class, steps.get(i).getClass());
+			DataType type = ((ETLStageToCubeStepDTO)steps.get(i)).getDataType();
+			assertEquals(types.get(i), type);
+			if (type.equals(DataType.intersections)) {
+				assertEquals(new HashSet<Integer>(Arrays.asList(3, 4)), ((ETLStageToCubeStepDTO)steps.get(i)).getClearSlicesDimensions());
+			}
+		}
+	}
+
 	@Test
 	public void testMultipleStageOperations() throws UnsupportedEncodingException {
 		ETLClient etlClient = mockETLClient();
