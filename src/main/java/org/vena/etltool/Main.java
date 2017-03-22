@@ -1130,6 +1130,10 @@ public class Main {
 									System.exit(1);
 								}
 			    			}
+			    			if (step.getClearSlicesDimensions() != null && step.getClearSlicesExpressions() != null) {
+			    				System.err.println("Error: --clearSlices and --clearSlicesByDimNums options cannot be combined. At most one of these options can be used at a time.");
+			    				System.exit(1);
+			    			}
 			    			metadata.addStep(step);
 			    		} else {
 							System.err.println( "Error: stageToCube valid option is type=<type>. The known types are ["+ETLFileOldDTO.SUPPORTED_FILETYPES_LIST+"]");
@@ -1302,8 +1306,13 @@ public class Main {
 
 			System.exit(1);
 		}
-		
-		if(commandLine.hasOption("clearSlices") || commandLine.hasOption("clearSlicesByDimNums")) {
+
+		if (commandLine.hasOption("clearSlices") && commandLine.hasOption("clearSlicesByDimNums")) {
+			System.err.println("Error: --clearSlices and --clearSlicesByDimNums options cannot be combined. At most one of these options can be used at a time.");
+			System.exit(1);
+		}
+
+		if (commandLine.hasOption("clearSlices") || commandLine.hasOption("clearSlicesByDimNums")) {
 			if (loadType == ETLLoadType.FILE_TO_STAGE) {
 				System.err.println("Error: --clearSlices and --clearSlicesByDimNums options cannot be combined with the --stageOnly option.");
 				System.exit(1);
@@ -1502,9 +1511,17 @@ public class Main {
 		if (etlFile.getFileType() == DataType.user_defined && etlFile.getTableName() == null) {
 			throw new IllegalArgumentException("Table name is required for user-defined type.");
 		}
-		
+
 		if (etlFile.getClearSlicesExpressions() != null && etlFile.getFileType() != DataType.intersections) {
 			throw new IllegalArgumentException("The types supported for the clearSlices option are: {intersections}");
+		}
+
+		if (etlFile.getClearSlicesDimensions() != null && etlFile.getFileType() != DataType.intersections) {
+			throw new IllegalArgumentException("The types supported for the clearSlicesByDimNums option are: {intersections}");
+		}
+
+		if (etlFile.getClearSlicesExpressions() != null && etlFile.getClearSlicesDimensions() != null) {
+			throw new IllegalArgumentException("Error: --clearSlices and --clearSlicesByDimNums options cannot be combined. At most one of these options can be used at a time.");
 		}
 
 		return etlFile;

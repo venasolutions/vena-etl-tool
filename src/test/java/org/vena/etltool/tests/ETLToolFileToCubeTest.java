@@ -1,6 +1,7 @@
 package org.vena.etltool.tests;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
@@ -93,5 +94,19 @@ public class ETLToolFileToCubeTest extends ETLToolTest {
 		assertEquals("intersectionsFile.csv", fileToCubeStep.getFileName());
 		assertEquals(FileFormat.CSV, fileToCubeStep.getFileFormat());
 		assertEquals(new HashSet<Integer>(Arrays.asList(1, 2, 5)),((ETLFileToCubeStepDTO)step).getClearSlicesDimensions());
+	}
+
+	@Test
+	public void testFileToCubeWithBothClearSlices() throws UnsupportedEncodingException {
+		ETLClient etlClient = mockETLClient();
+		String[] args = buildCommand(new String[] {"--jobName", "Loading intersections file", "--file", "intersectionsFile.csv;type=intersections;format=CSV;clearSlicesByDimNums=1,2,5;clearSlices=dimension('Accounts':'Sales')"});
+
+		try {
+			Main.parseCmdlineArgs(args, etlClient);
+		} catch (ExitException e) {
+			String expectedError = "Error: --clearSlices and --clearSlicesByDimNums options cannot be combined. At most one of these options can be used at a time.";
+			assertEquals(1, e.status);
+			assertTrue(err.toString().contains(expectedError));
+		}
 	}
 }

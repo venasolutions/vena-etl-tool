@@ -17,6 +17,7 @@ import org.vena.etltool.entities.ETLStageToCubeStepDTO;
 import org.vena.etltool.entities.ETLStepDTO;
 import org.vena.etltool.entities.ETLFileImportStepDTO.FileFormat;
 import org.vena.etltool.entities.ETLStepDTO.DataType;
+import org.vena.etltool.tests.ETLToolTest.ExitException;
 
 public class ETLToolFileToStageToCubeTest extends ETLToolTest {
 	
@@ -125,6 +126,19 @@ public class ETLToolFileToStageToCubeTest extends ETLToolTest {
 			if (type.equals(DataType.intersections)) {
 				assertEquals(new HashSet<Integer>(Arrays.asList(1, 3, 4)), ((ETLStageToCubeStepDTO)stageToCubeSteps.get(i)).getClearSlicesDimensions());
 			}
+		}
+	}
+
+	@Test
+	public void testFileToStageToCubeWithBothClearSlices() throws UnsupportedEncodingException {
+		ETLClient etlClient = mockETLClient();
+		String[] args = buildCommand(new String[] {"--jobName", "Loading intersections file with transform", "--file", "intersectionsFile.csv;type=intersections;format=CSV;table=values_table", "--stage", "--clearSlicesByDimNums", "1,3,4", "--clearSlices", "dimension('Accounts':'Expense')"});
+
+		try {
+			Main.parseCmdlineArgs(args, etlClient);
+		} catch (ExitException e) {
+			assertEquals(1, e.status);
+			assertEquals("Error: --clearSlices and --clearSlicesByDimNums options cannot be combined. At most one of these options can be used at a time.\n", err.toString());
 		}
 	}
 }
