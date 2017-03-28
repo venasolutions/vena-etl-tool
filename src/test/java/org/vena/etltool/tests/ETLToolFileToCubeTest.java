@@ -11,6 +11,7 @@ import org.junit.Test;
 import org.vena.etltool.ETLClient;
 import org.vena.etltool.Main;
 import org.vena.etltool.entities.ETLFileImportStepDTO.FileFormat;
+import org.vena.etltool.entities.ETLFileOldDTO;
 import org.vena.etltool.entities.ETLFileToCubeStepDTO;
 import org.vena.etltool.entities.ETLMetadataDTO;
 import org.vena.etltool.entities.ETLStepDTO;
@@ -105,6 +106,20 @@ public class ETLToolFileToCubeTest extends ETLToolTest {
 			Main.parseCmdlineArgs(args, etlClient);
 		} catch (ExitException e) {
 			String expectedError = "Error: --clearSlices and --clearSlicesByDimNums options cannot be combined. At most one of these options can be used at a time.";
+			assertEquals(1, e.status);
+			assertTrue(err.toString().contains(expectedError));
+		}
+	}
+
+	@Test
+	public void testFileToCubeWithInvalidDataType() throws UnsupportedEncodingException {
+		ETLClient etlClient = mockETLClient();
+		String[] args = buildCommand(new String[] {"--jobName", "Loading intersections file", "--file", "intersectionsFile.csv;type=staging;format=CSV;"});
+
+		try {
+			Main.parseCmdlineArgs(args, etlClient);
+		} catch (ExitException e) {
+			String expectedError = "The ETL file type \"staging\" does not exist. The supported filetypes are ["+ETLFileOldDTO.SUPPORTED_FILETYPES_LIST+"]";
 			assertEquals(1, e.status);
 			assertTrue(err.toString().contains(expectedError));
 		}
