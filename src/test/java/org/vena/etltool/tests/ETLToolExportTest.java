@@ -86,7 +86,7 @@ public class ETLToolExportTest extends ETLToolTest {
 			assertEquals(1, e.status);
 			assertEquals("Error: The ETL file type \"invalidType\" does not exist. The known filetypes are "
 			+ "[intersections, values, lids, hierarchy, dimensions, attributes, user_defined, "
-			+ "intersection_members, lid_members, variables, setexpressions, staging]\n", err.toString());
+			+ "intersection_members, lid_members, variables, setexpressions]\n", err.toString());
 		}
 	}
 	

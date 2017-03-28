@@ -843,7 +843,7 @@ public class Main {
 			DataType type = null;
 
 			if (commandLine.hasOption("exportFromTable")){
-				type = DataType.staging;
+				type = DataType.user_defined;
 			}
 
 			if (exportToFile != null && exportToTable != null)  {
