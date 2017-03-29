@@ -72,6 +72,33 @@ public class ETLToolExportTest extends ETLToolTest {
 		assertEquals("dimension('Accounts':'Sale')", cubeToStageStep.getQueryString());
 
 	}
+
+	@Test
+	public void testExportFromTableToFile() throws IOException {
+		ETLClient etlClient = mockETLClient();
+		InputStream intersection_data = getClass().getClassLoader().getResourceAsStream("exportIntersectionsSource.csv");
+		when(etlClient.sendExport(DataType.user_defined, "out_values", true, null, null, null, true)).thenReturn(intersection_data);
+
+		File file = File.createTempFile("exportIntersectionsDestination", ".csv");
+		file.deleteOnExit();
+
+		String[] args = buildCommand(new String[] {"--export","staging","--exportFromTable","out_values","--exportToFile", file.getPath()});
+
+		try {
+			Main.parseCmdlineArgs(args, etlClient);
+		} catch (ExitException e) {
+			verify(etlClient).sendExport(DataType.user_defined, "out_values", true, null, null, null, true);
+			assertEquals(0, e.status);
+			assertEquals(true, etlClient.pollingRequested);
+			assertEquals(true, etlClient.waitFully);
+
+			// Check that the contents of the destination file are correct
+			String sourcePath = "src" + File.separatorChar + "test" + File.separatorChar + "resources" + File.separatorChar + "exportIntersectionsSource.csv";
+			List<String> source = Files.readAllLines(Paths.get(sourcePath));
+			List<String> destination = Files.readAllLines(file.toPath());
+			assertEquals(source, destination);
+		}
+	}
 	
 	// Tests for expected errors
 	
