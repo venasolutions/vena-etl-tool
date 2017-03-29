@@ -460,7 +460,7 @@ public class ETLClient {
 			case hierarchy:
 				typePath = "hierarchies";
 				break;
-			case staging:
+			case user_defined:
 				typePath = "staging";
 				break;
 			case intersections:
@@ -475,7 +475,7 @@ public class ETLClient {
 		else if (queryExpr != null) {
 			switch (type) {
 			case attributes:
-			case staging:
+			case user_defined:
 			case hierarchy:
 				System.err.println("Type \""+type+"\" doesn't support query expression. Use where clause instead.");
 				break;
@@ -504,7 +504,7 @@ public class ETLClient {
 			case lids:
 				typePath = "lids2";
 				break;
-			case staging:
+			case user_defined:
 				typePath = "staging";
 				break;
 			default:

@@ -35,7 +35,7 @@ public abstract class ETLStepDTO {
 
 	public enum Status { NOT_STARTED, RUNNING, COMPLETED, ERROR, CANCELLED, WAITING, QUEUED };
 	
-	public enum DataType { intersections, values, lids, hierarchy, dimensions, attributes, user_defined, intersection_members, lid_members, variables, setexpressions, staging}
+	public enum DataType { intersections, values, lids, hierarchy, dimensions, attributes, user_defined, intersection_members, lid_members, variables, setexpressions}
 
 	protected Status status = Status.NOT_STARTED;
 	
