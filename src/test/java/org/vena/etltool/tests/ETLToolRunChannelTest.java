@@ -65,6 +65,19 @@ public class ETLToolRunChannelTest extends ETLToolTest {
 	@Test
 	public void testRunChannelMissingArg() throws UnsupportedEncodingException {
 		ETLClient etlClient = mockETLClient();
+		String[] args = buildCommand(new String[] {"--jobName", "Running integrations channels", "--runChannel"});
+
+		try {
+			Main.parseCmdlineArgs(args, etlClient);
+		} catch (ExitException e) {
+			assertEquals(1, e.status);
+			assertEquals("Error: Missing argument for option: runChannel\n", err.toString());
+		}
+	}
+
+	@Test
+	public void testMultipleRunChannelMissingArg() throws UnsupportedEncodingException {
+		ETLClient etlClient = mockETLClient();
 		String[] args = buildCommand(new String[] {"--jobName", "Running integrations channels", "--runChannel", "--runChannel", "5678"});
 
 		try {
