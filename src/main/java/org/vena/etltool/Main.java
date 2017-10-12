@@ -1003,25 +1003,21 @@ public class Main {
 		}
 		
 		if (commandLine.hasOption("runChannel")) {
-			String channelId = commandLine.getOptionValue("runChannel");
-			
-			if (channelId == null) {
-				System.err.println("Error: runChannel option requires channelId: --runChannel <channelId>");
-				System.exit(1);
-			}
+			String[] channelIds = commandLine.getOptionValues("runChannel");
 			
 			ETLMetadataDTO metadata = new ETLMetadataDTO();
-
 			System.out.println("Creating a new streaming job.");
-			
-			try {
-				ETLStreamChannelStepDTO step = new ETLStreamChannelStepDTO(Id.valueOf(channelId), MockMode.LIVE);
-				metadata.addStep(step);
-			} catch (NumberFormatException e) {
-				System.err.println("Error: channelId could not be parsed as a number.");
-				System.exit(1);
+
+			for (String channelId: channelIds) {
+				try {
+					ETLStreamChannelStepDTO step = new ETLStreamChannelStepDTO(Id.valueOf(channelId), MockMode.LIVE);
+					metadata.addStep(step);
+				} catch (NumberFormatException e) {
+					System.err.println("Error: channelId could not be parsed as a number.");
+					System.exit(1);
+				}
 			}
-			
+
 			metadata.setSchemaVersion(2);
 			metadata.setModelId(etlClient.modelId);
 
