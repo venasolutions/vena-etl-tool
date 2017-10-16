@@ -377,7 +377,7 @@ public class ETLClient {
 		return result;
 	}
 	
-	public static String getUserAgent() {
+	private String getUserAgent() {
 		Properties props = new Properties();
 		StringBuilder buf = new StringBuilder();
 
@@ -388,7 +388,7 @@ public class ETLClient {
 			String[] keys = new String[] { "artifactId", "version", "git.commit.id" };
 
 			for (String key : keys) {;
-				buf.append(props.getProperty(key)).append(" ");
+				buf.append(props.getProperty(key)).append("/");
 			}
 
 			return buf.toString();
