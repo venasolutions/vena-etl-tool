@@ -16,6 +16,8 @@ import java.util.Properties;
 import java.util.zip.DeflaterInputStream;
 
 import javax.ws.rs.core.MediaType;
+
+import org.apache.http.params.CoreProtocolPNames;
 import org.vena.etltool.entities.CreateModelRequestDTO;
 import org.vena.etltool.entities.ETLCalculationDeployStepDTO;
 import org.vena.etltool.entities.ETLCubeToStageStepDTO;
@@ -260,6 +262,7 @@ public class ETLClient {
 		WebResource webResource = client.resource(uri);
 
 		webResource.accept("application/json");
+		webResource.header(CoreProtocolPNames.USER_AGENT, getUserAgent());
 		
 		return webResource;
 	}
@@ -278,7 +281,7 @@ public class ETLClient {
 		WebResource webResource = client.resource(uri);
 
 		webResource.accept("application/json");
-
+		webResource.header(CoreProtocolPNames.USER_AGENT, getUserAgent());
 
 		ClientResponse response = webResource.post(ClientResponse.class);
 
@@ -372,6 +375,27 @@ public class ETLClient {
 		ETLJobDTO result = getEntity(response, ETLJobDTO.class);
 		
 		return result;
+	}
+	
+	public static String getUserAgent() {
+		Properties props = new Properties();
+		StringBuilder buf = new StringBuilder();
+
+		try {
+			props.load(ETLClient.class
+					.getResourceAsStream("/global.properties"));
+
+			String[] keys = new String[] { "artifactId", "version", "git.commit.id" };
+
+			for (String key : keys) {;
+				buf.append(props.getProperty(key)).append(" ");
+			}
+
+			return buf.toString();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return "vena-etl-tool";
+		}
 	}
 
 	public static String requestVersionInfo() {
