@@ -28,7 +28,8 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
 		@Type(value = ETLAsyncSaveDataStepDTO.class),
 		@Type(value = ETLVersioningCopyStepDTO.class),
 		@Type(value = ETLVersioningClearStepDTO.class),
-		@Type(value = ETLCalculationDeployStepDTO.class)
+		@Type(value = ETLCalculationDeployStepDTO.class),
+		@Type(value = ETLCalculationSyncStepDTO.class)
 })
 
 public abstract class ETLStepDTO {
