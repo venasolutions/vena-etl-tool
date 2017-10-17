@@ -18,7 +18,6 @@ import java.util.zip.DeflaterInputStream;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 
-import org.apache.http.params.CoreProtocolPNames;
 import org.vena.etltool.entities.CreateModelRequestDTO;
 import org.vena.etltool.entities.ETLCalculationDeployStepDTO;
 import org.vena.etltool.entities.ETLCubeToStageStepDTO;
@@ -42,7 +41,6 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.WebResource.Builder;
 import com.sun.jersey.api.client.config.ClientConfig;
 import com.sun.jersey.api.client.config.DefaultClientConfig;
@@ -69,6 +67,8 @@ public class ETLClient {
 	public boolean pollingRequested = false;
 	public boolean waitFully = false;
 	public boolean verbose;
+	
+	private String userAgent;
 
 	private Client uploadClient;
 	private Client apiClient;
@@ -308,7 +308,7 @@ public class ETLClient {
 	
 	//FIMXE - there is some code duplication between login() and this method that should be refactored out.
 	public ModelResponseDTO createModel(String modelName)  {
-
+		
 		Builder webResource = buildWebResource("/api/models");
 
 		CreateModelRequestDTO createModelDTO = new CreateModelRequestDTO();
@@ -376,33 +376,26 @@ public class ETLClient {
 	}
 	
 	private String getUserAgent() {
-		Properties props = new Properties();
-		StringBuilder buf = new StringBuilder();
-
+		if (userAgent != null) {
+			return userAgent;
+		}
+		
 		try {
-			props.load(ETLClient.class
-					.getResourceAsStream("/global.properties"));
-
-			String[] keys = new String[] { "artifactId", "version", "git.commit.id" };
-
-			for (String key : keys) {;
-				buf.append(props.getProperty(key)).append("/");
-			}
-
-			return buf.toString();
-		} catch (Exception e) {
-			e.printStackTrace();
-			return "vena-etl-tool";
+			Properties props = getGlobalProperties();
+			//don't want to have to read from disk every time
+			userAgent = props.getProperty("artifactId") + "/" + props.getProperty("version") + "/" + props.getProperty("git.commit.id");
+			return userAgent;
+		} catch (IOException e1) {
+			e1.printStackTrace();
+			return "cmdline-etl-tool";
 		}
 	}
 
 	public static String requestVersionInfo() {
-		Properties props = new Properties();
 		StringBuilder buf = new StringBuilder();
 
 		try {
-			props.load(ETLClient.class
-					.getResourceAsStream("/global.properties"));
+			Properties props = getGlobalProperties();
 
 			String[] keys = new String[] { "artifactId", "version",
 					"git.branch", "git.commit.id", "git.commit.id.describe", 
@@ -418,6 +411,15 @@ public class ETLClient {
 		} catch (Exception e) {
 			e.printStackTrace();
 			return "Error: Could not extract any git information.";
+		}
+	}
+	
+	private static Properties getGlobalProperties() throws IOException {
+		try (InputStream is = ETLClient.class.getResourceAsStream("/global.properties")) {
+			Properties props = new Properties();
+			//WARNING: props.load() doesn't close the input stream!
+			props.load(is);
+			return props;
 		}
 	}
 	
