@@ -113,7 +113,7 @@ public class ETLToolExportTest extends ETLToolTest {
 			assertEquals(1, e.status);
 			assertEquals("Error: The ETL file type \"invalidType\" does not exist. The known filetypes are "
 			+ "[intersections, values, lids, hierarchy, dimensions, attributes, user_defined, "
-			+ "intersection_members, lid_members, variables, setexpressions]\n", err.toString());
+			+ "intersection_members, lid_members, variables, setexpressions]", err.toString().trim());
 		}
 	}
 	
@@ -126,7 +126,7 @@ public class ETLToolExportTest extends ETLToolTest {
 			Main.parseCmdlineArgs(args, etlClient);
 		} catch (ExitException e) {
 			assertEquals(1, e.status);
-			assertEquals("Error: exportWhere and exportQuery options cannot be combined.\n", err.toString());
+			assertEquals("Error: exportWhere and exportQuery options cannot be combined.", err.toString().trim());
 		}
 	}
 	
@@ -139,7 +139,7 @@ public class ETLToolExportTest extends ETLToolTest {
 			Main.parseCmdlineArgs(args, etlClient);
 		} catch (ExitException e) {
 			assertEquals(1, e.status);
-			assertEquals("Error: cannot use --exportQuery with --exportFromTable. Use --exportWhere \"<HQL Query>\" instead. \n", err.toString());
+			assertEquals("Error: cannot use --exportQuery with --exportFromTable. Use --exportWhere \"<HQL Query>\" instead.", err.toString().trim());
 		}
 	}
 	
@@ -152,7 +152,7 @@ public class ETLToolExportTest extends ETLToolTest {
 			Main.parseCmdlineArgs(args, etlClient);
 		} catch (ExitException e) {
 			assertEquals(1, e.status);
-			assertEquals("Error: cannot export from table to another table.\n", err.toString());
+			assertEquals("Error: cannot export from table to another table.", err.toString().trim());
 		}
 	}
 	
@@ -167,7 +167,7 @@ public class ETLToolExportTest extends ETLToolTest {
 			assertEquals(1, e.status);
 			assertEquals(true, etlClient.pollingRequested);
 			assertEquals(true, etlClient.waitFully);
-			assertEquals("Error: export option requires either --exportToTable <name> or --exportToFile <name>.\n", err.toString());
+			assertEquals("Error: export option requires either --exportToTable <name> or --exportToFile <name>.", err.toString().trim());
 		}
 	}
 	
@@ -182,7 +182,7 @@ public class ETLToolExportTest extends ETLToolTest {
 			assertEquals(1, e.status);
 			assertEquals(true, etlClient.pollingRequested);
 			assertEquals(true, etlClient.waitFully);
-			assertEquals("Error: --export <intersections> is not supported with --exportFromTable\n", err.toString());
+			assertEquals("Error: --export <intersections> is not supported with --exportFromTable", err.toString().trim());
 		}
 	}
 	
@@ -197,7 +197,7 @@ public class ETLToolExportTest extends ETLToolTest {
 			assertEquals(1, e.status);
 			assertEquals(true, etlClient.pollingRequested);
 			assertEquals(true, etlClient.waitFully);
-			assertEquals("Error: --exportToTable and --exportToFile options cannot be combined.\n", err.toString());
+			assertEquals("Error: --exportToTable and --exportToFile options cannot be combined.", err.toString().trim());
 		}
 	}
 }

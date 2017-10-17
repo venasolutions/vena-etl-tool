@@ -71,7 +71,7 @@ public class ETLToolRunChannelTest extends ETLToolTest {
 			Main.parseCmdlineArgs(args, etlClient);
 		} catch (ExitException e) {
 			assertEquals(1, e.status);
-			assertEquals("Error: Missing argument for option: runChannel\n", err.toString());
+			assertEquals("Error: Missing argument for option: runChannel", err.toString().trim());
 		}
 	}
 
@@ -84,7 +84,7 @@ public class ETLToolRunChannelTest extends ETLToolTest {
 			Main.parseCmdlineArgs(args, etlClient);
 		} catch (ExitException e) {
 			assertEquals(1, e.status);
-			assertEquals("Error: Missing argument for option: runChannel\n", err.toString());
+			assertEquals("Error: Missing argument for option: runChannel", err.toString().trim());
 		}
 	}
 
@@ -97,7 +97,7 @@ public class ETLToolRunChannelTest extends ETLToolTest {
 			Main.parseCmdlineArgs(args, etlClient);
 		} catch (ExitException e) {
 			assertEquals(1, e.status);
-			assertEquals("Error: channelId could not be parsed as a number.\n", err.toString());
+			assertEquals("Error: channelId could not be parsed as a number.", err.toString().trim());
 		}
 	}
 }

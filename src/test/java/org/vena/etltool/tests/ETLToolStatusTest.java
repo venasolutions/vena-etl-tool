@@ -41,7 +41,7 @@ public class ETLToolStatusTest extends ETLToolTest {
 			Main.parseCmdlineArgs(args, etlClient);
 		} catch (ExitException e) {
 			assertEquals(1, e.status);
-			assertEquals("Error: You must specify --jobId=<job Id>.\n", err.toString());
+			assertEquals("Error: You must specify --jobId=<job Id>.", err.toString().trim());
 		}
 	}
 }

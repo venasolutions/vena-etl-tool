@@ -30,7 +30,7 @@ public class ETLToolCreateModelTest extends ETLToolTest {
 			verify(etlClient).createModel("newModel");
 			assertEquals(1, e.status);
 			assertEquals(newModelId, etlClient.modelId);
-			assertEquals("Error: You must specify at least one --file option when submitting a job.\n", err.toString());
+			assertEquals("Error: You must specify at least one --file option when submitting a job.", err.toString().trim());
 		}
 	}
 	

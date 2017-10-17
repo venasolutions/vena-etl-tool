@@ -17,7 +17,7 @@ public class ETLToolAuthenticationTest extends ETLToolTest {
 			Main.parseCmdlineArgs(buildCommandArgs(), etlClient);
 		} catch (ExitException e) {
 			assertEquals(1, e.status);
-			assertEquals("Error: You must specify at least one --file option when submitting a job.\n", err.toString());
+			assertEquals("Error: You must specify at least one --file option when submitting a job.", err.toString().trim());
 			assertEquals("vena", etlClient.password);
 			assertEquals("admin@vena.io", etlClient.username);
 		}
@@ -31,7 +31,7 @@ public class ETLToolAuthenticationTest extends ETLToolTest {
 			Main.parseCmdlineArgs(args, etlClient);
 		} catch (ExitException e) {
 			assertEquals(1, e.status);
-			assertEquals("Error: You must specify either --username/--password or --apiUser/--apiKey to authenticate with the server, but not both.\n", err.toString());
+			assertEquals("Error: You must specify either --username/--password or --apiUser/--apiKey to authenticate with the server, but not both.", err.toString().trim());
 		}
 	}
 }

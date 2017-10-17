@@ -84,7 +84,7 @@ public class ETLToolDeleteTest extends ETLToolTest {
 			Main.parseCmdlineArgs(args, etlClient);
 		} catch (ExitException e) {
 			assertEquals(1, e.status);
-			assertEquals("Error: delete option requires --deleteQuery <expr>.\n", err.toString());
+			assertEquals("Error: delete option requires --deleteQuery <expr>.", err.toString().trim());
 		}
 	}
 	
@@ -97,7 +97,7 @@ public class ETLToolDeleteTest extends ETLToolTest {
 			Main.parseCmdlineArgs(args, etlClient);
 		} catch (ExitException e) {
 			assertEquals(1, e.status);
-			assertEquals("Error: Missing argument for option: deleteQuery\n", err.toString());
+			assertEquals("Error: Missing argument for option: deleteQuery", err.toString().trim());
 		}
 	}
 	
@@ -109,7 +109,7 @@ public class ETLToolDeleteTest extends ETLToolTest {
 			Main.parseCmdlineArgs(args, etlClient);
 		} catch (ExitException e) {
 			assertEquals(1, e.status);
-			assertEquals("Error: The ETL file type \"invalid\" is not supported. The supported filetypes are intersections, values, and lids.\n", err.toString());
+			assertEquals("Error: The ETL file type \"invalid\" is not supported. The supported filetypes are intersections, values, and lids.", err.toString().trim());
 		}
 	}
 	

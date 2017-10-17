@@ -18,7 +18,7 @@ public class ETLToolVerboseTest extends ETLToolTest {
 			Main.parseCmdlineArgs(args, etlClient);
 		} catch (ExitException e) {
 			assertEquals(1, e.status);
-			assertEquals("Error: You must specify at least one --file option when submitting a job.\n", err.toString());
+			assertEquals("Error: You must specify at least one --file option when submitting a job.", err.toString().trim());
 			assertEquals(true, etlClient.verbose);
 		}
 	}

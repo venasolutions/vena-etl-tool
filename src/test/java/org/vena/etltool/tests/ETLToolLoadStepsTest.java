@@ -65,7 +65,7 @@ public class ETLToolLoadStepsTest extends ETLToolTest {
 			Main.parseCmdlineArgs(args, etlClient);
 		} catch (ExitException e) {
 			assertEquals(1, e.status);
-			assertEquals("Error: Missing argument for option: loadSteps\n", err.toString());
+			assertEquals("Error: Missing argument for option: loadSteps", err.toString().trim());
 		}
 	}
 

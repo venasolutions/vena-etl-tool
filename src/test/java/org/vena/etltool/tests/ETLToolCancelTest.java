@@ -21,7 +21,7 @@ public class ETLToolCancelTest extends ETLToolTest {
 		try {
 			Main.parseCmdlineArgs(args, etlClient);
 		} catch (ExitException e) {
-			verify(etlClient).sendCancel(jobId.toString());
+			verify(etlClient).sendCancel(jobId.toString().trim());
 			assertEquals(0, e.status);
 		}
 	}
@@ -34,7 +34,7 @@ public class ETLToolCancelTest extends ETLToolTest {
 			Main.parseCmdlineArgs(args, etlClient);
 		} catch (ExitException e) {
 			assertEquals(1, e.status);
-			assertEquals("Error: You must specify --jobId=<job Id>.\n", err.toString());
+			assertEquals("Error: You must specify --jobId=<job Id>.", err.toString().trim());
 		}
 	}
 }

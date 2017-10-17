@@ -22,7 +22,7 @@ public class ETLToolTemplateIdTest extends ETLToolTest {
 		} catch (ExitException e) {
 			assertEquals(1, e.status);
 			assertEquals(templateId.toString(), etlClient.templateId);
-			assertEquals("Error: You must specify at least one --file option when submitting a job.\n", err.toString());
+			assertEquals("Error: You must specify at least one --file option when submitting a job.", err.toString().trim());
 		}
 	}
 	
@@ -35,7 +35,7 @@ public class ETLToolTemplateIdTest extends ETLToolTest {
 			Main.parseCmdlineArgs(args, etlClient);
 		} catch (ExitException e) {
 			assertEquals(1, e.status);
-			assertEquals("Error: Missing argument for option: templateId\n", err.toString());
+			assertEquals("Error: Missing argument for option: templateId", err.toString().trim());
 		}
 	}
 

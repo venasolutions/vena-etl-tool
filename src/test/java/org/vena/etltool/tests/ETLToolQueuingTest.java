@@ -39,7 +39,7 @@ public class ETLToolQueuingTest extends ETLToolTest {
 		} catch (ExitException e) {
 			assertTrue(exitExpected);
 			assertEquals(1, e.status);
-			assertEquals("Error: --queue and --noqueue options cannot be combined.\n", err.toString());
+			assertEquals("Error: --queue and --noqueue options cannot be combined.", err.toString().trim());
 		}
 	}
 	

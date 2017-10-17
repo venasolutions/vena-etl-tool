@@ -138,7 +138,7 @@ public class ETLToolFileToStageToCubeTest extends ETLToolTest {
 			Main.parseCmdlineArgs(args, etlClient);
 		} catch (ExitException e) {
 			assertEquals(1, e.status);
-			assertEquals("Error: --clearSlices and --clearSlicesByDimNums options cannot be combined. At most one of these options can be used at a time.\n", err.toString());
+			assertEquals("Error: --clearSlices and --clearSlicesByDimNums options cannot be combined. At most one of these options can be used at a time.", err.toString().trim());
 		}
 	}
 }
