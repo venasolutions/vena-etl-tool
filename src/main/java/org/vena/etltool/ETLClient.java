@@ -15,7 +15,9 @@ import java.util.List;
 import java.util.Properties;
 import java.util.zip.DeflaterInputStream;
 
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
+
 import org.vena.etltool.entities.CreateModelRequestDTO;
 import org.vena.etltool.entities.ETLCalculationDeployStepDTO;
 import org.vena.etltool.entities.ETLCubeToStageStepDTO;
@@ -39,7 +41,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.api.client.WebResource;
+import com.sun.jersey.api.client.WebResource.Builder;
 import com.sun.jersey.api.client.config.ClientConfig;
 import com.sun.jersey.api.client.config.DefaultClientConfig;
 import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
@@ -65,6 +67,8 @@ public class ETLClient {
 	public boolean pollingRequested = false;
 	public boolean waitFully = false;
 	public boolean verbose;
+	
+	private String userAgent;
 
 	private Client uploadClient;
 	private Client apiClient;
@@ -89,7 +93,7 @@ public class ETLClient {
 				parameters.add(new TwoTuple<String, String>("templateId", templateId));
 			}
 			
-			WebResource webResource = buildWebResource(resource, parameters, true);
+			Builder webResource = buildWebResource(resource, parameters, true);
 			
 			FormDataMultiPart form = new FormDataMultiPart();
 
@@ -241,15 +245,15 @@ public class ETLClient {
 		return apiClient;
 	}
 
-	private WebResource buildWebResource(String path) {
+	private Builder buildWebResource(String path) {
 		return buildWebResource(path, Collections.<TwoTuple<String, String>> emptyList(), false);
 	}
 
-	private WebResource buildWebResource(String path, Iterable<TwoTuple<String, String>> parameters) {
+	private Builder buildWebResource(String path, Iterable<TwoTuple<String, String>> parameters) {
 		return buildWebResource(path, parameters, false);
 	}
 
-	private WebResource buildWebResource(String path, Iterable<TwoTuple<String, String>> parameters, boolean chunked) {
+	private Builder buildWebResource(String path, Iterable<TwoTuple<String, String>> parameters, boolean chunked) {
 
 		Client client = chunked ? getUploadClient() : getAPIClient();
 		String uri = buildURI(path, parameters);
@@ -257,11 +261,9 @@ public class ETLClient {
 		if( verbose )
 			System.err.println("Calling " + uri);
 
-		WebResource webResource = client.resource(uri);
-
-		webResource.accept("application/json");
-		
-		return webResource;
+		return client.resource(uri)
+				.accept("application/json")
+				.header(HttpHeaders.USER_AGENT, getUserAgent());
 	}
 
 	public void login()
@@ -275,11 +277,10 @@ public class ETLClient {
 		if( verbose )
 			System.err.println("Calling " + uri);
 		
-		WebResource webResource = client.resource(uri);
-
-		webResource.accept("application/json");
-
-
+		Builder webResource = client.resource(uri)
+				.accept("application/json")
+				.header(HttpHeaders.USER_AGENT, getUserAgent());
+		
 		ClientResponse response = webResource.post(ClientResponse.class);
 
 		int retryCount = 5;
@@ -307,8 +308,8 @@ public class ETLClient {
 	
 	//FIMXE - there is some code duplication between login() and this method that should be refactored out.
 	public ModelResponseDTO createModel(String modelName)  {
-
-		WebResource webResource = buildWebResource("/api/models");
+		
+		Builder webResource = buildWebResource("/api/models");
 
 		CreateModelRequestDTO createModelDTO = new CreateModelRequestDTO();
 
@@ -330,7 +331,7 @@ public class ETLClient {
 	
 	public ModelResponseDTO lookupModel(String modelName) {
 
-		WebResource webResource = buildWebResource("/api/models");
+		Builder webResource = buildWebResource("/api/models");
 
 		CreateModelRequestDTO createModelDTO = new CreateModelRequestDTO();
 
@@ -360,7 +361,7 @@ public class ETLClient {
 	
 	public ETLJobDTO requestJobStatus(String idString)
 	{
-		WebResource webResource = buildWebResource(getETLBasePath() + "/jobs/" + idString);
+		Builder webResource = buildWebResource(getETLBasePath() + "/jobs/" + idString);
 
 
 		ClientResponse response = webResource.get(ClientResponse.class);
@@ -373,14 +374,28 @@ public class ETLClient {
 		
 		return result;
 	}
+	
+	private String getUserAgent() {
+		if (userAgent != null) {
+			return userAgent;
+		}
+		
+		try {
+			Properties props = getGlobalProperties();
+			//don't want to have to read from disk every time
+			userAgent = props.getProperty("artifactId") + "/" + props.getProperty("version") + "/" + props.getProperty("git.commit.id");
+			return userAgent;
+		} catch (IOException e1) {
+			e1.printStackTrace();
+			return "cmdline-etl-tool";
+		}
+	}
 
 	public static String requestVersionInfo() {
-		Properties props = new Properties();
 		StringBuilder buf = new StringBuilder();
 
 		try {
-			props.load(ETLClient.class
-					.getResourceAsStream("/global.properties"));
+			Properties props = getGlobalProperties();
 
 			String[] keys = new String[] { "artifactId", "version",
 					"git.branch", "git.commit.id", "git.commit.id.describe", 
@@ -399,12 +414,21 @@ public class ETLClient {
 		}
 	}
 	
+	private static Properties getGlobalProperties() throws IOException {
+		try (InputStream is = ETLClient.class.getResourceAsStream("/global.properties")) {
+			Properties props = new Properties();
+			//WARNING: props.load() doesn't close the input stream!
+			props.load(is);
+			return props;
+		}
+	}
+	
 	public ETLJobDTO setJobError(String idString, String errMsg) throws UnsupportedEncodingException
 	{
 		List<TwoTuple<String, String>> params = new ArrayList<>();
 		params.add(new TwoTuple<String, String>("message", errMsg));
 
-		WebResource webResource = buildWebResource(getETLBasePath() + "/jobs/"+idString + "/setError", params);
+		Builder webResource = buildWebResource(getETLBasePath() + "/jobs/"+idString + "/setError", params);
 
 		ClientResponse response = webResource.get(ClientResponse.class);
 
@@ -419,7 +443,7 @@ public class ETLClient {
 
 	public ETLJobDTO sendTransformComplete(String idString)
 	{
-		WebResource webResource = buildWebResource(getETLBasePath() + "/jobs/"+idString + "/transformComplete");
+		Builder webResource = buildWebResource(getETLBasePath() + "/jobs/"+idString + "/transformComplete");
 
 		ClientResponse response = webResource.get(ClientResponse.class);
 
@@ -435,7 +459,7 @@ public class ETLClient {
 
 	public ETLJobDTO sendCancel(String idString)
 	{
-		WebResource webResource = buildWebResource(getETLBasePath() + "/jobs/"+idString + "/cancel");
+		Builder webResource = buildWebResource(getETLBasePath() + "/jobs/"+idString + "/cancel");
 
 		ClientResponse response = webResource.get(ClientResponse.class);
 
@@ -517,7 +541,7 @@ public class ETLClient {
 			return null;
 		}
 
-		WebResource webResource = buildWebResource(getETLBasePath() + "/query/" + typePath);
+		Builder webResource = buildWebResource(getETLBasePath() + "/query/" + typePath);
 		QueryDTO query = new QueryDTO();
 		if (!toFile) {
 			query.setDestination(Destination.ToStaging);
