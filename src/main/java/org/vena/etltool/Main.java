@@ -65,6 +65,7 @@ public class Main {
 			+ "\n| --delete <type> --deleteQuery <expr> [--nowait]"
 			+ "\n| --export <type>\n {--exportQuery <expr> | --exportWhere <clause>}\n {--exportToFile <name> [--excludeHeaders] | --exportToTable <name> [--nowait]}"
 			+ "\n| --loadSteps <file>"
+			+ "\n| --encoding <fileEncoding>"
 			+ "\n}";
 	
 	/**
@@ -530,6 +531,15 @@ public class Main {
 				.create();
 
 		options.addOption(loadStepsOption);
+		
+		Option encodingOption = OptionBuilder.withLongOpt("encoding").isRequired(false).hasArg()
+				.withArgName("fileEncoding")
+				.withDescription(
+						"Name of the encoding used for file to be imported. "
+						+ "Supports all java supported encodings. Encoding name provided should match java standards.")
+				.create();
+
+		options.addOption(encodingOption);
 		
 		Option runChannelOption =
 				OptionBuilder
@@ -1049,7 +1059,8 @@ public class Main {
 		if (commandLine.hasOption("noqueue")) {
 			metadata.setQueuingEnabled(false);
 		}
-
+		
+		String fileEncoding = commandLine.getOptionValue("fileEncoding");
 		String stepsFile = commandLine.getOptionValue("loadSteps");
 		
 		try (BufferedReader br = new BufferedReader(new FileReader(new File(stepsFile).getPath()))) {
@@ -1065,13 +1076,13 @@ public class Main {
 			    	switch (loadType.toUpperCase()) {
 			    	case "FILETOCUBE":
 			    	{
-			    		etlFile = prepareFilesToLoad(optionFields);
+			    		etlFile = prepareFilesToLoad(optionFields, fileEncoding);
 						metadata.addStep(new ETLFileToCubeStepDTO(etlFile));
 			    		break;
 			    	}
 			    	case "FILETOSTAGE":
 			    	{
-			    		etlFile = prepareFilesToLoad(optionFields);
+			    		etlFile = prepareFilesToLoad(optionFields, fileEncoding);
 						metadata.addStep(new ETLFileToStageStepDTO(etlFile));
 			    		break;
 			    	}
@@ -1234,7 +1245,7 @@ public class Main {
 	}
 
 
-	private static ETLFileOldDTO prepareFilesToLoad(String[] optionFields) {
+	private static ETLFileOldDTO prepareFilesToLoad(String[] optionFields, String fileEncoding) {
 		
 		if (optionFields.length < 2)
 		{
@@ -1249,6 +1260,7 @@ public class Main {
 		ETLFileOldDTO etlFile = null;
 		try {
 			etlFile = parseETLFileArgs(optionFields[1].replaceAll("\"", ""));
+			etlFile.setFileEncoding(fileEncoding);
 			String key = "file" + (FIRST_FILE_INDEX++);			
 			etlFile.setMimePart(key);
 		}
@@ -1319,12 +1331,14 @@ public class Main {
 		}
 
 		List<ETLFileOldDTO> etlFiles = new ArrayList<>();
+		String fileEncoding = commandLine.getOptionValue("encoding");
 
 		if (etlFileOptionValues != null) {
 			
 			for(String etlFileOption : etlFileOptionValues)  {
 				try {
 					ETLFileOldDTO etlFile = parseETLFileArgs(etlFileOption);
+					etlFile.setFileEncoding(fileEncoding);
 					etlFiles.add(etlFile);
 				}
 				catch (IllegalArgumentException e) {

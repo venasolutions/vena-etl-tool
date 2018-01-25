@@ -47,6 +47,8 @@ public class ETLFileOldDTO {
 	
 	private Set<Integer> clearSlicesDimensions = null;
 	
+	private String fileEncoding;
+	
 	public ETLFileOldDTO() {
 		super();
 		this.linesProcessed=0;
@@ -150,6 +152,14 @@ public class ETLFileOldDTO {
 	
 	public Set<Integer> getClearSlicesDimensions() {
 		return clearSlicesDimensions;
+	}
+
+	public String getFileEncoding() {
+		return fileEncoding;
+	}
+
+	public void setFileEncoding(String fileEncoding) {
+		this.fileEncoding = fileEncoding;
 	}
 
 }

@@ -22,7 +22,7 @@ public class ETLToolFileToCubeTest extends ETLToolTest {
 	@Test
 	public void testFileToCube() throws UnsupportedEncodingException {
 		ETLClient etlClient = mockETLClient();
-		String[] args = buildCommand(new String[] {"--jobName", "Loading LIDs file", "--file", "lidsFile.csv;type=lids;format=CSV;"});
+		String[] args = buildCommand(new String[] {"--jobName", "Loading LIDs file", "--encoding", "UTF-16", "--file", "lidsFile.csv;type=lids;format=CSV;"});
 		
 		ETLMetadataDTO metadata = Main.parseCmdlineArgs(args, etlClient);
 		
@@ -38,6 +38,7 @@ public class ETLToolFileToCubeTest extends ETLToolTest {
 		assertEquals(DataType.lids, fileToCubeStep.getDataType());
 		assertEquals("lidsFile.csv", fileToCubeStep.getFileName());
 		assertEquals(FileFormat.CSV, fileToCubeStep.getFileFormat());
+		assertEquals("UTF-16", fileToCubeStep.getFileEncoding());
 	}
 	
 	@Test

@@ -18,7 +18,7 @@ public class ETLToolFileToStageTest extends ETLToolTest {
 	@Test
 	public void testFileToStage() throws UnsupportedEncodingException {
 		ETLClient etlClient = mockETLClient();
-		String[] args = buildCommand(new String[] {"--jobName", "Loading LIDs file", "--file", "lidsFile.csv;type=lids;format=CSV;table=lids_table", "--stageOnly"});
+		String[] args = buildCommand(new String[] {"--jobName", "Loading LIDs file", "--encoding", "ASCII", "--file", "lidsFile.csv;type=lids;format=CSV;table=lids_table", "--stageOnly"});
 		
 		ETLMetadataDTO metadata = Main.parseCmdlineArgs(args, etlClient);
 		
@@ -35,5 +35,6 @@ public class ETLToolFileToStageTest extends ETLToolTest {
 		assertEquals("lidsFile.csv", fileToStageStep.getFileName());
 		assertEquals("lids_table", fileToStageStep.getTableName());
 		assertEquals(FileFormat.CSV, fileToStageStep.getFileFormat());
+		assertEquals("ASCII", fileToStageStep.getFileEncoding());
 	}
 }
