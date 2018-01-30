@@ -29,6 +29,8 @@ public abstract class ETLFileImportStepDTO extends ETLStepDTO {
 	private int skipInvalidLines;
 
 	private int numInvalidLines;
+	
+	private String fileEncoding;
 
 	private boolean compressed = true;
 
@@ -43,6 +45,7 @@ public abstract class ETLFileImportStepDTO extends ETLStepDTO {
 		this.serverFileName = etlFile.getServerFilename();
 		this.linesProcessed = etlFile.getLinesProcessed();
 		this.bytesProcessed = 0;
+		this.fileEncoding = etlFile.getFileEncoding();
 		if (etlFile.getDone()) {
 			this.status = Status.COMPLETED;
 			this.percentDone = 100;
@@ -156,4 +159,12 @@ public abstract class ETLFileImportStepDTO extends ETLStepDTO {
 	public boolean isCompressed() { return compressed; }
 
 	public void setCompressed(boolean compressed) { this.compressed = compressed; }
+
+	public String getFileEncoding() {
+		return fileEncoding;
+	}
+
+	public void setFileEncoding(String fileEncoding) {
+		this.fileEncoding = fileEncoding;
+	}
 }
