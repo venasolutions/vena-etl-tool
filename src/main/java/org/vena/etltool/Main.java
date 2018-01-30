@@ -249,7 +249,7 @@ public class Main {
 						+ "\n -F \"[file=]<filename>; [type=]<filetype> [;[table=]<tableName>] [;format={CSV|PSV|TDF}] [;bulkInsert={true|false}] [;clearSlices=<expr>] [;encoding=<fileEncoding>]\""
 						+ "\n where <filetype> is one of {"+ETLFileOldDTO.SUPPORTED_FILETYPES_LIST+"}>."
 						+ "\n and <expr> is the expression specifying the slice of the cube to clear intersections from. Multiple expressions separated by a comma are supported."
-						+ "\n and <fileEncoding> is the type of encoding used by the file to be imported."
+						+ "\n and <fileEncoding> is the type of encoding used by the file to be imported, e.g. UTF-16."
 						+ "\n Example: -F model.csv;hierarchy"
 						+ "\n Example: -F file=values.tdf;format=TDF;type=intersections")
 				.create('F');
