@@ -53,8 +53,8 @@ import com.sun.jersey.multipart.impl.MultiPartWriter;
 
 public class ETLClient {
 	private static final int POLL_INTERVAL = 5000;
-	private static final String DEFAULT_HOST = "vena.io";
-	private static final List<String> LOGIN_HOSTS = Arrays.asList("ca3.vena.io", "eu1.vena.io", "us1.vena.io", "us2.vena.io", "us3.vena.io");
+	public static final String DEFAULT_HOST = "vena.io";
+	public static final List<String> LOGIN_HOSTS = Arrays.asList("ca3.vena.io", "eu1.vena.io", "us1.vena.io", "us2.vena.io", "us3.vena.io");
 	
 	protected Integer port = null;
 	protected String host = DEFAULT_HOST;
@@ -62,7 +62,6 @@ public class ETLClient {
 	protected String apiKey;
 	public String username;
 	public String password;
-	public boolean needsLogin = false;
 	public Id modelId;
 	public String protocol = "https";
 	public String location;
@@ -74,12 +73,14 @@ public class ETLClient {
 	
 	private String userAgent;
 
+	private JerseyClientFactory clientFactory;
 	private Client uploadClient;
 	private Client apiClient;
 
-	public ETLClient() {
+	public ETLClient(JerseyClientFactory clientFactory) {
+		this.clientFactory = clientFactory;
 	}
-	 
+
 	public ETLJobDTO uploadETL(ETLMetadataDTO metadata)
 	{
 		try {
@@ -239,7 +240,7 @@ public class ETLClient {
 			ClientConfig jerseyClientConfig = new DefaultClientConfig();
 			jerseyClientConfig.getClasses().add(MultiPartWriter.class);
 
-			uploadClient = Client.create(jerseyClientConfig);
+			uploadClient = clientFactory.create(jerseyClientConfig);
 			uploadClient.setChunkedEncodingSize(8192);
 			uploadClient.addFilter(new HTTPBasicAuthFilter(apiUser, apiKey));
 		}
@@ -248,7 +249,7 @@ public class ETLClient {
 
 	private Client getAPIClient() {
 		if (apiClient == null) {
-			apiClient = Client.create();
+			apiClient = clientFactory.create();
 			apiClient.addFilter(new HTTPBasicAuthFilter(apiUser, apiKey));
 		}
 		return apiClient;
@@ -288,7 +289,7 @@ public class ETLClient {
 
 	public void login()
 	{
-		Client client = Client.create();
+		Client client = clientFactory.create();
 
 		client.addFilter(new HTTPBasicAuthFilter(username, password));
 
@@ -305,12 +306,6 @@ public class ETLClient {
 
 			// We had a case where nginx returned 404 when all mt-servers in a DC were unavailable.
 			while (retryCount > 0 && ( response.getStatus() == 404 || response.getStatus() >= 500 )) {
-				try {
-					Thread.sleep(2000);
-				}
-				catch( InterruptedException e) {
-					break;
-				}
 				String nextHost = LOGIN_HOSTS.get(index);
 				index = (index + 1) % LOGIN_HOSTS.size();
 				webResource = buildLoginResource(client, nextHost);
