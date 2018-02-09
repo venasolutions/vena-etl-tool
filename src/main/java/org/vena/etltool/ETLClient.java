@@ -9,10 +9,12 @@ import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
+import java.util.Random;
 import java.util.zip.DeflaterInputStream;
 
 import javax.ws.rs.core.HttpHeaders;
@@ -51,14 +53,15 @@ import com.sun.jersey.multipart.impl.MultiPartWriter;
 
 public class ETLClient {
 	private static final int POLL_INTERVAL = 5000;
+	public static final String DEFAULT_HOST = "vena.io";
+	public static final List<String> LOGIN_HOSTS = Arrays.asList("ca3.vena.io", "eu1.vena.io", "us1.vena.io", "us2.vena.io", "us3.vena.io");
 	
 	protected Integer port = null;
-	protected String host = "vena.io";
+	protected String host = DEFAULT_HOST;
 	protected String apiUser;
 	protected String apiKey;
 	public String username;
 	public String password;
-	public boolean needsLogin = false;
 	public Id modelId;
 	public String protocol = "https";
 	public String location;
@@ -70,12 +73,14 @@ public class ETLClient {
 	
 	private String userAgent;
 
+	private JerseyClientFactory clientFactory;
 	private Client uploadClient;
 	private Client apiClient;
 
-	public ETLClient() {
+	public ETLClient(JerseyClientFactory clientFactory) {
+		this.clientFactory = clientFactory;
 	}
-	 
+
 	public ETLJobDTO uploadETL(ETLMetadataDTO metadata)
 	{
 		try {
@@ -178,12 +183,17 @@ public class ETLClient {
 		}
 		return "/api/models/" + modelId + "/etl";
 	}
-	
-	private String buildURI(String path) {
-		return buildURI(path, Collections.<TwoTuple<String, String>> emptyList());
+
+	private String buildURI(String path, Iterable<TwoTuple<String, String>> parameters)
+	{
+		return buildURIForHost(host, path, parameters);
 	}
-	
-	private  String buildURI(String path, Iterable<TwoTuple<String, String>> parameters)
+
+	private String buildURIForHost(String host, String path) {
+		return buildURIForHost(host, path, Collections.<TwoTuple<String, String>> emptyList());
+	}
+
+	private String buildURIForHost(String host, String path, Iterable<TwoTuple<String, String>> parameters)
 	{
 		StringBuilder urlBuf = new StringBuilder();
 		
@@ -230,7 +240,7 @@ public class ETLClient {
 			ClientConfig jerseyClientConfig = new DefaultClientConfig();
 			jerseyClientConfig.getClasses().add(MultiPartWriter.class);
 
-			uploadClient = Client.create(jerseyClientConfig);
+			uploadClient = clientFactory.create(jerseyClientConfig);
 			uploadClient.setChunkedEncodingSize(8192);
 			uploadClient.addFilter(new HTTPBasicAuthFilter(apiUser, apiKey));
 		}
@@ -239,7 +249,7 @@ public class ETLClient {
 
 	private Client getAPIClient() {
 		if (apiClient == null) {
-			apiClient = Client.create();
+			apiClient = clientFactory.create();
 			apiClient.addFilter(new HTTPBasicAuthFilter(apiUser, apiKey));
 		}
 		return apiClient;
@@ -266,35 +276,44 @@ public class ETLClient {
 				.header(HttpHeaders.USER_AGENT, getUserAgent());
 	}
 
+	private Builder buildLoginResource(Client client, String host) {
+		String uri = buildURIForHost(host, "/login");
+
+		if( verbose )
+			System.err.println("Calling " + uri);
+
+		return client.resource(uri)
+				.accept("application/json")
+				.header(HttpHeaders.USER_AGENT, getUserAgent());
+	}
+
 	public void login()
 	{
-		Client client = Client.create();
+		Client client = clientFactory.create();
 
 		client.addFilter(new HTTPBasicAuthFilter(username, password));
 
-		String uri = buildURI("/login");
-		
-		if( verbose )
-			System.err.println("Calling " + uri);
-		
-		Builder webResource = client.resource(uri)
-				.accept("application/json")
-				.header(HttpHeaders.USER_AGENT, getUserAgent());
-		
+		Builder webResource = buildLoginResource(client, host);
+
 		ClientResponse response = webResource.post(ClientResponse.class);
 
-		int retryCount = 5;
-		while (retryCount > 0 && response.getStatus() != 200 && response.getStatus() >= 500 ) {
-			try {
-				Thread.sleep(2000);
+		if (host.equals(DEFAULT_HOST)) {
+			// Workaround for vena.io resolving to a bad DC. Only needed for logins on default host.
+			int retryCount = LOGIN_HOSTS.size();
+
+			// Start at a random host so that we don't always spam the same DC when there is an outage.
+			int index = new Random().nextInt(LOGIN_HOSTS.size());
+
+			// We had a case where nginx returned 404 when all mt-servers in a DC were unavailable.
+			while (retryCount > 0 && ( response.getStatus() == 404 || response.getStatus() >= 500 )) {
+				String nextHost = LOGIN_HOSTS.get(index);
+				index = (index + 1) % LOGIN_HOSTS.size();
+				webResource = buildLoginResource(client, nextHost);
+				response = webResource.post(ClientResponse.class);
+				retryCount--;
 			}
-			catch( InterruptedException e) {
-				break;
-			}
-			response = webResource.post(ClientResponse.class);
-			retryCount--;
 		}
-		
+
 		if (response.getStatus() != 200) {
 			handleErrorResponse(response, "Login failed.");
 		}
@@ -305,7 +324,7 @@ public class ETLClient {
 		this.apiUser = result.getApiUser();
 		this.location = result.getLocation();
 	}
-	
+
 	//FIMXE - there is some code duplication between login() and this method that should be refactored out.
 	public ModelResponseDTO createModel(String modelName)  {
 		

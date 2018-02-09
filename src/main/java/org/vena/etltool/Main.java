@@ -74,7 +74,7 @@ public class Main {
 	public static void main(String[] args) throws UnsupportedEncodingException {
 		System.getProperties().setProperty("datacenterId", "1");
 
-		ETLClient etlClient = new ETLClient();
+		ETLClient etlClient = new ETLClient(new JerseyClientFactory());
 		ETLMetadataDTO metadata = parseCmdlineArgs(args, etlClient);
 
 		System.out.print("Submitting job... ");

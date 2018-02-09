@@ -81,7 +81,7 @@ public abstract class ETLToolTest {
 	}
 
 	@SuppressWarnings("serial")
-	protected static class ExitException extends SecurityException {
+	public static class ExitException extends SecurityException {
 		public final int status;
 
 		public ExitException(int status) {
@@ -89,7 +89,7 @@ public abstract class ETLToolTest {
 		}
 	}
 
-	private static class NoExitSecurityManager extends SecurityManager {
+	public static class NoExitSecurityManager extends SecurityManager {
 		@Override
 		public void checkPermission(Permission perm) {
 		}
