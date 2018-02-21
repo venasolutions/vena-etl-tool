@@ -246,7 +246,7 @@ public class Main {
 				.hasArg()
 				.withArgName("options")
 				.withDescription("A data file to import (multiple allowed)."
-						+ "\n -F \"[file=]<filename>; [type=]<filetype> [;[table=]<tableName>] [;format={CSV|PSV|TDF}] [;bulkInsert={true|false}] [;clearSlices=<expr>] [;encoding=<fileEncoding>]\""
+						+ "\n -F \"[file=]<filename>; [type=]<filetype> [;[table=]<tableName>] [;format={CSV|PSV|TDF}] [;bulkInsert={true|false}] [;clearSlices=<expr>] [;clearSlicesByDimNums=<expr>] [;encoding=<fileEncoding>]\""
 						+ "\n where <filetype> is one of {"+ETLFileOldDTO.SUPPORTED_FILETYPES_LIST+"}>."
 						+ "\n and <expr> is the expression specifying the slice of the cube to clear intersections from. Multiple expressions separated by a comma are supported."
 						+ "\n and <fileEncoding> is the type of encoding used by the file to be imported, e.g. UTF-16."
@@ -1127,10 +1127,6 @@ public class Main {
 									System.exit(1);
 								}
 			    			}
-			    			if (step.getClearSlicesDimensions() != null && step.getClearSlicesExpressions() != null) {
-			    				System.err.println("Error: --clearSlices and --clearSlicesByDimNums options cannot be combined. At most one of these options can be used at a time.");
-			    				System.exit(1);
-			    			}
 			    			metadata.addStep(step);
 			    		} else {
 							System.err.println( "Error: stageToCube valid option is type=<type>. The known types are ["+ETLFileOldDTO.SUPPORTED_FILETYPES_LIST+"]");
@@ -1301,11 +1297,6 @@ public class Main {
 		if (etlFileOptionValues != null && loadType == ETLLoadType.STAGE_TO_CUBE) {
 			System.err.println( "Error: --file and --loadFromStaging options cannot be combined.");
 
-			System.exit(1);
-		}
-
-		if (commandLine.hasOption("clearSlices") && commandLine.hasOption("clearSlicesByDimNums")) {
-			System.err.println("Error: --clearSlices and --clearSlicesByDimNums options cannot be combined. At most one of these options can be used at a time.");
 			System.exit(1);
 		}
 
@@ -1520,10 +1511,6 @@ public class Main {
 
 		if (etlFile.getClearSlicesDimensions() != null && etlFile.getFileType() != DataType.intersections) {
 			throw new IllegalArgumentException("The types supported for the clearSlicesByDimNums option are: {intersections}");
-		}
-
-		if (etlFile.getClearSlicesExpressions() != null && etlFile.getClearSlicesDimensions() != null) {
-			throw new IllegalArgumentException("Error: --clearSlices and --clearSlicesByDimNums options cannot be combined. At most one of these options can be used at a time.");
 		}
 
 		return etlFile;
