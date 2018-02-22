@@ -4,7 +4,6 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 
 import org.junit.Test;
@@ -34,54 +33,6 @@ public class ETLToolStageToCubeTest extends ETLToolTest {
 		for (int i=0; i<steps.size(); i++) { 
 			assertEquals(ETLStageToCubeStepDTO.class, steps.get(i).getClass());
 			assertEquals(types.get(i), ((ETLStageToCubeStepDTO)steps.get(i)).getDataType());
-		}
-	}
-	
-	@Test
-	public void testStageToCubeWithClearSlices() throws UnsupportedEncodingException {
-		ETLClient etlClient = mockETLClient();
-		String[] args = buildCommand(new String[] {"--jobName", "Loading to stage with clear", "--loadFromStaging", "--clearSlices", "dimension('Accounts':'Expense'),dimension('Accounts':'Sale')"});
-		
-		ETLMetadataDTO metadata = Main.parseCmdlineArgs(args, etlClient);
-		
-		assertEquals(modelId, metadata.getModelId());
-		assertEquals("Loading to stage with clear", metadata.getName());
-		assertEquals(4, metadata.getSteps().size());
-		
-		List<ETLStepDTO> steps = metadata.getSteps();
-		List<DataType> types = Arrays.asList(DataType.hierarchy, DataType.attributes, DataType.intersections, DataType.lids);
-		
-		for (int i=0; i<steps.size(); i++) { 
-			assertEquals(ETLStageToCubeStepDTO.class, steps.get(i).getClass());
-			DataType type = ((ETLStageToCubeStepDTO)steps.get(i)).getDataType();
-			assertEquals(types.get(i), type);
-			if (type.equals(DataType.intersections)) {
-				assertEquals(Arrays.asList("dimension('Accounts':'Expense')","dimension('Accounts':'Sale')"), ((ETLStageToCubeStepDTO)steps.get(i)).getClearSlicesExpressions());
-			}
-		}
-	}
-
-	@Test
-	public void testStageToCubeWithClearSlicesByDimNums() throws UnsupportedEncodingException {
-		ETLClient etlClient = mockETLClient();
-		String[] args = buildCommand(new String[] {"--jobName", "Loading to stage with clear", "--loadFromStaging", "--clearSlicesByDimNums", "3, 4"});
-
-		ETLMetadataDTO metadata = Main.parseCmdlineArgs(args, etlClient);
-
-		assertEquals(modelId, metadata.getModelId());
-		assertEquals("Loading to stage with clear", metadata.getName());
-		assertEquals(4, metadata.getSteps().size());
-
-		List<ETLStepDTO> steps = metadata.getSteps();
-		List<DataType> types = Arrays.asList(DataType.hierarchy, DataType.attributes, DataType.intersections, DataType.lids);
-
-		for (int i=0; i<steps.size(); i++) {
-			assertEquals(ETLStageToCubeStepDTO.class, steps.get(i).getClass());
-			DataType type = ((ETLStageToCubeStepDTO)steps.get(i)).getDataType();
-			assertEquals(types.get(i), type);
-			if (type.equals(DataType.intersections)) {
-				assertEquals(new HashSet<Integer>(Arrays.asList(3, 4)), ((ETLStageToCubeStepDTO)steps.get(i)).getClearSlicesDimensions());
-			}
 		}
 	}
 
