@@ -1110,7 +1110,7 @@ public class Main {
 				    					System.err.println("Error: The clearSlices option can only be combined with the type: {intersections}. Please specify the type first.");
 				    					System.exit(1);
 				    				}
-								} else if (key.equalsIgnoreCase("clearSlicesByDimNums")) {
+				    			} else if (key.equalsIgnoreCase("clearSlicesByDimNums")) {
 									if (step.getDataType() == DataType.intersections && value != null) {
 										step.setClearSlicesDimensions(parseClearSlicesByDimNumsArgs(value));
 									} else {
