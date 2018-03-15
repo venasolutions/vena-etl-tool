@@ -20,7 +20,7 @@ public class ETLToolFileToStageTest extends ETLToolTest {
 		ETLClient etlClient = mockETLClient();
 		String[] args = buildCommand(new String[] {"--jobName", "Loading LIDs file", "--file", "lidsFile.csv;type=lids;format=CSV;table=lids_table", "--stageOnly"});
 		
-		ETLMetadataDTO metadata = Main.parseCmdlineArgs(args, etlClient);
+		ETLMetadataDTO metadata = Main.buildETLMetadata(args, etlClient);
 		
 		assertEquals(modelId, metadata.getModelId());
 		assertEquals("Loading LIDs file", metadata.getName());
@@ -42,7 +42,7 @@ public class ETLToolFileToStageTest extends ETLToolTest {
 		ETLClient etlClient = mockETLClient();
 		String[] args = buildCommand(new String[] {"--jobName", "Loading LIDs file", "--file", "lidsFile.csv;type=lids;format=CSV;table=lids_table;encoding=ASCII", "--stageOnly"});
 		
-		ETLMetadataDTO metadata = Main.parseCmdlineArgs(args, etlClient);
+		ETLMetadataDTO metadata = Main.buildETLMetadata(args, etlClient);
 		
 		assertEquals(modelId, metadata.getModelId());
 		assertEquals("Loading LIDs file", metadata.getName());

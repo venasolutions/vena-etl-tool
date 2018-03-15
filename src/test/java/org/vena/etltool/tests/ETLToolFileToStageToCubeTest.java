@@ -24,7 +24,7 @@ public class ETLToolFileToStageToCubeTest extends ETLToolTest {
 		ETLClient etlClient = mockETLClient();
 		String[] args = buildCommand(new String[] {"--jobName", "Loading intersections file with transform", "--file", "intersectionsFile.csv;type=intersections;format=CSV;table=values_table", "--stageAndTransform"});
 
-		ETLMetadataDTO metadata = Main.parseCmdlineArgs(args, etlClient);
+		ETLMetadataDTO metadata = Main.buildETLMetadata(args, etlClient);
 
 		assertEquals(modelId, metadata.getModelId());
 		assertEquals("Loading intersections file with transform", metadata.getName());

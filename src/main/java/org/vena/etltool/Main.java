@@ -28,6 +28,7 @@ import org.vena.etltool.entities.ETLCubeToStageStepDTO.QueryType;
 import org.vena.etltool.entities.ETLDeleteIntersectionsStepDTO;
 import org.vena.etltool.entities.ETLDeleteLidsStepDTO;
 import org.vena.etltool.entities.ETLDeleteValuesStepDTO;
+import org.vena.etltool.entities.ETLFileImportStepDTO;
 import org.vena.etltool.entities.ETLFileOldDTO;
 import org.vena.etltool.entities.ETLFileToCubeStepDTO;
 import org.vena.etltool.entities.ETLFileToStageStepDTO;
@@ -39,6 +40,7 @@ import org.vena.etltool.entities.ETLStageToCubeStepDTO;
 import org.vena.etltool.entities.ETLStepDTO.DataType;
 import org.vena.etltool.entities.ETLStreamChannelStepDTO;
 import org.vena.etltool.entities.ETLStreamStepDTO.MockMode;
+import org.vena.etltool.entities.ETLTemplateDTO;
 import org.vena.etltool.entities.Id;
 import org.vena.etltool.entities.ModelResponseDTO;
 
@@ -57,6 +59,7 @@ public class Main {
 			+ "\n{ [--queue|--noqueue]"
 			+ "\n}"
 			+ "\n{ --loadFromStaging [--wait|--waitFully]"
+			+ "\n| [--runTemplate=<templateId>]"
 			+ "\n| [--stage|--stageOnly] [--wait|--waitFully] [--validate] [--templateId <id>] [--jobName <name>] --file \"[file=]<filename>; [type=]<filetype> [;[table=]<tableName>] [;format={CSV|PSV|TDF}] [;bulkInsert={true|false}]\""
 			+ "\n| --cancel --jobId <id>"
 			+ "\n| --setError --jobId <id>"
@@ -75,7 +78,8 @@ public class Main {
 		System.getProperties().setProperty("datacenterId", "1");
 
 		ETLClient etlClient = new ETLClient(new JerseyClientFactory());
-		ETLMetadataDTO metadata = parseCmdlineArgs(args, etlClient);
+		CommandLine commandLine = parseCommandLineArgs(args);
+		ETLMetadataDTO metadata = produceETLMetadata(etlClient, commandLine);
 
 		System.out.print("Submitting job... ");
 		ETLJobDTO etlJob = etlClient.uploadETL(metadata);
@@ -90,9 +94,8 @@ public class Main {
 		}
 	}
 
-
 	@SuppressWarnings("static-access")
-	public static ETLMetadataDTO parseCmdlineArgs(String[] args, ETLClient etlClient) throws UnsupportedEncodingException {
+	public static CommandLine parseCommandLineArgs(String[] args) {
 		Options options  = new Options();
 
 		Option helpOption =  OptionBuilder
@@ -542,6 +545,17 @@ public class Main {
 				.create();
 		
 		options.addOption(runChannelOption);
+		
+		Option runTemplateOption = 
+				OptionBuilder
+				.withLongOpt("runTemplate")
+				.isRequired(false)
+				.hasArg()
+				.withArgName("templateId")
+				.withDescription("Run the ETL template with the given id.")
+				.create();
+
+		options.addOption(runTemplateOption);
 
 		Option queueOption =
 				OptionBuilder
@@ -596,9 +610,10 @@ public class Main {
 			System.out.print(ETLClient.requestVersionInfo());
 			System.exit(0);
 		}
+		return commandLine;
+	}
 
-
-
+	private static boolean prepareETLClient(ETLClient etlClient, CommandLine commandLine) {
 		String port = commandLine.getOptionValue("port");
 
 		if( port != null)
@@ -664,12 +679,25 @@ public class Main {
 		String username =  commandLine.getOptionValue("username");
 
 		String password =  commandLine.getOptionValue("password");
+		
+		boolean runTemplate = commandLine.hasOption("runTemplate");
 
-		String jobId =  commandLine.getOptionValue("jobId");
-
-		String templateId = commandLine.getOptionValue("templateId");
-
-		etlClient.templateId = templateId;
+		if(runTemplate) {
+			String[] incompatibleOptions = new String[]{"templateId", "clearSlices", "clearSlicesByDimNums",
+					"loadSteps", "runChannel", "export", "exportToTable", "exportFromTable",
+					"exportToFile", "exportWhere", "exportQuery", "delete", "deleteQuery",
+					"jobName", "jobId", "cancel", "loadFromStaging", "stage", "stageAndTransform",
+					"stageOnly", "transformComplete", "loadFromStaging"};
+			for(String option : incompatibleOptions) {
+				if(commandLine.hasOption(option)) {
+					System.err.println( "Error: You cannot use --runTemplate with --" +option+".");
+					System.exit(1);
+				}
+			}
+			etlClient.templateId = commandLine.getOptionValue("runTemplate");
+		} else {
+			etlClient.templateId = commandLine.getOptionValue("templateId");
+		}
 
 		/* Cross validation for the authentication options. */
 		if (etlClient.verbose) {
@@ -697,6 +725,34 @@ public class Main {
 			System.err.println( "Error: You must specify either --username/--password or --apiUser/--apiKey to authenticate with the server, but not both.");
 			System.exit(1);
 		}
+		return runTemplate;
+	}
+
+	public static ETLMetadataDTO produceETLMetadata(
+			ETLClient etlClient, 
+			CommandLine commandLine) throws UnsupportedEncodingException {
+		boolean runningTemplate = prepareETLClient(etlClient, commandLine);
+		ETLMetadataDTO metadata;
+		if(runningTemplate) {
+			if(etlClient.templateId == null) {
+				System.err.println("Template Id must be specified if running an ETL template");
+				System.exit(1);
+			}
+			ETLTemplateDTO template = etlClient.getETLTemplate();
+			metadata = fillTemplateMetadata(commandLine, template);
+		} else {
+			metadata = buildETLMetadata(commandLine, etlClient);
+		}
+		return metadata;
+	}
+
+	public static ETLMetadataDTO buildETLMetadata(String[] args, ETLClient etlClient) throws UnsupportedEncodingException {
+		CommandLine commandLine = parseCommandLineArgs(args);
+		prepareETLClient(etlClient, commandLine);
+		return buildETLMetadata(commandLine, etlClient);
+	}
+	
+	public static ETLMetadataDTO buildETLMetadata(CommandLine commandLine, ETLClient etlClient) throws UnsupportedEncodingException {
 
 		String modelIdStr = commandLine.getOptionValue("modelId");
 		String modelNameStr = commandLine.getOptionValue("modelName");
@@ -740,8 +796,8 @@ public class Main {
 		}
 
 		// Options that work on a single job ID, model ID optional
-
-		if(commandLine.hasOption("status") || args.length == 0) {
+		String jobId =  commandLine.getOptionValue("jobId");
+		if(commandLine.hasOption("status")) {
 
 			if (jobId == null) {
 				System.err.println( "Error: You must specify --jobId=<job Id>.");
@@ -1230,7 +1286,6 @@ public class Main {
 		return metadata;
 	}
 
-
 	private static ETLFileOldDTO prepareFilesToLoad(String[] optionFields) {
 		
 		if (optionFields.length < 2)
@@ -1310,37 +1365,15 @@ public class Main {
 			}
 		}
 
-		List<ETLFileOldDTO> etlFiles = new ArrayList<>();
-
-		if (etlFileOptionValues != null) {
-			
-			for(String etlFileOption : etlFileOptionValues)  {
-				try {
-					ETLFileOldDTO etlFile = parseETLFileArgs(etlFileOption);
-					etlFiles.add(etlFile);
-				}
-				catch (IllegalArgumentException e) {
-					System.err.println( "Error: The value \""+etlFileOption+"\" for option --file is invalid.  " + e.getMessage());
-					System.err.println( "\nPlease specify the filename followed by the file type, table name, and optional arguments."
-							+ "\n Example: --file intersections.csv;intersections"
-							+ "\n Example: --file arbitrary.csv;user_defined;mytable;bulkInsert=true");
-					System.err.println( "\nOr specify options in any order using key-value pairs."
-							+ "\n Example: --file \"file=arbitrary.csv; type=user_defined; table=mytable; format=CSV; bulkInsert=true\"");
-					System.exit(1);
+		List<ETLFileOldDTO> etlFiles = handleFileOptions(etlFileOptionValues);
+		for(ETLFileOldDTO etlFile : etlFiles) {
+			if (etlFile.getClearSlicesExpressions() != null || etlFile.getClearSlicesDimensions() != null) {
+				if (loadType != ETLLoadType.FILE_TO_CUBE) {
+					System.err.println("Error: the --file options clearSlices and clearSlicesByDimNums are only available for ETL File to Cube imports."
+							+"\n For Stage operations, use the stand alone --clearSlices and --clearSlicesByDimNums options instead.");
 				}
 			}
 			
-			for(ETLFileOldDTO etlFile : etlFiles) {
-				if (etlFile.getClearSlicesExpressions() != null || etlFile.getClearSlicesDimensions() != null) {
-					if (loadType != ETLLoadType.FILE_TO_CUBE) {
-						System.err.println("Error: the --file options clearSlices and clearSlicesByDimNums are only available for ETL File to Cube imports."
-								+"\n For Stage operations, use the stand alone --clearSlices and --clearSlicesByDimNums options instead.");
-					}
-				}
-				
-				String key = "file" + (FIRST_FILE_INDEX++);			
-				etlFile.setMimePart(key);
-			}
 		}
 		
 		System.out.println("Creating a new job.");
@@ -1402,6 +1435,32 @@ public class Main {
 
 		return metadata;
 		
+	}
+
+	private static List<ETLFileOldDTO> handleFileOptions(String[] etlFileOptionValues) {
+		List<ETLFileOldDTO> etlFiles = new ArrayList<>();
+
+		if (etlFileOptionValues != null) {
+			
+			for(String etlFileOption : etlFileOptionValues)  {
+				try {
+					ETLFileOldDTO etlFile = parseETLFileArgs(etlFileOption);
+					String key = "file" + (FIRST_FILE_INDEX++);			
+					etlFile.setMimePart(key);
+					etlFiles.add(etlFile);
+				}
+				catch (IllegalArgumentException e) {
+					System.err.println( "Error: The value \""+etlFileOption+"\" for option --file is invalid.  " + e.getMessage());
+					System.err.println( "\nPlease specify the filename followed by the file type, table name, and optional arguments."
+							+ "\n Example: --file intersections.csv;intersections"
+							+ "\n Example: --file arbitrary.csv;user_defined;mytable;bulkInsert=true");
+					System.err.println( "\nOr specify options in any order using key-value pairs."
+							+ "\n Example: --file \"file=arbitrary.csv; type=user_defined; table=mytable; format=CSV; bulkInsert=true\"");
+					System.exit(1);
+				}
+			}
+		}
+		return etlFiles;
 	}
 
 	private static ETLFileOldDTO parseETLFileArgs(String etlFileOption) {
@@ -1527,4 +1586,33 @@ public class Main {
 		}
 		return null;
 	}
+	
+	private static ETLMetadataDTO fillTemplateMetadata(CommandLine commandLine, ETLTemplateDTO template) {
+		ETLMetadataDTO metadata = template.getMetadata();
+		List<ETLFileImportStepDTO> fileSteps = metadata.getAllFileSteps();
+		String[] fileOptions = commandLine.getOptionValues("file") == null? new String[0] : commandLine.getOptionValues("file");
+		if(fileSteps.size() != fileOptions.length) {
+			System.err.println("ETL Template (" +template.getId()+") requires " + fileSteps.size() + "files.");
+			System.err.println(fileOptions.length + " files were provided as arguments.");
+			System.err.println("Please provide the correct number of input files to run template.");
+			System.exit(1);
+		}
+		List<ETLFileOldDTO> files = handleFileOptions(fileOptions);
+		for(int i = 0; i < fileSteps.size(); i++) {
+			ETLFileImportStepDTO step = fileSteps.get(i);
+			ETLFileOldDTO file = files.get(i);
+			if(!step.getDataType().equals(file.getFileType())) {
+				System.err.println("File step type must match input file type");
+				System.err.println("step="+step.getDataType().toString()+" file="+file.getFileType().toString());
+				System.exit(1);
+			}
+			step.setCompressed(true); // ETL Tool compresses all file uploads.
+			step.setFileEncoding(file.getFileEncoding());
+			step.setFileFormat(file.getFileFormat());
+			step.setFileName(file.getFilename());
+			step.setMimePart(file.getMimePart());
+		}
+		return metadata;
+	}
+	
 }

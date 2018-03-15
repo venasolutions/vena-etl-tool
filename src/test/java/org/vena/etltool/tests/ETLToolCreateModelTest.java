@@ -25,7 +25,7 @@ public class ETLToolCreateModelTest extends ETLToolTest {
 		String[] args = new String[] {"--username","user@vena.io","--password","Vena123","--createModel","newModel"};
 		
 		try {
-			Main.parseCmdlineArgs(args, etlClient);
+			Main.buildETLMetadata(args, etlClient);
 		} catch (ExitException e) {
 			verify(etlClient).createModel("newModel");
 			assertEquals(1, e.status);

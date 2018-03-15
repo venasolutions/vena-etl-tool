@@ -22,7 +22,7 @@ public class ETLToolFileToCubeTest extends ETLToolTest {
 		ETLClient etlClient = mockETLClient();
 		String[] args = buildCommand(new String[] {"--jobName", "Loading LIDs file", "--file", "lidsFile.csv;type=lids;format=CSV;"});
 		
-		ETLMetadataDTO metadata = Main.parseCmdlineArgs(args, etlClient);
+		ETLMetadataDTO metadata = Main.buildETLMetadata(args, etlClient);
 		
 		assertEquals(modelId, metadata.getModelId());
 		assertEquals("Loading LIDs file", metadata.getName());
@@ -43,7 +43,7 @@ public class ETLToolFileToCubeTest extends ETLToolTest {
 		ETLClient etlClient = mockETLClient();
 		String[] args = buildCommand(new String[] {"--jobName", "Loading LIDs file", "--file", "lidsFile.csv;type=lids;format=CSV;encoding=UTF-16"});
 		
-		ETLMetadataDTO metadata = Main.parseCmdlineArgs(args, etlClient);
+		ETLMetadataDTO metadata = Main.buildETLMetadata(args, etlClient);
 		
 		assertEquals(modelId, metadata.getModelId());
 		assertEquals("Loading LIDs file", metadata.getName());
@@ -66,7 +66,7 @@ public class ETLToolFileToCubeTest extends ETLToolTest {
 		String[] args = buildCommand(new String[] {"--jobName", "Loading intersections file", "--file", "intersectionsFile.csv;type=staging;format=CSV;"});
 
 		try {
-			Main.parseCmdlineArgs(args, etlClient);
+			Main.buildETLMetadata(args, etlClient);
 		} catch (ExitException e) {
 			String expectedError = "The ETL file type \"staging\" does not exist. The supported filetypes are ["+ETLFileOldDTO.SUPPORTED_FILETYPES_LIST+"]";
 			assertEquals(1, e.status);

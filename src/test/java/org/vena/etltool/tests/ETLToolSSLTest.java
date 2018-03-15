@@ -15,7 +15,7 @@ public class ETLToolSSLTest extends ETLToolTest {
 		String[] args = buildCommand(new String[] {"--ssl"});
 		ETLClient etlClient = mockETLClient();
 		try {
-			Main.parseCmdlineArgs(args, etlClient);
+			Main.buildETLMetadata(args, etlClient);
 		} catch (ExitException e) {
 			assertEquals(1, e.status);
 			assertEquals("Error: You must specify at least one --file option when submitting a job.", err.toString().trim());
@@ -28,7 +28,7 @@ public class ETLToolSSLTest extends ETLToolTest {
 		String[] args = buildCommand(new String[] {"--nossl"});
 		ETLClient etlClient = mockETLClient();
 		try {
-			Main.parseCmdlineArgs(args, etlClient);
+			Main.buildETLMetadata(args, etlClient);
 		} catch (ExitException e) {
 			assertEquals(1, e.status);
 			assertEquals("Error: You must specify at least one --file option when submitting a job.", err.toString().trim());
@@ -41,7 +41,7 @@ public class ETLToolSSLTest extends ETLToolTest {
 		String[] args = buildCommand(new String[] {"--nossl", "--ssl"});
 		ETLClient etlClient = mockETLClient();
 		try {
-			Main.parseCmdlineArgs(args, etlClient);
+			Main.buildETLMetadata(args, etlClient);
 		} catch (ExitException e) {
 			assertEquals(1, e.status);
 			assertEquals("Error: --ssl and --nossl options cannot be combined.", err.toString().trim());

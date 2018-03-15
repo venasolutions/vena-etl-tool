@@ -27,7 +27,7 @@ public class ETLToolClearSlicesTest extends ETLToolTest {
 		ETLClient etlClient = mockETLClient();
 		String[] args = buildCommand(new String[] {"--jobName", "Loading intersections file", "--file", "intersectionsFile.csv;type=intersections;format=CSV;clearSlices=dimension('Accounts':'Sales'),dimension('Accounts':'Expense')"});
 		
-		ETLMetadataDTO metadata = Main.parseCmdlineArgs(args, etlClient);
+		ETLMetadataDTO metadata = Main.buildETLMetadata(args, etlClient);
 		
 		assertEquals(modelId, metadata.getModelId());
 		assertEquals("Loading intersections file", metadata.getName());
@@ -49,7 +49,7 @@ public class ETLToolClearSlicesTest extends ETLToolTest {
 		ETLClient etlClient = mockETLClient();
 		String[] args = buildCommand(new String[] {"--jobName", "Loading intersections file", "--file", "intersectionsFile.csv;type=intersections;format=CSV;clearSlicesByDimNums=1,2,5"});
 
-		ETLMetadataDTO metadata = Main.parseCmdlineArgs(args, etlClient);
+		ETLMetadataDTO metadata = Main.buildETLMetadata(args, etlClient);
 
 		assertEquals(modelId, metadata.getModelId());
 		assertEquals("Loading intersections file", metadata.getName());
@@ -71,7 +71,7 @@ public class ETLToolClearSlicesTest extends ETLToolTest {
 		ETLClient etlClient = mockETLClient();
 		String[] args = buildCommand(new String[] {"--jobName", "Loading intersections file", "--file", "intersectionsFile.csv;type=intersections;format=CSV;clearSlicesByDimNums=1,2,5;clearSlices=dimension('Accounts':'Sales')"});
 
-		ETLMetadataDTO metadata = Main.parseCmdlineArgs(args, etlClient);
+		ETLMetadataDTO metadata = Main.buildETLMetadata(args, etlClient);
 
 		assertEquals(modelId, metadata.getModelId());
 		assertEquals("Loading intersections file", metadata.getName());
@@ -95,7 +95,7 @@ public class ETLToolClearSlicesTest extends ETLToolTest {
 		String[] args = buildCommand(new String[] {"--jobName", "Loading intersections file", "--file", "intersectionsFile.csv;type=intersections;format=CSV", "--clearSlices","dimension('Accounts':'Sales'),dimension('Accounts':'Expense')"});
 		
 		try {
-			Main.parseCmdlineArgs(args, etlClient);
+			Main.buildETLMetadata(args, etlClient);
 		} catch (ExitException e) {
 			assertEquals(1, e.status);
 			assertEquals("Error: --clearSlices and --clearSlicesByDimNums options cannot be combined with the --file option. Instead use the suboptions clearSlices and clearSlicesByDimNums for the --file option", err.toString().trim());
@@ -107,7 +107,7 @@ public class ETLToolClearSlicesTest extends ETLToolTest {
 		ETLClient etlClient = mockETLClient();
 		String[] args = buildCommand(new String[] {"--jobName", "Loading to stage with clear", "--loadFromStaging", "--clearSlices", "dimension('Accounts':'Expense'),dimension('Accounts':'Sale')"});
 		
-		ETLMetadataDTO metadata = Main.parseCmdlineArgs(args, etlClient);
+		ETLMetadataDTO metadata = Main.buildETLMetadata(args, etlClient);
 		
 		assertEquals(modelId, metadata.getModelId());
 		assertEquals("Loading to stage with clear", metadata.getName());
@@ -131,7 +131,7 @@ public class ETLToolClearSlicesTest extends ETLToolTest {
 		ETLClient etlClient = mockETLClient();
 		String[] args = buildCommand(new String[] {"--jobName", "Loading to stage with clear", "--loadFromStaging", "--clearSlicesByDimNums", "3, 4"});
 
-		ETLMetadataDTO metadata = Main.parseCmdlineArgs(args, etlClient);
+		ETLMetadataDTO metadata = Main.buildETLMetadata(args, etlClient);
 
 		assertEquals(modelId, metadata.getModelId());
 		assertEquals("Loading to stage with clear", metadata.getName());
@@ -155,7 +155,7 @@ public class ETLToolClearSlicesTest extends ETLToolTest {
 		ETLClient etlClient = mockETLClient();
 		String[] args = buildCommand(new String[] {"--jobName", "Loading to stage with clear", "--loadFromStaging", "--clearSlicesByDimNums", "3, 4", "--clearSlices", "dimension('Accounts':'Expense')"});
 
-		ETLMetadataDTO metadata = Main.parseCmdlineArgs(args, etlClient);
+		ETLMetadataDTO metadata = Main.buildETLMetadata(args, etlClient);
 
 		assertEquals(modelId, metadata.getModelId());
 		assertEquals("Loading to stage with clear", metadata.getName());
@@ -180,7 +180,7 @@ public class ETLToolClearSlicesTest extends ETLToolTest {
 		ETLClient etlClient = mockETLClient();
 		String[] args = buildCommand(new String[] {"--jobName", "Loading intersections file with transform", "--file", "intersectionsFile.csv;type=intersections;format=CSV;table=values_table", "--stage", "--clearSlices", "dimension('Accounts':'Expense'),dimension('Accounts':'Sale')"});
 
-		ETLMetadataDTO metadata = Main.parseCmdlineArgs(args, etlClient);
+		ETLMetadataDTO metadata = Main.buildETLMetadata(args, etlClient);
 
 		assertEquals(modelId, metadata.getModelId());
 		assertEquals("Loading intersections file with transform", metadata.getName());
@@ -217,7 +217,7 @@ public class ETLToolClearSlicesTest extends ETLToolTest {
 		ETLClient etlClient = mockETLClient();
 		String[] args = buildCommand(new String[] {"--jobName", "Loading intersections file with transform", "--file", "intersectionsFile.csv;type=intersections;format=CSV;table=values_table", "--stage", "--clearSlicesByDimNums", "1,3,4"});
 
-		ETLMetadataDTO metadata = Main.parseCmdlineArgs(args, etlClient);
+		ETLMetadataDTO metadata = Main.buildETLMetadata(args, etlClient);
 
 		assertEquals(modelId, metadata.getModelId());
 		assertEquals("Loading intersections file with transform", metadata.getName());
@@ -256,7 +256,7 @@ public class ETLToolClearSlicesTest extends ETLToolTest {
 				"intersectionsFile.csv;type=intersections;format=CSV;table=values_table", "--stage",
 				"--clearSlicesByDimNums", "1,3,4", "--clearSlices", "dimension('Accounts':'Expense'),dimension('Accounts':'Sale')"});
 
-		ETLMetadataDTO metadata = Main.parseCmdlineArgs(args, etlClient);
+		ETLMetadataDTO metadata = Main.buildETLMetadata(args, etlClient);
 
 		assertEquals(modelId, metadata.getModelId());
 		assertEquals("Loading intersections file with transform", metadata.getName());

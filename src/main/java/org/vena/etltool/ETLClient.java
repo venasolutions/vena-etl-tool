@@ -31,6 +31,7 @@ import org.vena.etltool.entities.ETLStageToCubeStepDTO;
 import org.vena.etltool.entities.ETLStepDTO;
 import org.vena.etltool.entities.ETLStepDTO.DataType;
 import org.vena.etltool.entities.ETLStepDTO.Status;
+import org.vena.etltool.entities.ETLTemplateDTO;
 import org.vena.etltool.entities.ETLVersioningStepDTO;
 import org.vena.etltool.entities.Id;
 import org.vena.etltool.entities.LoginResultDTO;
@@ -81,6 +82,27 @@ public class ETLClient {
 		this.clientFactory = clientFactory;
 	}
 
+	public ETLTemplateDTO getETLTemplate() {
+		// Get the ETL template from the server.
+		try {
+			String resource = getETLBasePath() + "/templates/" +templateId;
+			Builder webResource = buildWebResource(resource);
+			ClientResponse response = webResource.type(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
+			switch(response.getStatus()) {
+			case 200:
+				return getEntity(response, ETLTemplateDTO.class);
+			default:
+				handleErrorResponse(response, "Could not retrieve ETL Template.");
+			}
+			
+		} catch (Exception e) {
+
+			e.printStackTrace();
+		}
+		System.exit(1);
+		return null; // should never reach here
+	}
+	
 	public ETLJobDTO uploadETL(ETLMetadataDTO metadata)
 	{
 		try {
@@ -184,6 +206,10 @@ public class ETLClient {
 		return "/api/models/" + modelId + "/etl";
 	}
 
+	private String buildURI(String path) {
+		return buildURIForHost(host, path);
+	}
+	
 	private String buildURI(String path, Iterable<TwoTuple<String, String>> parameters)
 	{
 		return buildURIForHost(host, path, parameters);
@@ -266,7 +292,12 @@ public class ETLClient {
 	private Builder buildWebResource(String path, Iterable<TwoTuple<String, String>> parameters, boolean chunked) {
 
 		Client client = chunked ? getUploadClient() : getAPIClient();
-		String uri = buildURI(path, parameters);
+		String uri;
+		if(parameters == null || !parameters.iterator().hasNext() ) {
+			uri = buildURI(path);
+		} else {
+			uri = buildURI(path, parameters);
+		}
 		
 		if( verbose )
 			System.err.println("Calling " + uri);

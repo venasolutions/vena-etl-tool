@@ -19,7 +19,7 @@ public class ETLToolTransformCompleteTest extends ETLToolTest {
 		String[] args = buildCommand(new String[] {"--transformComplete", "--jobId", jobId.toString()});
 		
 		try {
-			Main.parseCmdlineArgs(args, etlClient);
+			Main.buildETLMetadata(args, etlClient);
 		} catch (ExitException e) {
 			verify(etlClient).sendTransformComplete(jobId.toString().trim());
 			assertEquals(0, e.status);
@@ -31,7 +31,7 @@ public class ETLToolTransformCompleteTest extends ETLToolTest {
 		ETLClient etlClient = mockETLClient();
 		String[] args = buildCommand(new String[] {"--transformComplete"});
 		try {
-			Main.parseCmdlineArgs(args, etlClient);
+			Main.buildETLMetadata(args, etlClient);
 		} catch (ExitException e) {
 			assertEquals(1, e.status);
 			assertEquals("Error: You must specify --jobId=<job Id>.", err.toString().trim());

@@ -14,7 +14,7 @@ public class ETLToolAuthenticationTest extends ETLToolTest {
 	public void testUsernameAndPwd() throws UnsupportedEncodingException {
 		ETLClient etlClient = mockETLClient();
 		try {
-			Main.parseCmdlineArgs(buildCommandArgs(), etlClient);
+			Main.buildETLMetadata(buildCommandArgs(), etlClient);
 		} catch (ExitException e) {
 			assertEquals(1, e.status);
 			assertEquals("Error: You must specify at least one --file option when submitting a job.", err.toString().trim());
@@ -28,7 +28,7 @@ public class ETLToolAuthenticationTest extends ETLToolTest {
 		ETLClient etlClient = mockETLClient();
 		String[] args = buildCommand(new String[] {"--apiUser", "user", "--apiKey", "key"});
 		try {
-			Main.parseCmdlineArgs(args, etlClient);
+			Main.buildETLMetadata(args, etlClient);
 		} catch (ExitException e) {
 			assertEquals(1, e.status);
 			assertEquals("Error: You must specify either --username/--password or --apiUser/--apiKey to authenticate with the server, but not both.", err.toString().trim());

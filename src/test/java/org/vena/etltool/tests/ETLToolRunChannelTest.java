@@ -20,7 +20,7 @@ public class ETLToolRunChannelTest extends ETLToolTest {
 		ETLClient etlClient = mockETLClient();
 		String[] args = buildCommand(new String[] {"--jobName", "Running integrations channel", "--runChannel", "1234"});
 
-		ETLMetadataDTO metadata = Main.parseCmdlineArgs(args, etlClient);
+		ETLMetadataDTO metadata = Main.buildETLMetadata(args, etlClient);
 
 		assertEquals(modelId, metadata.getModelId());
 		assertEquals("Running integrations channel", metadata.getName());
@@ -40,7 +40,7 @@ public class ETLToolRunChannelTest extends ETLToolTest {
 		ETLClient etlClient = mockETLClient();
 		String[] args = buildCommand(new String[] {"--jobName", "Running integrations channels", "--runChannel", "1234", "--runChannel", "5678"});
 
-		ETLMetadataDTO metadata = Main.parseCmdlineArgs(args, etlClient);
+		ETLMetadataDTO metadata = Main.buildETLMetadata(args, etlClient);
 
 		assertEquals(modelId, metadata.getModelId());
 		assertEquals("Running integrations channels", metadata.getName());
@@ -68,7 +68,7 @@ public class ETLToolRunChannelTest extends ETLToolTest {
 		String[] args = buildCommand(new String[] {"--jobName", "Running integrations channels", "--runChannel"});
 
 		try {
-			Main.parseCmdlineArgs(args, etlClient);
+			Main.buildETLMetadata(args, etlClient);
 		} catch (ExitException e) {
 			assertEquals(1, e.status);
 			assertEquals("Error: Missing argument for option: runChannel", err.toString().trim());
@@ -81,7 +81,7 @@ public class ETLToolRunChannelTest extends ETLToolTest {
 		String[] args = buildCommand(new String[] {"--jobName", "Running integrations channels", "--runChannel", "--runChannel", "5678"});
 
 		try {
-			Main.parseCmdlineArgs(args, etlClient);
+			Main.buildETLMetadata(args, etlClient);
 		} catch (ExitException e) {
 			assertEquals(1, e.status);
 			assertEquals("Error: Missing argument for option: runChannel", err.toString().trim());
@@ -94,7 +94,7 @@ public class ETLToolRunChannelTest extends ETLToolTest {
 		String[] args = buildCommand(new String[] {"--jobName", "Running integrations channels", "--runChannel", "1234a", "--runChannel", "5678"});
 
 		try {
-			Main.parseCmdlineArgs(args, etlClient);
+			Main.buildETLMetadata(args, etlClient);
 		} catch (ExitException e) {
 			assertEquals(1, e.status);
 			assertEquals("Error: channelId could not be parsed as a number.", err.toString().trim());

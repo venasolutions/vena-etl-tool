@@ -35,7 +35,7 @@ public class ETLToolExportTest extends ETLToolTest {
 		String[] args = buildCommand(new String[] {"--export","intersections","--exportToFile", file.getPath()});
 		
 		try {
-			Main.parseCmdlineArgs(args, etlClient);
+			Main.buildETLMetadata(args, etlClient);
 		} catch (ExitException e) {
 			verify(etlClient).sendExport(DataType.intersections, null, true, null, null, null, true);
 			assertEquals(0, e.status);
@@ -55,7 +55,7 @@ public class ETLToolExportTest extends ETLToolTest {
 		ETLClient etlClient = mockETLClient();
 		String[] args = buildCommand(new String[] {"--jobName","Stage to cube job","--export","intersections","--exportToTable", "export_table","--exportQuery","dimension('Accounts':'Sale')"});
 		
-		ETLMetadataDTO metadata = Main.parseCmdlineArgs(args, etlClient);
+		ETLMetadataDTO metadata = Main.buildETLMetadata(args, etlClient);
 		
 		assertEquals(modelId, metadata.getModelId());
 		assertEquals("Stage to cube job", metadata.getName());
@@ -85,7 +85,7 @@ public class ETLToolExportTest extends ETLToolTest {
 		String[] args = buildCommand(new String[] {"--export","staging","--exportFromTable","out_values","--exportToFile", file.getPath()});
 
 		try {
-			Main.parseCmdlineArgs(args, etlClient);
+			Main.buildETLMetadata(args, etlClient);
 		} catch (ExitException e) {
 			verify(etlClient).sendExport(DataType.user_defined, "out_values", true, null, null, null, true);
 			assertEquals(0, e.status);
@@ -108,7 +108,7 @@ public class ETLToolExportTest extends ETLToolTest {
 		String[] args = buildCommand(new String[] {"--export","invalidType", "--exportToFile", "intersectionsFile.csv"});
 		
 		try {
-			Main.parseCmdlineArgs(args, etlClient);
+			Main.buildETLMetadata(args, etlClient);
 		} catch (ExitException e) {
 			assertEquals(1, e.status);
 			assertEquals("Error: The ETL file type \"invalidType\" does not exist. The known filetypes are "
@@ -123,7 +123,7 @@ public class ETLToolExportTest extends ETLToolTest {
 		String[] args = buildCommand(new String[] {"--export","intersections","--exportQuery","query", "--exportWhere","whereQueyr","--exportToFile","intersectionsFile.csv"});
 		
 		try {
-			Main.parseCmdlineArgs(args, etlClient);
+			Main.buildETLMetadata(args, etlClient);
 		} catch (ExitException e) {
 			assertEquals(1, e.status);
 			assertEquals("Error: exportWhere and exportQuery options cannot be combined.", err.toString().trim());
@@ -136,7 +136,7 @@ public class ETLToolExportTest extends ETLToolTest {
 		String[] args = buildCommand(new String[] {"--exportFromTable","intersections_table","--exportQuery","query", "--exportToFile","intersectionsFile.csv"});
 		
 		try {
-			Main.parseCmdlineArgs(args, etlClient);
+			Main.buildETLMetadata(args, etlClient);
 		} catch (ExitException e) {
 			assertEquals(1, e.status);
 			assertEquals("Error: cannot use --exportQuery with --exportFromTable. Use --exportWhere \"<HQL Query>\" instead.", err.toString().trim());
@@ -149,7 +149,7 @@ public class ETLToolExportTest extends ETLToolTest {
 		String[] args = buildCommand(new String[] {"--exportFromTable","intersections_table","--exportToTable","out_table"});
 		
 		try {
-			Main.parseCmdlineArgs(args, etlClient);
+			Main.buildETLMetadata(args, etlClient);
 		} catch (ExitException e) {
 			assertEquals(1, e.status);
 			assertEquals("Error: cannot export from table to another table.", err.toString().trim());
@@ -162,7 +162,7 @@ public class ETLToolExportTest extends ETLToolTest {
 		String[] args = buildCommand(new String[] {"--export","intersections"});
 		
 		try {
-			Main.parseCmdlineArgs(args, etlClient);
+			Main.buildETLMetadata(args, etlClient);
 		} catch (ExitException e) {
 			assertEquals(1, e.status);
 			assertEquals(true, etlClient.pollingRequested);
@@ -177,7 +177,7 @@ public class ETLToolExportTest extends ETLToolTest {
 		String[] args = buildCommand(new String[] {"--export","intersections","--exportFromTable", "values_table"});
 		
 		try {
-			Main.parseCmdlineArgs(args, etlClient);
+			Main.buildETLMetadata(args, etlClient);
 		} catch (ExitException e) {
 			assertEquals(1, e.status);
 			assertEquals(true, etlClient.pollingRequested);
@@ -192,7 +192,7 @@ public class ETLToolExportTest extends ETLToolTest {
 		String[] args = buildCommand(new String[] {"--export","intersections","--exportToFile", "intersectionsFile.csv", "--exportToTable", "values_table"});
 		
 		try {
-			Main.parseCmdlineArgs(args, etlClient);
+			Main.buildETLMetadata(args, etlClient);
 		} catch (ExitException e) {
 			assertEquals(1, e.status);
 			assertEquals(true, etlClient.pollingRequested);

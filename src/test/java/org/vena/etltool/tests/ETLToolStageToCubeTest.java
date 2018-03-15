@@ -21,7 +21,7 @@ public class ETLToolStageToCubeTest extends ETLToolTest {
 		ETLClient etlClient = mockETLClient();
 		String[] args = buildCommand(new String[] {"--jobName", "Loading to stage", "--loadFromStaging"});
 		
-		ETLMetadataDTO metadata = Main.parseCmdlineArgs(args, etlClient);
+		ETLMetadataDTO metadata = Main.buildETLMetadata(args, etlClient);
 		
 		assertEquals(modelId, metadata.getModelId());
 		assertEquals("Loading to stage", metadata.getName());
@@ -42,7 +42,7 @@ public class ETLToolStageToCubeTest extends ETLToolTest {
 		String[] args = buildCommand(new String[] {"--jobName", "Hello world", "--loadFromStaging", "--stageOnly"});
 		
 		try {
-			Main.parseCmdlineArgs(args, etlClient);
+			Main.buildETLMetadata(args, etlClient);
 		} catch (ExitException e) {
 			assertEquals(1, e.status);
 			assertEquals("Error: --stage, --stageAndTransform, --stageOnly, and --loadFromStaging options cannot be combined. At most one of these options can be used at a time.", err.toString().trim());

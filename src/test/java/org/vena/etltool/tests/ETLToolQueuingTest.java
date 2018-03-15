@@ -33,7 +33,7 @@ public class ETLToolQueuingTest extends ETLToolTest {
 		String[] args = buildCommand(commands);
 		
 		try {
-			ETLMetadataDTO metadata = Main.parseCmdlineArgs(args, etlClient);
+			ETLMetadataDTO metadata = Main.buildETLMetadata(args, etlClient);
 			assertEquals(modelId, metadata.getModelId());
 			assertEquals(queuingEnabled, metadata.getQueuingEnabled());
 		} catch (ExitException e) {

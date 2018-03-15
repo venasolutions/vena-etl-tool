@@ -16,7 +16,7 @@ public class ETLToolVersionTest extends ETLToolTest {
 		String[] args = new String[] {"--version"};
 		
 		try {
-			Main.parseCmdlineArgs(args, etlClient);
+			Main.buildETLMetadata(args, etlClient);
 		} catch (ExitException e) {
 			assertEquals(0, e.status);
 		}

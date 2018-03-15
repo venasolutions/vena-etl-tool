@@ -21,7 +21,7 @@ public class ETLToolDeleteTest extends ETLToolTest {
 		ETLClient etlClient = mockETLClient();
 		String[] args = buildCommand(new String[] {"--delete", "lids", "--deleteQuery", "dimension('Accounts': 'Expense')"});
 		
-		ETLMetadataDTO metadata = Main.parseCmdlineArgs(args, etlClient);
+		ETLMetadataDTO metadata = Main.buildETLMetadata(args, etlClient);
 		assertEquals(metadata.getModelId(), modelId);
 		assertEquals(metadata.getSteps().size(), 1);
 		
@@ -41,7 +41,7 @@ public class ETLToolDeleteTest extends ETLToolTest {
 		ETLClient etlClient = mockETLClient();
 		String[] args = buildCommand(new String[] {"--delete", "values", "--deleteQuery", "dimension('Accounts': 'Expense')"});
 		
-		ETLMetadataDTO metadata = Main.parseCmdlineArgs(args, etlClient);
+		ETLMetadataDTO metadata = Main.buildETLMetadata(args, etlClient);
 		assertEquals(modelId, metadata.getModelId());
 		assertEquals(1, metadata.getSteps().size());
 		
@@ -61,7 +61,7 @@ public class ETLToolDeleteTest extends ETLToolTest {
 		ETLClient etlClient = mockETLClient();
 		String[] args = buildCommand(new String[] {"--delete", "intersections", "--deleteQuery", "dimension('Accounts': 'Expense')"});
 		
-		ETLMetadataDTO metadata = Main.parseCmdlineArgs(args, etlClient);
+		ETLMetadataDTO metadata = Main.buildETLMetadata(args, etlClient);
 		assertEquals(metadata.getModelId(), modelId);
 		assertEquals(metadata.getSteps().size(), 1);
 		
@@ -81,7 +81,7 @@ public class ETLToolDeleteTest extends ETLToolTest {
 		ETLClient etlClient = mockETLClient();
 		String[] args = buildCommand(new String[] {"--delete", "intersections"});
 		try {
-			Main.parseCmdlineArgs(args, etlClient);
+			Main.buildETLMetadata(args, etlClient);
 		} catch (ExitException e) {
 			assertEquals(1, e.status);
 			assertEquals("Error: delete option requires --deleteQuery <expr>.", err.toString().trim());
@@ -94,7 +94,7 @@ public class ETLToolDeleteTest extends ETLToolTest {
 		String[] args = buildCommand(new String[] {"--delete", "--intersections", "--deleteQuery"});
 		
 		try {
-			Main.parseCmdlineArgs(args, etlClient);
+			Main.buildETLMetadata(args, etlClient);
 		} catch (ExitException e) {
 			assertEquals(1, e.status);
 			assertEquals("Error: Missing argument for option: deleteQuery", err.toString().trim());
@@ -106,7 +106,7 @@ public class ETLToolDeleteTest extends ETLToolTest {
 		ETLClient etlClient = mockETLClient();
 		String[] args = buildCommand(new String[] {"--delete", "invalid", "--deleteQuery", "dimension('Accounts': 'Expense')"});
 		try {
-			Main.parseCmdlineArgs(args, etlClient);
+			Main.buildETLMetadata(args, etlClient);
 		} catch (ExitException e) {
 			assertEquals(1, e.status);
 			assertEquals("Error: The ETL file type \"invalid\" is not supported. The supported filetypes are intersections, values, and lids.", err.toString().trim());

@@ -18,7 +18,7 @@ public class ETLToolTemplateIdTest extends ETLToolTest {
 		String[] args = buildCommand(new String[] {"--templateId", templateId.toString()});
 		
 		try {
-			Main.parseCmdlineArgs(args, etlClient);
+			Main.buildETLMetadata(args, etlClient);
 		} catch (ExitException e) {
 			assertEquals(1, e.status);
 			assertEquals(templateId.toString(), etlClient.templateId);
@@ -32,7 +32,7 @@ public class ETLToolTemplateIdTest extends ETLToolTest {
 		String[] args = buildCommand(new String[] {"--templateId"});
 		
 		try {
-			Main.parseCmdlineArgs(args, etlClient);
+			Main.buildETLMetadata(args, etlClient);
 		} catch (ExitException e) {
 			assertEquals(1, e.status);
 			assertEquals("Error: Missing argument for option: templateId", err.toString().trim());

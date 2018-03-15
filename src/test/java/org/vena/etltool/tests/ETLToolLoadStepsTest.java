@@ -26,7 +26,7 @@ public class ETLToolLoadStepsTest extends ETLToolTest {
 		String[] args = buildCommand(new String[] {"--jobName", "Loading job with multiple steps", "--loadSteps", testFile});
 		ETLClient etlClient = mockETLClient();
 		
-		ETLMetadataDTO metadata = Main.parseCmdlineArgs(args, etlClient);
+		ETLMetadataDTO metadata = Main.buildETLMetadata(args, etlClient);
 		assertEquals(4, metadata.getSteps().size());
 
 		ETLStepDTO firstStep = metadata.getSteps().get(0);
@@ -62,7 +62,7 @@ public class ETLToolLoadStepsTest extends ETLToolTest {
 		ETLClient etlClient = mockETLClient();
 		
 		try {
-			Main.parseCmdlineArgs(args, etlClient);
+			Main.buildETLMetadata(args, etlClient);
 		} catch (ExitException e) {
 			assertEquals(1, e.status);
 			assertEquals("Error: Missing argument for option: loadSteps", err.toString().trim());
