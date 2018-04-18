@@ -522,8 +522,8 @@ public class ETLClient {
 		return etlJob;
 	}	
 
-	public InputStream sendExport(DataType type, String tableFromName, boolean toFile, String tableToName, String whereClause, String queryExpr, boolean showHeaders){
-		
+	public InputStream sendExport(DataType type, String tableFromName, String tableToName, String whereClause, String queryExpr, boolean showHeaders){
+
 		String typePath = null;
 
 		if (whereClause != null) {
@@ -593,13 +593,10 @@ public class ETLClient {
 
 		Builder webResource = buildWebResource(getETLBasePath() + "/query/" + typePath);
 		QueryDTO query = new QueryDTO();
-		if (!toFile) {
-			query.setDestination(Destination.ToStaging);
-			query.setTableName(tableToName);
-		} else {
-			query.setDestination(Destination.ToCSV);
-			query.setTableName(tableFromName);
-		}
+
+		query.setDestination(Destination.ToCSV);
+		query.setTableName(tableFromName);
+
 		if (whereClause != null) {
 			query.setQueryString(whereClause);
 		} else if (queryExpr != null) {
@@ -611,8 +608,7 @@ public class ETLClient {
 		if ((response.getStatus() != 204) && (response.getStatus() != 200)) {
 			handleErrorResponse(response, "Request to export failed.");
 		}
-		if (toFile) return response.getEntityInputStream();
-		else return null;
+		return response.getEntityInputStream();
 	}
 
 	private void handleErrorResponse(ClientResponse response, String message) {

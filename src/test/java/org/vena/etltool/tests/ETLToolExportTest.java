@@ -27,7 +27,7 @@ public class ETLToolExportTest extends ETLToolTest {
 	public void testExportToFile() throws IOException {
 		ETLClient etlClient = mockETLClient();
 		InputStream intersection_data = getClass().getClassLoader().getResourceAsStream("exportIntersectionsSource.csv");
-		when(etlClient.sendExport(DataType.intersections, null, true, null, null, null, true)).thenReturn(intersection_data);
+		when(etlClient.sendExport(DataType.intersections, null, null, null, null, true)).thenReturn(intersection_data);
 	
 		File file = File.createTempFile("exportIntersectionsDestination", ".csv");
 		file.deleteOnExit();
@@ -37,7 +37,7 @@ public class ETLToolExportTest extends ETLToolTest {
 		try {
 			Main.buildETLMetadata(args, etlClient);
 		} catch (ExitException e) {
-			verify(etlClient).sendExport(DataType.intersections, null, true, null, null, null, true);
+			verify(etlClient).sendExport(DataType.intersections, null, null, null, null, true);
 			assertEquals(0, e.status);
 			assertEquals(true, etlClient.pollingRequested);
 			assertEquals(true, etlClient.waitFully);
@@ -77,7 +77,7 @@ public class ETLToolExportTest extends ETLToolTest {
 	public void testExportFromTableToFile() throws IOException {
 		ETLClient etlClient = mockETLClient();
 		InputStream intersection_data = getClass().getClassLoader().getResourceAsStream("exportIntersectionsSource.csv");
-		when(etlClient.sendExport(DataType.user_defined, "out_values", true, null, null, null, true)).thenReturn(intersection_data);
+		when(etlClient.sendExport(DataType.user_defined, "out_values", null, null, null, true)).thenReturn(intersection_data);
 
 		File file = File.createTempFile("exportIntersectionsDestination", ".csv");
 		file.deleteOnExit();
@@ -87,7 +87,7 @@ public class ETLToolExportTest extends ETLToolTest {
 		try {
 			Main.buildETLMetadata(args, etlClient);
 		} catch (ExitException e) {
-			verify(etlClient).sendExport(DataType.user_defined, "out_values", true, null, null, null, true);
+			verify(etlClient).sendExport(DataType.user_defined, "out_values", null, null, null, true);
 			assertEquals(0, e.status);
 			assertEquals(true, etlClient.pollingRequested);
 			assertEquals(true, etlClient.waitFully);

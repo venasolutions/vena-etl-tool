@@ -945,7 +945,7 @@ public class Main {
 
 			if (exportToFile != null) {
 				System.out.print("Running export (this might take a while)... ");
-				InputStream in = etlClient.sendExport(type, exportFromTable, exportToFile != null, exportToTable, whereClause, queryExpr, !excludeHeaders);
+				InputStream in = etlClient.sendExport(type, exportFromTable, exportToTable, whereClause, queryExpr, !excludeHeaders);
 				try {
 					Files.copy(in, new File(exportToFile).toPath(), StandardCopyOption.REPLACE_EXISTING);
 				} catch (IOException e) {
