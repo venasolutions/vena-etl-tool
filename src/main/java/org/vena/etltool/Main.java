@@ -66,7 +66,7 @@ public class Main {
 			+ "\n| --status --jobId <id>"
 			+ "\n| --transformComplete --jobId <id>"
 			+ "\n| --delete <type> --deleteQuery <expr> [--nowait]"
-			+ "\n| --export <type>\n {--exportQuery <expr> | --exportWhere <clause>}\n {--exportToFile <name> [--excludeHeaders] | --exportToTable <name> [--nowait]}"
+			+ "\n| --export <type>\n {--exportQuery <expr> | --exportWhere <clause>}\n {--exportToFile <name> [--excludeHeaders] [--exportFormat {CSV|PSV|TDF}] | --exportToTable <name> [--nowait]}"
 			+ "\n| --loadSteps <file>"
 			+ "\n}";
 	
@@ -441,6 +441,16 @@ public class Main {
 				.create();
 
 		options.addOption(excludeHeadersOption);
+
+		Option exportFormatOption = 
+				OptionBuilder
+				.withLongOpt("exportFormat")
+				.isRequired(false)
+				.hasArg()
+				.withDescription("File format for export to file (default CSV). Other options: PSV, TDF.")
+				.create();
+
+		options.addOption(exportFormatOption);
 
 		Option deleteOption = 
 				OptionBuilder
@@ -943,9 +953,22 @@ public class Main {
 
 			boolean excludeHeaders = commandLine.hasOption("excludeHeaders");
 
+			String fileFormatStr = commandLine.getOptionValue("exportFormat");
+			FileFormat fileFormat = FileFormat.CSV;
+
+			if (fileFormatStr != null) {
+				try {
+					fileFormat = FileFormat.valueOf(fileFormatStr);
+				}
+				catch(IllegalArgumentException e) {
+					System.err.println( "Error: The export file format \""+fileFormatStr+"\" does not exist. The known formats are "+Arrays.asList(FileFormat.values())+"");
+					System.exit(1);
+				}
+			}
+
 			if (exportToFile != null) {
 				System.out.print("Running export (this might take a while)... ");
-				InputStream in = etlClient.sendExport(type, exportFromTable, exportToTable, whereClause, queryExpr, !excludeHeaders);
+				InputStream in = etlClient.sendExport(type, exportFromTable, exportToTable, whereClause, queryExpr, !excludeHeaders, fileFormat);
 				try {
 					Files.copy(in, new File(exportToFile).toPath(), StandardCopyOption.REPLACE_EXISTING);
 				} catch (IOException e) {
