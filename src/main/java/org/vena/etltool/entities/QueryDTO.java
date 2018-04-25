@@ -3,12 +3,14 @@ package org.vena.etltool.entities;
 import java.util.Date;
 import java.util.List;
 
+import org.vena.etltool.entities.ETLFileImportStepDTO.FileFormat;
+
 public class QueryDTO {
 
 	public enum Destination { ToCSV, ToStaging }
 
 	private Id modelId;
-	
+
 	private String queryString;
 	
 	private Date timestamp;
@@ -27,6 +29,8 @@ public class QueryDTO {
 
 	private List<String> filterColumnNames;
 	
+	private FileFormat format;
+
 	public QueryDTO()
 	{
 	}
@@ -114,5 +118,13 @@ public class QueryDTO {
 
 	public void setTimestamp(Date timestamp) {
 		this.timestamp = timestamp;
+	}
+
+	public FileFormat getFormat() {
+		return format;
+	}
+
+	public void setFormat(FileFormat format) {
+		this.format = format;
 	}
 }

@@ -24,6 +24,7 @@ import org.vena.etltool.entities.CreateModelRequestDTO;
 import org.vena.etltool.entities.ETLCalculationDeployStepDTO;
 import org.vena.etltool.entities.ETLCubeToStageStepDTO;
 import org.vena.etltool.entities.ETLFileImportStepDTO;
+import org.vena.etltool.entities.ETLFileImportStepDTO.FileFormat;
 import org.vena.etltool.entities.ETLJobDTO;
 import org.vena.etltool.entities.ETLJobDTO.Phase;
 import org.vena.etltool.entities.ETLMetadataDTO;
@@ -522,8 +523,8 @@ public class ETLClient {
 		return etlJob;
 	}	
 
-	public InputStream sendExport(DataType type, String tableFromName, boolean toFile, String tableToName, String whereClause, String queryExpr, boolean showHeaders){
-		
+	public InputStream sendExport(DataType type, String tableFromName, String tableToName, String whereClause, String queryExpr, boolean showHeaders, FileFormat format){
+
 		String typePath = null;
 
 		if (whereClause != null) {
@@ -593,26 +594,23 @@ public class ETLClient {
 
 		Builder webResource = buildWebResource(getETLBasePath() + "/query/" + typePath);
 		QueryDTO query = new QueryDTO();
-		if (!toFile) {
-			query.setDestination(Destination.ToStaging);
-			query.setTableName(tableToName);
-		} else {
-			query.setDestination(Destination.ToCSV);
-			query.setTableName(tableFromName);
-		}
+
+		query.setDestination(Destination.ToCSV);
+		query.setTableName(tableFromName);
+
 		if (whereClause != null) {
 			query.setQueryString(whereClause);
 		} else if (queryExpr != null) {
 			query.setQueryString(queryExpr);
 		}
 		query.setShowHeaders(showHeaders);
+		query.setFormat(format);
 
 		ClientResponse response = webResource.type(MediaType.APPLICATION_JSON_TYPE).post(ClientResponse.class, query);
 		if ((response.getStatus() != 204) && (response.getStatus() != 200)) {
 			handleErrorResponse(response, "Request to export failed.");
 		}
-		if (toFile) return response.getEntityInputStream();
-		else return null;
+		return response.getEntityInputStream();
 	}
 
 	private void handleErrorResponse(ClientResponse response, String message) {
