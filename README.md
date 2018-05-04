@@ -1,9 +1,9 @@
-etl-console
+Vena Command Line ETL Tool
 ===========
 
 Help and Usage
 --------------
-See the [ETL Tool Guide](https://docs.google.com/a/venasolutions.com/document/d/1HOc4PtN2OV0btpztmAMXS3r6Dopge6i4EMLz6Mn9cNM/edit?usp=sharing).
+See the [ETL Tool Guide](https://docs.vena.io/etl-guide/command-line-ETL/).
 
 Development
 -----------
@@ -29,23 +29,6 @@ git.commit.time: 16.09.2015 @ 14:25:09 UTC
 git.build.time: 16.09.2015 @ 14:26:45 UTC
 
 ```
-
-### Deploying a release to production
-
-__Pre-requisites:__
-You need write access to `development/etl-console` repo in Github.
-
-__Deploying:__
-
-1. Checkout the release branch.
-2. Run `mvn release:prepare` to update the version numbers.
-
-  When prompted, accept the defaults.
-  This will make two commits to the branch you are on, creates a tag, and automatically pushes to `development/etl-console` repo.
-  (If nothing happens, ensure that you do not have any `release.properties` file from a previous release.)
-
-3. Run Jenkins job [prod.etl-console](http://jenkins.devops.vena.vpn/job/prod.etl-console/) supplying the tag you just created.
-4. Merge the release branch back to `development/master`.
 
 ### Debugging
 
