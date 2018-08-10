@@ -750,6 +750,7 @@ public class Main {
 			}
 			ETLTemplateDTO template = etlClient.getETLTemplate();
 			metadata = fillTemplateMetadata(commandLine, template);
+			etlClient.modelId = metadata.getModelId();
 		} else {
 			metadata = buildETLMetadata(commandLine, etlClient);
 		}

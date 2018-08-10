@@ -49,6 +49,18 @@ public class ETLToolTemplateUploadTest extends ETLToolTest {
 	}
 
 	@Test
+	public void testGetTemplateMetadataWithReturnModelId() throws UnsupportedEncodingException {
+		// Ensure that the modelId is copied over from the template metadata to the client when running template
+		ETLClient etlClient = mockETLClient();
+		when(etlClient.getETLTemplate()).thenReturn(produceFileTemplate());
+		CommandLine commandLine = Main.parseCommandLineArgs(buildCommand(new String[] { "--runTemplate=12345",
+				"--file=file1.csv;type=hierarchy", "--file=file2.csv;type=intersections" }));
+		ETLMetadataDTO metadata = Main.produceETLMetadata(etlClient, commandLine);
+		assertEquals(new Id(1L), etlClient.modelId);
+	}
+
+
+	@Test
 	public void testGetTemplateMetadataWrongFileFormat() throws UnsupportedEncodingException {
 		ETLClient etlClient = mockETLClient();
 		when(etlClient.getETLTemplate()).thenReturn(produceFileTemplate());
@@ -148,6 +160,7 @@ public class ETLToolTemplateUploadTest extends ETLToolTest {
 		steps.add(step1);
 		steps.add(step2);
 		metadata.setSteps(steps);
+		metadata.setModelId(new Id(1L));
 		template.setMetadata(metadata);
 		return template;
 	}
