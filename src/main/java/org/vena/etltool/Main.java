@@ -727,6 +727,11 @@ public class Main {
 			System.out.println("OK");
 		}
 		else if( (username == null && password == null && apiUser != null && apiKey != null) ) {
+			if (hostname == null) {
+				System.err.println("Error: You cannot use --apiUser/--apiKey without providing a host.");
+				System.exit(1);
+			}
+
 			// Use API key
 			etlClient.apiUser = apiUser;
 			etlClient.apiKey = apiKey;
