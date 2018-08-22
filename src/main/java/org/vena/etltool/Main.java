@@ -728,7 +728,7 @@ public class Main {
 		}
 		else if( (username == null && password == null && apiUser != null && apiKey != null) ) {
 			if (hostname == null) {
-				System.err.println("Error: You cannot use --apiUser/--apiKey without providing a host.");
+				System.err.println("Error: You must specify --hostname when using --apiUser/--apiKey.");
 				System.exit(1);
 			}
 
