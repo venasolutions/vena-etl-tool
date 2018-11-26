@@ -22,27 +22,12 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.vena.etltool.entities.*;
 import org.vena.etltool.entities.ETLFileImportStepDTO.FileFormat;
-import org.vena.etltool.entities.ETLCubeToStageStepDTO;
 import org.vena.etltool.entities.ETLCubeToStageStepDTO.QueryType;
-import org.vena.etltool.entities.ETLDeleteIntersectionsStepDTO;
-import org.vena.etltool.entities.ETLDeleteLidsStepDTO;
-import org.vena.etltool.entities.ETLDeleteValuesStepDTO;
-import org.vena.etltool.entities.ETLFileImportStepDTO;
-import org.vena.etltool.entities.ETLFileOldDTO;
-import org.vena.etltool.entities.ETLFileToCubeStepDTO;
-import org.vena.etltool.entities.ETLFileToStageStepDTO;
-import org.vena.etltool.entities.ETLJobDTO;
-import org.vena.etltool.entities.ETLMetadataDTO;
 import org.vena.etltool.entities.ETLMetadataDTO.ETLLoadType;
-import org.vena.etltool.entities.ETLSQLTransformStepDTO;
-import org.vena.etltool.entities.ETLStageToCubeStepDTO;
 import org.vena.etltool.entities.ETLStepDTO.DataType;
-import org.vena.etltool.entities.ETLStreamChannelStepDTO;
 import org.vena.etltool.entities.ETLStreamStepDTO.MockMode;
-import org.vena.etltool.entities.ETLTemplateDTO;
-import org.vena.etltool.entities.Id;
-import org.vena.etltool.entities.ModelResponseDTO;
 
 
 public class Main {
@@ -60,7 +45,7 @@ public class Main {
 			+ "\n}"
 			+ "\n{ --loadFromStaging [--wait|--waitFully]"
 			+ "\n| [--runTemplate=<templateId>]"
-			+ "\n| [--stage|--stageOnly] [--wait|--waitFully] [--validate] [--templateId <id>] [--jobName <name>] --file \"[file=]<filename>; [type=]<filetype> [;[table=]<tableName>] [;format={CSV|PSV|TDF}] [;bulkInsert={true|false}]\""
+			+ "\n| [--stage|--stageOnly|--venaTable] [--wait|--waitFully] [--validate] [--templateId <id>] [--jobName <name>] --file \"[file=]<filename>; [type=]<filetype> [;[table=]<tableName>] [;format={CSV|PSV|TDF}] [;bulkInsert={true|false}]\""
 			+ "\n| --cancel --jobId <id>"
 			+ "\n| --setError --jobId <id>"
 			+ "\n| --status --jobId <id>"
@@ -303,6 +288,15 @@ public class Main {
 				.create();
 
 		options.addOption(loadFromStagingOption);
+
+		Option venaTableOption =
+				OptionBuilder
+						.withLongOpt("venaTable")
+						.isRequired(false)
+						.withDescription("Load the files into a Vena Table.")
+						.create();
+
+		options.addOption(venaTableOption);
 
 		Option setErrorOption = 
 				OptionBuilder
@@ -1145,9 +1139,9 @@ public class Main {
 			    	System.out.println(line);
 			    	String[] optionFields = line.trim().split(" ", 2);
 			    	String loadType = optionFields[0];
-			    	
+
 			    	ETLFileOldDTO etlFile = null;
-			    	
+
 			    	switch (loadType.toUpperCase()) {
 			    	case "FILETOCUBE":
 			    	{
@@ -1175,7 +1169,7 @@ public class Main {
 							metadata.addStep(new ETLStageToCubeStepDTO(DataType.lids));
 			    		} else if (optionFields.length == 2) {
 			    			ETLStageToCubeStepDTO step = new ETLStageToCubeStepDTO();
-			    			
+
 			    			String[] subOptionFields = optionFields[1].split(";");
 			    			for (String field: subOptionFields) {
 			    				String[] parts = field.split("=", 2);
@@ -1219,21 +1213,21 @@ public class Main {
 			    		}
 			    		break;
 			    	}
-			    	case "CUBETOSTAGE": 
+			    	case "CUBETOSTAGE":
 			    	{
 						ETLCubeToStageStepDTO step = new ETLCubeToStageStepDTO();
-						
+
 						if (optionFields.length != 2)
 						{
 							System.err.println( "Error: cubeToStage step requires type=<type>;table=<name>. The known types are ["+ETLFileOldDTO.SUPPORTED_FILETYPES_LIST+"]");
 							System.exit(1);
 						}
-						
+
 						String[] fields = optionFields[1].split(";");
-						
+
 						boolean typeFound = false;
 						boolean tableFound = false;
-						
+
 						for (String field : fields) {
 							String[] parts = field.split("=", 2);
 
@@ -1269,12 +1263,12 @@ public class Main {
 								throw new IllegalArgumentException("The field "+ field +" contained "+ parts.length +" parts.");
 							}
 						}
-						
+
 						if (!typeFound || !tableFound) {
 							System.err.println( "Error: cubeToStage step requires type=<type>;table=<name>. The known types are ["+ETLFileOldDTO.SUPPORTED_FILETYPES_LIST+"]");
 							System.exit(1);
 						}
-						
+
 						if (step.getQueryType() == null) {
 							if ((step.getDataType() == DataType.intersections) || (step.getDataType() == DataType.lids))
 								step.setQueryType(QueryType.MODEL_SLICE);
@@ -1283,28 +1277,33 @@ public class Main {
 						metadata.addStep(step);
 						break;
 			    	}
-			    	case "INTEGRATIONCHANNEL":
-			    		
-			    		if (optionFields.length != 2) {
-							System.err.println( "Error: integrationChannel step requires channelId=<channelId>.");
+			    	case "INTEGRATIONCHANNEL": {
+						if (optionFields.length != 2) {
+							System.err.println("Error: integrationChannel step requires channelId=<channelId>.");
 							System.exit(1);
-			    		}
-			    		
-			    		try {
-			    			ETLStreamChannelStepDTO step = new ETLStreamChannelStepDTO(Id.valueOf(optionFields[1].trim()), MockMode.LIVE);
-			    			metadata.addStep(step);
-			    		} catch (NumberFormatException e) {
-			    			System.err.println( "Error: channelId could not be parsed as a number.");
-			    			System.exit(1);
-			    		}
-			    		
-			    		break;
+						}
+
+						try {
+							ETLStreamChannelStepDTO step = new ETLStreamChannelStepDTO(Id.valueOf(optionFields[1].trim()), MockMode.LIVE);
+							metadata.addStep(step);
+						} catch (NumberFormatException e) {
+							System.err.println("Error: channelId could not be parsed as a number.");
+							System.exit(1);
+						}
+
+						break;
+					}
+			    	case "FILETOVENATABLE": {
+							etlFile = prepareFilesToLoad(optionFields);
+							metadata.addStep(new ETLFileToRedshiftStepDTO(etlFile));
+							break;
+					}
 			    	case "":
 			    		break;
 			    	default:
 						System.err.println("Error: loadType " + loadType + " not supported. "
 								+ "Supported options are { fileToCube, fileToStage, SQLTransform, stageToCube, cubeToStage, integrationChannel }.");
-						System.exit(1);	
+						System.exit(1);
 			    	}
 			    }
 		} catch (IOException e) {
@@ -1350,23 +1349,27 @@ public class Main {
 
 		ETLLoadType loadType = ETLLoadType.FILE_TO_CUBE;
 
-		int numStageOptions = 0;
+		int numStageOrRedshiftOptions = 0;
 		
 		if (commandLine.hasOption("stage") || commandLine.hasOption("stageAndTransform")) {
 			loadType = ETLLoadType.FILE_TO_STAGE_TO_CUBE;
-			numStageOptions++;
+			numStageOrRedshiftOptions++;
 		}
 		if (commandLine.hasOption("stageOnly")) {
 			loadType = ETLLoadType.FILE_TO_STAGE;
-			numStageOptions++;
+			numStageOrRedshiftOptions++;
+		}
+		if (commandLine.hasOption("venaTable")) {
+			loadType = ETLLoadType.FILE_TO_VENA_TABLE;
+			numStageOrRedshiftOptions++;
 		}
 		if (commandLine.hasOption("loadFromStaging")) {
 			loadType = ETLLoadType.STAGE_TO_CUBE;
-			numStageOptions++;
+			numStageOrRedshiftOptions++;
 		}
 
-		if (numStageOptions > 1) {
-			System.err.println( "Error: --stage, --stageAndTransform, --stageOnly, and --loadFromStaging options cannot be combined. At most one of these options can be used at a time.");
+		if (numStageOrRedshiftOptions > 1) {
+			System.err.println( "Error: --stage, --stageAndTransform, --stageOnly, --loadFromStaging, --venaTable options cannot be combined. At most one of these options can be used at a time.");
 			System.exit(1);
 		}
 
@@ -1439,6 +1442,11 @@ public class Main {
 		case FILE_TO_STAGE:
 			for(ETLFileOldDTO file : etlFiles) {
 				metadata.addStep(new ETLFileToStageStepDTO(file));
+			}
+			break;
+		case FILE_TO_VENA_TABLE:
+			for(ETLFileOldDTO file : etlFiles) {
+				metadata.addStep(new ETLFileToRedshiftStepDTO(file));
 			}
 			break;
 		case FILE_TO_STAGE_TO_CUBE:

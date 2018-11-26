@@ -14,7 +14,8 @@ public class ETLMetadataDTO {
 		FILE_TO_CUBE,
 		FILE_TO_STAGE_TO_CUBE,
 		FILE_TO_STAGE,
-		STAGE_TO_CUBE
+		STAGE_TO_CUBE,
+		FILE_TO_VENA_TABLE
 	}
 
 	public static ETLLoadType stagingRequiredToLoadType(boolean stagingRequired) {
@@ -33,6 +34,8 @@ public class ETLMetadataDTO {
 			return "Stage Only";
 		case STAGE_TO_CUBE:
 			return "Load From Staging";
+		case FILE_TO_VENA_TABLE:
+			return "Load to Vena Table";
 		default:
 			return "Unrecognized Load Type";
 		}

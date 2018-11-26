@@ -45,7 +45,7 @@ public class ETLToolStageToCubeTest extends ETLToolTest {
 			Main.buildETLMetadata(args, etlClient);
 		} catch (ExitException e) {
 			assertEquals(1, e.status);
-			assertEquals("Error: --stage, --stageAndTransform, --stageOnly, and --loadFromStaging options cannot be combined. At most one of these options can be used at a time.", err.toString().trim());
+			assertEquals("Error: --stage, --stageAndTransform, --stageOnly, --loadFromStaging, --venaTable options cannot be combined. At most one of these options can be used at a time.", err.toString().trim());
 		}
 	}
 }

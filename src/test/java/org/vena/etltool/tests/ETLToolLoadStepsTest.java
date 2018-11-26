@@ -10,11 +10,7 @@ import java.util.HashSet;
 import org.junit.Test;
 import org.vena.etltool.ETLClient;
 import org.vena.etltool.Main;
-import org.vena.etltool.entities.ETLFileToStageStepDTO;
-import org.vena.etltool.entities.ETLMetadataDTO;
-import org.vena.etltool.entities.ETLSQLTransformStepDTO;
-import org.vena.etltool.entities.ETLStageToCubeStepDTO;
-import org.vena.etltool.entities.ETLStepDTO;
+import org.vena.etltool.entities.*;
 import org.vena.etltool.entities.ETLFileImportStepDTO.FileFormat;
 import org.vena.etltool.entities.ETLStepDTO.DataType;
 
@@ -27,7 +23,7 @@ public class ETLToolLoadStepsTest extends ETLToolTest {
 		ETLClient etlClient = mockETLClient();
 		
 		ETLMetadataDTO metadata = Main.buildETLMetadata(args, etlClient);
-		assertEquals(4, metadata.getSteps().size());
+		assertEquals(5, metadata.getSteps().size());
 
 		ETLStepDTO firstStep = metadata.getSteps().get(0);
 		assertEquals(ETLFileToStageStepDTO.class, firstStep.getClass());
@@ -54,6 +50,15 @@ public class ETLToolLoadStepsTest extends ETLToolTest {
 		ETLStageToCubeStepDTO stageToCubeFourthStep = (ETLStageToCubeStepDTO)fourthStep;
 		assertEquals(DataType.intersections, stageToCubeFourthStep.getDataType());
 		assertEquals(new HashSet<Integer>(Arrays.asList(1, 3, 4)), stageToCubeFourthStep.getClearSlicesDimensions());
+
+		ETLStepDTO fifthStep = metadata.getSteps().get(4);
+		assertEquals(ETLFileToRedshiftStepDTO.class, fifthStep.getClass());
+
+		ETLFileToRedshiftStepDTO fileToRedshiftFifthStep = (ETLFileToRedshiftStepDTO)fifthStep;
+		assertEquals(DataType.intersections, fileToRedshiftFifthStep.getDataType());
+		assertEquals("intersectionsFile.csv", fileToRedshiftFifthStep.getFileName());
+		assertEquals("redshift_values_table", fileToRedshiftFifthStep.getTableName());
+		assertEquals(FileFormat.CSV, fileToRedshiftFifthStep.getFileFormat());
 	}
 	
 	@Test
