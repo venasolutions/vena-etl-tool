@@ -1464,7 +1464,6 @@ public class Main {
 		}
 		
 		metadata.setSchemaVersion(2);
-		metadata.setLoadType(loadType);
 		metadata.setModelId(modelId);
 
 		String jobName =  commandLine.getOptionValue("jobName");
