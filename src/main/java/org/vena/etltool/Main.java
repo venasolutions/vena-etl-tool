@@ -691,7 +691,7 @@ public class Main {
 					"loadSteps", "runChannel", "export", "exportToTable", "exportFromTable",
 					"exportToFile", "exportWhere", "exportQuery", "delete", "deleteQuery",
 					"jobName", "jobId", "cancel", "loadFromStaging", "stage", "stageAndTransform",
-					"stageOnly", "transformComplete", "loadFromStaging"};
+					"stageOnly", "transformComplete", "loadFromStaging", "venaTable"};
 			for(String option : incompatibleOptions) {
 				if(commandLine.hasOption(option)) {
 					System.err.println( "Error: You cannot use --runTemplate with --" +option+".");
@@ -1295,6 +1295,7 @@ public class Main {
 					}
 			    	case "FILETOVENATABLE": {
 							etlFile = prepareFilesToLoad(optionFields);
+						    validateFileToVenaStep(etlFile);
 							metadata.addStep(new ETLFileToRedshiftStepDTO(etlFile));
 							break;
 					}
@@ -1369,7 +1370,7 @@ public class Main {
 		}
 
 		if (numStageOrRedshiftOptions > 1) {
-			System.err.println( "Error: --stage, --stageAndTransform, --stageOnly, --loadFromStaging, --venaTable options cannot be combined. At most one of these options can be used at a time.");
+			System.err.println( "Error: --stage, --stageAndTransform, --stageOnly, --loadFromStaging, and --venaTable options cannot be combined. At most one of these options can be used at a time.");
 			System.exit(1);
 		}
 
@@ -1445,9 +1446,10 @@ public class Main {
 			}
 			break;
 		case FILE_TO_VENA_TABLE:
-			for(ETLFileOldDTO file : etlFiles) {
-				metadata.addStep(new ETLFileToRedshiftStepDTO(file));
-			}
+				for (ETLFileOldDTO file : etlFiles) {
+					validateFileToVenaStep(file);
+					metadata.addStep(new ETLFileToRedshiftStepDTO(file));
+				}
 			break;
 		case FILE_TO_STAGE_TO_CUBE:
 			for(ETLFileOldDTO file : etlFiles) {
@@ -1649,6 +1651,15 @@ public class Main {
 			step.setMimePart(file.getMimePart());
 		}
 		return metadata;
+	}
+
+	private static void validateFileToVenaStep(ETLFileOldDTO etlFile) {
+		if (etlFile.getFileFormat() != FileFormat.CSV) {
+			throw new IllegalArgumentException("Vena Tables only accept CSV files at this time.");
+		}
+		if (etlFile.getTableName().isEmpty()) {
+			throw new IllegalArgumentException("The table name must be specified for the Vena Table step.");
+		}
 	}
 	
 }
