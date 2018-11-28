@@ -38,9 +38,9 @@ public class ETLToolFileToRedshiftTest extends ETLToolTest {
 	}
 	
 	@Test
-	public void testFileToRedshiftWithEncoding() throws UnsupportedEncodingException {
+	public void testFileToRedshiftWithEncodingWithoutType() throws UnsupportedEncodingException {
 		ETLClient etlClient = mockETLClient();
-		String[] args = buildCommand(new String[] {"--jobName", "Loading LIDs file", "--file", "lidsFile.csv;type=lids;format=CSV;table=lids_table;encoding=ASCII", "--venaTable"});
+		String[] args = buildCommand(new String[] {"--jobName", "Loading LIDs file", "--file", "lidsFile.csv;format=CSV;table=lids_table;encoding=ASCII", "--venaTable"});
 
 		ETLMetadataDTO metadata = Main.buildETLMetadata(args, etlClient);
 
@@ -53,10 +53,48 @@ public class ETLToolFileToRedshiftTest extends ETLToolTest {
 		assertEquals(ETLFileToRedshiftStepDTO.class, step.getClass());
 
 		ETLFileToRedshiftStepDTO fileToStageStep = (ETLFileToRedshiftStepDTO) step;
-		assertEquals(DataType.lids, fileToStageStep.getDataType());
 		assertEquals("lidsFile.csv", fileToStageStep.getFileName());
 		assertEquals("lids_table", fileToStageStep.getTableName());
 		assertEquals(FileFormat.CSV, fileToStageStep.getFileFormat());
 		assertEquals("ASCII", fileToStageStep.getFileEncoding());
+	}
+
+	@Test
+	public void testSetErrorWithoutFormat() throws UnsupportedEncodingException {
+		ETLClient etlClient = mockETLClient();
+		String[] args = buildCommand(new String[] {"--jobName", "Loading LIDs file", "--file", "lidsFile.csv;table=lids_table;encoding=ASCII", "--venaTable"});
+
+		try {
+			Main.buildETLMetadata(args, etlClient);
+		} catch (ExitException e) {
+			assertEquals(1, e.status);
+			assertEquals("Error: Vena Tables only accept CSV files at this time.", err.toString().trim());
+		}
+	}
+
+	@Test
+	public void testSetErrorNonCSVFormat() throws UnsupportedEncodingException {
+		ETLClient etlClient = mockETLClient();
+		String[] args = buildCommand(new String[] {"--jobName", "Loading LIDs file", "--file", "lidsFile.csv;format=TDF;encoding=ASCII", "--venaTable"});
+
+		try {
+			Main.buildETLMetadata(args, etlClient);
+		} catch (ExitException e) {
+			assertEquals(1, e.status);
+			assertEquals("Error: Vena Tables only accept CSV files at this time.", err.toString().trim());
+		}
+	}
+
+	@Test
+	public void testSetErrorWithoutTable() throws UnsupportedEncodingException {
+		ETLClient etlClient = mockETLClient();
+		String[] args = buildCommand(new String[] {"--jobName", "Loading LIDs file", "--file", "lidsFile.csv;format=CSV;encoding=ASCII", "--venaTable"});
+		
+		try {
+			Main.buildETLMetadata(args, etlClient);
+		} catch (ExitException e) {
+			assertEquals(1, e.status);
+			assertEquals("Error: The table name must be specified for the Vena Table step.", err.toString().trim());
+		}
 	}
 }

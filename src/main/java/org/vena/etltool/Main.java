@@ -1146,12 +1146,14 @@ public class Main {
 			    	case "FILETOCUBE":
 			    	{
 			    		etlFile = prepareFilesToLoad(optionFields);
+						validateNonEmptyFileType(etlFile);
 						metadata.addStep(new ETLFileToCubeStepDTO(etlFile));
 			    		break;
 			    	}
 			    	case "FILETOSTAGE":
 			    	{
 			    		etlFile = prepareFilesToLoad(optionFields);
+						validateNonEmptyFileType(etlFile);
 						metadata.addStep(new ETLFileToStageStepDTO(etlFile));
 			    		break;
 			    	}
@@ -1350,26 +1352,26 @@ public class Main {
 
 		ETLLoadType loadType = ETLLoadType.FILE_TO_CUBE;
 
-		int numStageOrRedshiftOptions = 0;
+		int numStageOrVenaTableOptions = 0;
 		
 		if (commandLine.hasOption("stage") || commandLine.hasOption("stageAndTransform")) {
 			loadType = ETLLoadType.FILE_TO_STAGE_TO_CUBE;
-			numStageOrRedshiftOptions++;
+			numStageOrVenaTableOptions++;
 		}
 		if (commandLine.hasOption("stageOnly")) {
 			loadType = ETLLoadType.FILE_TO_STAGE;
-			numStageOrRedshiftOptions++;
+			numStageOrVenaTableOptions++;
 		}
 		if (commandLine.hasOption("venaTable")) {
 			loadType = ETLLoadType.FILE_TO_VENA_TABLE;
-			numStageOrRedshiftOptions++;
+			numStageOrVenaTableOptions++;
 		}
 		if (commandLine.hasOption("loadFromStaging")) {
 			loadType = ETLLoadType.STAGE_TO_CUBE;
-			numStageOrRedshiftOptions++;
+			numStageOrVenaTableOptions++;
 		}
 
-		if (numStageOrRedshiftOptions > 1) {
+		if (numStageOrVenaTableOptions > 1) {
 			System.err.println( "Error: --stage, --stageAndTransform, --stageOnly, --loadFromStaging, and --venaTable options cannot be combined. At most one of these options can be used at a time.");
 			System.exit(1);
 		}
@@ -1400,6 +1402,9 @@ public class Main {
 
 		List<ETLFileOldDTO> etlFiles = handleFileOptions(etlFileOptionValues);
 		for(ETLFileOldDTO etlFile : etlFiles) {
+			if (loadType != ETLLoadType.FILE_TO_VENA_TABLE){
+				validateNonEmptyFileType(etlFile);
+			}
 			if (etlFile.getClearSlicesExpressions() != null || etlFile.getClearSlicesDimensions() != null) {
 				if (loadType != ETLLoadType.FILE_TO_CUBE) {
 					System.err.println("Error: the --file options clearSlices and clearSlicesByDimNums are only available for ETL File to Cube imports."
@@ -1594,10 +1599,6 @@ public class Main {
 			throw new IllegalArgumentException("File name is required.");
 		}
 
-		if (etlFile.getFileType() == null) {
-			throw new IllegalArgumentException("Type is required.");
-		}
-
 		if (etlFile.getFileType() == DataType.user_defined && etlFile.getTableName() == null) {
 			throw new IllegalArgumentException("Table name is required for user-defined type.");
 		}
@@ -1639,7 +1640,7 @@ public class Main {
 		for(int i = 0; i < fileSteps.size(); i++) {
 			ETLFileImportStepDTO step = fileSteps.get(i);
 			ETLFileOldDTO file = files.get(i);
-			if(!step.getDataType().equals(file.getFileType())) {
+			if(file.getFileType() == null || !step.getDataType().equals(file.getFileType())) {
 				System.err.println("File step type must match input file type");
 				System.err.println("step="+step.getDataType().toString()+" file="+file.getFileType().toString());
 				System.exit(1);
@@ -1653,12 +1654,21 @@ public class Main {
 		return metadata;
 	}
 
+	private static void validateNonEmptyFileType(ETLFileOldDTO etlFile) {
+		if (etlFile.getFileType() == null) {
+			System.err.println( "Error: One of the ETL files does not have the required type field.");
+			System.exit(1);
+		}
+	}
+
 	private static void validateFileToVenaStep(ETLFileOldDTO etlFile) {
 		if (etlFile.getFileFormat() != FileFormat.CSV) {
-			throw new IllegalArgumentException("Vena Tables only accept CSV files at this time.");
+			System.err.println( "Error: Vena Tables only accept CSV files at this time.");
+			System.exit(1);
 		}
-		if (etlFile.getTableName().isEmpty()) {
-			throw new IllegalArgumentException("The table name must be specified for the Vena Table step.");
+		if (etlFile.getTableName() == null || etlFile.getTableName().isEmpty()) {
+			System.err.println( "Error: The table name must be specified for the Vena Table step.");
+			System.exit(1);
 		}
 	}
 	
