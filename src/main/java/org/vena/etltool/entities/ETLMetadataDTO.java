@@ -14,28 +14,8 @@ public class ETLMetadataDTO {
 		FILE_TO_CUBE,
 		FILE_TO_STAGE_TO_CUBE,
 		FILE_TO_STAGE,
-		STAGE_TO_CUBE
-	}
-
-	public static ETLLoadType stagingRequiredToLoadType(boolean stagingRequired) {
-		return stagingRequired ? ETLLoadType.FILE_TO_STAGE_TO_CUBE : ETLLoadType.FILE_TO_CUBE;
-	}
-	
-	public static String loadTypeToString(ETLLoadType loadType) {
-		if (loadType == null) return null;
-
-		switch (loadType) {
-		case FILE_TO_CUBE:
-			return "Direct Load";
-		case FILE_TO_STAGE_TO_CUBE:
-			return "Stage, Transform, and Load";
-		case FILE_TO_STAGE:
-			return "Stage Only";
-		case STAGE_TO_CUBE:
-			return "Load From Staging";
-		default:
-			return "Unrecognized Load Type";
-		}
+		STAGE_TO_CUBE,
+		FILE_TO_VENA_TABLE
 	}
 	
 	public ETLMetadataDTO() {
@@ -49,8 +29,6 @@ public class ETLMetadataDTO {
 	private Id modelId;
 	
 	private Id processId;
-
-	private ETLLoadType loadType;
 
 	private List<ETLStepDTO> steps = new ArrayList<ETLStepDTO>();
 	
@@ -84,14 +62,6 @@ public class ETLMetadataDTO {
 
 	public void setProcessId(Id processId) {
 		this.processId = processId;
-	}
-
-	public ETLLoadType getLoadType() {
-		return loadType;
-	}
-
-	public void setLoadType(ETLLoadType loadType) {
-		this.loadType = loadType;
 	}
 
 	public List<ETLStepDTO> getSteps() {

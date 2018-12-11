@@ -680,8 +680,6 @@ public class ETLClient {
 			userString = "-";
 		}
 		System.out.println("  Created by user: " + userString);
-		System.out.println("  Load Type: " + (metadata.getLoadType() == null ? "-" :
-			ETLMetadataDTO.loadTypeToString(metadata.getLoadType())));
 		
 		if (metadata.getSteps() != null) {
 			System.out.println("  Steps:");
