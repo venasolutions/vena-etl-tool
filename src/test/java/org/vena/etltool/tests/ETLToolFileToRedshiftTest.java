@@ -60,19 +60,6 @@ public class ETLToolFileToRedshiftTest extends ETLToolTest {
 	}
 
 	@Test
-	public void testSetErrorWithoutFormat() throws UnsupportedEncodingException {
-		ETLClient etlClient = mockETLClient();
-		String[] args = buildCommand(new String[] {"--jobName", "Loading LIDs file", "--file", "lidsFile.csv;table=lids_table;encoding=ASCII", "--venaTable"});
-
-		try {
-			Main.buildETLMetadata(args, etlClient);
-		} catch (ExitException e) {
-			assertEquals(1, e.status);
-			assertEquals("Error: Vena Tables only accept CSV files at this time.", err.toString().trim());
-		}
-	}
-
-	@Test
 	public void testSetErrorNonCSVFormat() throws UnsupportedEncodingException {
 		ETLClient etlClient = mockETLClient();
 		String[] args = buildCommand(new String[] {"--jobName", "Loading LIDs file", "--file", "lidsFile.csv;format=TDF;encoding=ASCII", "--venaTable"});

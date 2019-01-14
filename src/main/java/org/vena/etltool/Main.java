@@ -1662,10 +1662,6 @@ public class Main {
 	}
 
 	private static void validateFileToVenaStep(ETLFileOldDTO etlFile) {
-		if (etlFile.getFileFormat() != FileFormat.CSV) {
-			System.err.println( "Error: Vena Tables only accept CSV files at this time.");
-			System.exit(1);
-		}
 		if (etlFile.getTableName() == null || etlFile.getTableName().isEmpty()) {
 			System.err.println( "Error: The table name must be specified for the Vena Table step.");
 			System.exit(1);
