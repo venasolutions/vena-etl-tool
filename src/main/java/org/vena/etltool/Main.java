@@ -1298,7 +1298,7 @@ public class Main {
 			    	case "FILETOVENATABLE": {
 							etlFile = prepareFilesToLoad(optionFields);
 						    validateFileToVenaStep(etlFile);
-							metadata.addStep(new ETLFileToRedshiftStepDTO(etlFile));
+							metadata.addStep(new ETLFileToVenaTableStepDTO(etlFile));
 							break;
 					}
 			    	case "":
@@ -1453,7 +1453,7 @@ public class Main {
 		case FILE_TO_VENA_TABLE:
 				for (ETLFileOldDTO file : etlFiles) {
 					validateFileToVenaStep(file);
-					metadata.addStep(new ETLFileToRedshiftStepDTO(file));
+					metadata.addStep(new ETLFileToVenaTableStepDTO(file));
 				}
 			break;
 		case FILE_TO_STAGE_TO_CUBE:
