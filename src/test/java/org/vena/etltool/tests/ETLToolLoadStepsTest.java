@@ -52,13 +52,13 @@ public class ETLToolLoadStepsTest extends ETLToolTest {
 		assertEquals(new HashSet<Integer>(Arrays.asList(1, 3, 4)), stageToCubeFourthStep.getClearSlicesDimensions());
 
 		ETLStepDTO fifthStep = metadata.getSteps().get(4);
-		assertEquals(ETLFileToRedshiftStepDTO.class, fifthStep.getClass());
+		assertEquals(ETLFileToVenaTableStepDTO.class, fifthStep.getClass());
 
-		ETLFileToRedshiftStepDTO fileToRedshiftFifthStep = (ETLFileToRedshiftStepDTO)fifthStep;
-		assertEquals(DataType.intersections, fileToRedshiftFifthStep.getDataType());
-		assertEquals("intersectionsFile.csv", fileToRedshiftFifthStep.getFileName());
-		assertEquals("redshift_values_table", fileToRedshiftFifthStep.getTableName());
-		assertEquals(FileFormat.CSV, fileToRedshiftFifthStep.getFileFormat());
+		ETLFileToVenaTableStepDTO fileToVenaTableFifthStep = (ETLFileToVenaTableStepDTO)fifthStep;
+		assertEquals(DataType.intersections, fileToVenaTableFifthStep.getDataType());
+		assertEquals("intersectionsFile.csv", fileToVenaTableFifthStep.getFileName());
+		assertEquals("venaTable_values_table", fileToVenaTableFifthStep.getTableName());
+		assertEquals(FileFormat.CSV, fileToVenaTableFifthStep.getFileFormat());
 	}
 	
 	@Test

@@ -4,7 +4,7 @@ import org.junit.Test;
 import org.vena.etltool.ETLClient;
 import org.vena.etltool.Main;
 import org.vena.etltool.entities.ETLFileImportStepDTO.FileFormat;
-import org.vena.etltool.entities.ETLFileToRedshiftStepDTO;
+import org.vena.etltool.entities.ETLFileToVenaTableStepDTO;
 import org.vena.etltool.entities.ETLMetadataDTO;
 import org.vena.etltool.entities.ETLStepDTO;
 import org.vena.etltool.entities.ETLStepDTO.DataType;
@@ -13,10 +13,10 @@ import java.io.UnsupportedEncodingException;
 
 import static org.junit.Assert.assertEquals;
 
-public class ETLToolFileToRedshiftTest extends ETLToolTest {
+public class ETLToolFileToVenaTableTest extends ETLToolTest {
 
 	@Test
-	public void testFileToRedshift() throws UnsupportedEncodingException {
+	public void testFileToVenaTable() throws UnsupportedEncodingException {
 		ETLClient etlClient = mockETLClient();
 		String[] args = buildCommand(new String[] {"--jobName", "Loading LIDs file", "--file", "lidsFile.csv;type=lids;format=CSV;table=lids_table", "--venaTable"});
 		
@@ -28,17 +28,17 @@ public class ETLToolFileToRedshiftTest extends ETLToolTest {
 		
 		ETLStepDTO step = metadata.getSteps().get(0);
 		
-		assertEquals(ETLFileToRedshiftStepDTO.class, step.getClass());
+		assertEquals(ETLFileToVenaTableStepDTO.class, step.getClass());
 
-		ETLFileToRedshiftStepDTO fileToRedshiftStep = (ETLFileToRedshiftStepDTO) step;
-		assertEquals(DataType.lids, fileToRedshiftStep.getDataType());
-		assertEquals("lidsFile.csv", fileToRedshiftStep.getFileName());
-		assertEquals("lids_table", fileToRedshiftStep.getTableName());
-		assertEquals(FileFormat.CSV, fileToRedshiftStep.getFileFormat());
+		ETLFileToVenaTableStepDTO fileToVenaTableStep = (ETLFileToVenaTableStepDTO) step;
+		assertEquals(DataType.lids, fileToVenaTableStep.getDataType());
+		assertEquals("lidsFile.csv", fileToVenaTableStep.getFileName());
+		assertEquals("lids_table", fileToVenaTableStep.getTableName());
+		assertEquals(FileFormat.CSV, fileToVenaTableStep.getFileFormat());
 	}
 
 	@Test
-	public void testFileToRedshiftWithEncodingWithoutType() throws UnsupportedEncodingException {
+	public void testFileToVenaTableWithEncodingWithoutType() throws UnsupportedEncodingException {
 		ETLClient etlClient = mockETLClient();
 		String[] args = buildCommand(new String[] {"--jobName", "Loading LIDs file", "--file", "lidsFile.csv;format=CSV;table=lids_table;encoding=ASCII", "--venaTable"});
 
@@ -50,9 +50,9 @@ public class ETLToolFileToRedshiftTest extends ETLToolTest {
 
 		ETLStepDTO step = metadata.getSteps().get(0);
 
-		assertEquals(ETLFileToRedshiftStepDTO.class, step.getClass());
+		assertEquals(ETLFileToVenaTableStepDTO.class, step.getClass());
 
-		ETLFileToRedshiftStepDTO fileToStageStep = (ETLFileToRedshiftStepDTO) step;
+		ETLFileToVenaTableStepDTO fileToStageStep = (ETLFileToVenaTableStepDTO) step;
 		assertEquals("lidsFile.csv", fileToStageStep.getFileName());
 		assertEquals("lids_table", fileToStageStep.getTableName());
 		assertEquals(FileFormat.CSV, fileToStageStep.getFileFormat());

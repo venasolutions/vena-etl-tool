@@ -31,7 +31,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
 		@Type(value = ETLCalculationDeployStepDTO.class),
 		@Type(value = ETLCalculationSyncStepDTO.class),
 		@Type(value = ETLSSPTemplateStepWrapperStepDTO.class),
-		@Type(value = ETLFileToRedshiftStepDTO.class)
+		@Type(value = ETLFileToVenaTableStepDTO.class)
 })
 
 public abstract class ETLStepDTO {

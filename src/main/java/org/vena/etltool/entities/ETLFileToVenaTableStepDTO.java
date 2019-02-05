@@ -2,20 +2,18 @@ package org.vena.etltool.entities;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
 
-import java.util.List;
+@JsonTypeName(ETLFileToVenaTableStepDTO.stepType)
+public class ETLFileToVenaTableStepDTO extends ETLFileImportStepDTO {
 
-@JsonTypeName(ETLFileToRedshiftStepDTO.stepType)
-public class ETLFileToRedshiftStepDTO extends ETLFileImportStepDTO {
-
-	protected final static String stepType = "ETLFileToRedshiftStep";
+	protected final static String stepType = "ETLFileToVenaTableStep";
 
 	private String tableName;
 
-	public ETLFileToRedshiftStepDTO() {
+	public ETLFileToVenaTableStepDTO() {
 		super();
 	}
 
-	public ETLFileToRedshiftStepDTO(ETLFileOldDTO etlFile) {
+	public ETLFileToVenaTableStepDTO(ETLFileOldDTO etlFile) {
 		super(etlFile);
 		this.tableName = etlFile.getTableName();
 	}
