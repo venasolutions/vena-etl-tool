@@ -747,7 +747,9 @@ public class Main {
 				System.err.println("Template Id must be specified if running an ETL template");
 				System.exit(1);
 			}
+			System.out.print("Getting template... ");
 			ETLTemplateDTO template = etlClient.getETLTemplate();
+			System.out.println("OK");
 			metadata = fillTemplateMetadata(commandLine, template);
 			etlClient.modelId = metadata.getModelId();
 		} else {
@@ -1631,7 +1633,7 @@ public class Main {
 		List<ETLFileImportStepDTO> fileSteps = metadata.getAllFileSteps();
 		String[] fileOptions = commandLine.getOptionValues("file") == null? new String[0] : commandLine.getOptionValues("file");
 		if(fileSteps.size() != fileOptions.length) {
-			System.err.println("ETL Template (" +template.getId()+") requires " + fileSteps.size() + "files.");
+			System.err.println("ETL Template (" +template.getId()+") requires " + fileSteps.size() + " file(s).");
 			System.err.println(fileOptions.length + " files were provided as arguments.");
 			System.err.println("Please provide the correct number of input files to run template.");
 			System.exit(1);
@@ -1641,8 +1643,8 @@ public class Main {
 			ETLFileImportStepDTO step = fileSteps.get(i);
 			ETLFileOldDTO file = files.get(i);
 			if(file.getFileType() == null || !step.getDataType().equals(file.getFileType())) {
-				System.err.println("File step type must match input file type");
-				System.err.println("step="+step.getDataType().toString()+" file="+file.getFileType().toString());
+				System.err.println("Error: File step type must match input file type");
+				System.err.println("  step "+i+" type: "+step.getDataType()+", file type: "+file.getFileType());
 				System.exit(1);
 			}
 			step.setCompressed(true); // ETL Tool compresses all file uploads.
