@@ -489,6 +489,17 @@ public class Main {
 				.create();
 		
 		options.addOption(clearSlicesByDimNumsOption);
+
+		Option clearSlicesByColumnsOption =
+				OptionBuilder
+						.withLongOpt("clearSlicesByColumns")
+						.isRequired(false)
+						.hasArg()
+						.withArgName("columns")
+						.withDescription("A list of columns numbers separated by commas to be used to compute slices to clear.")
+						.create();
+
+		options.addOption(clearSlicesByColumnsOption);
 		
 		Option waitOption = 
 				OptionBuilder
@@ -1298,10 +1309,10 @@ public class Main {
 						break;
 					}
 			    	case "FILETOVENATABLE": {
-							etlFile = prepareFilesToLoad(optionFields);
-						    validateFileToVenaStep(etlFile);
-							metadata.addStep(new ETLFileToVenaTableStepDTO(etlFile));
-							break;
+						etlFile = prepareFilesToLoad(optionFields);
+						validateFileToVenaStep(etlFile);
+						metadata.addStep(new ETLFileToVenaTableStepDTO(etlFile));
+						break;
 					}
 			    	case "":
 			    		break;
@@ -1402,15 +1413,25 @@ public class Main {
 			}
 		}
 
+		if (commandLine.hasOption("clearSlicesByColumns")) {
+			System.err.println("Error: clearSlicesByColumns can only be used as a suboption to the --file option for ETL File to Vena Table imports.");
+			System.exit(1);
+		}
+
 		List<ETLFileOldDTO> etlFiles = handleFileOptions(etlFileOptionValues);
 		for(ETLFileOldDTO etlFile : etlFiles) {
 			if (loadType != ETLLoadType.FILE_TO_VENA_TABLE){
 				validateNonEmptyFileType(etlFile);
 			}
+			if (!etlFile.getClearSlicesColumns().isEmpty() && loadType != ETLLoadType.FILE_TO_VENA_TABLE) {
+				System.err.println("Error: the --file option clearSlicesByColumns is only available for ETL File to Vena Table imports.");
+				System.exit(1);
+			}
 			if (etlFile.getClearSlicesExpressions() != null || etlFile.getClearSlicesDimensions() != null) {
 				if (loadType != ETLLoadType.FILE_TO_CUBE) {
 					System.err.println("Error: the --file options clearSlices and clearSlicesByDimNums are only available for ETL File to Cube imports."
 							+"\n For Stage operations, use the stand alone --clearSlices and --clearSlicesByDimNums options instead.");
+					System.exit(1);
 				}
 			}
 			
@@ -1553,6 +1574,12 @@ public class Main {
 				case "clearSlicesByDimNums":
 					if (value != null) {
 						etlFile.setClearSlicesDimensions(parseClearSlicesByDimNumsArgs(value));
+					}
+					break;
+
+				case "clearSlicesByColumns":
+					if (value != null && !value.isEmpty()) {
+						etlFile.setClearSlicesColumns(Arrays.asList(value.split(",")));
 					}
 					break;
 				case "encoding":

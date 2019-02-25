@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 
@@ -59,6 +60,7 @@ public class ETLToolLoadStepsTest extends ETLToolTest {
 		assertEquals("intersectionsFile.csv", fileToVenaTableFifthStep.getFileName());
 		assertEquals("venaTable_values_table", fileToVenaTableFifthStep.getTableName());
 		assertEquals(FileFormat.CSV, fileToVenaTableFifthStep.getFileFormat());
+		assertEquals(new ArrayList<String>(Arrays.asList("col1","col2")),((ETLFileToVenaTableStepDTO)fileToVenaTableFifthStep).getClearSlicesColumns());
 	}
 	
 	@Test

@@ -1,5 +1,6 @@
 package org.vena.etltool.entities;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -46,6 +47,8 @@ public class ETLFileOldDTO {
 	private List<String> clearSlicesExpressions = null;
 	
 	private Set<Integer> clearSlicesDimensions = null;
+
+	private List<String> clearSlicesColumns = new ArrayList<>();
 	
 	private String fileEncoding;
 	
@@ -152,6 +155,14 @@ public class ETLFileOldDTO {
 	
 	public Set<Integer> getClearSlicesDimensions() {
 		return clearSlicesDimensions;
+	}
+
+	public void setClearSlicesColumns(List<String> clearSlicesColumns) {
+		this.clearSlicesColumns = clearSlicesColumns;
+	}
+
+	public List<String> getClearSlicesColumns() {
+		return clearSlicesColumns;
 	}
 
 	public String getFileEncoding() {
