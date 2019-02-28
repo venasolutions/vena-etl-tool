@@ -24,7 +24,7 @@ public class ETLToolLoadStepsTest extends ETLToolTest {
 		ETLClient etlClient = mockETLClient();
 		
 		ETLMetadataDTO metadata = Main.buildETLMetadata(args, etlClient);
-		assertEquals(5, metadata.getSteps().size());
+		assertEquals(6, metadata.getSteps().size());
 
 		ETLStepDTO firstStep = metadata.getSteps().get(0);
 		assertEquals(ETLFileToStageStepDTO.class, firstStep.getClass());
@@ -58,9 +58,18 @@ public class ETLToolLoadStepsTest extends ETLToolTest {
 		ETLFileToVenaTableStepDTO fileToVenaTableFifthStep = (ETLFileToVenaTableStepDTO)fifthStep;
 		assertEquals(DataType.intersections, fileToVenaTableFifthStep.getDataType());
 		assertEquals("intersectionsFile.csv", fileToVenaTableFifthStep.getFileName());
-		assertEquals("venaTable_values_table", fileToVenaTableFifthStep.getTableName());
+		assertEquals("venaTable_values_table1", fileToVenaTableFifthStep.getTableName());
 		assertEquals(FileFormat.CSV, fileToVenaTableFifthStep.getFileFormat());
 		assertEquals(new ArrayList<String>(Arrays.asList("col1","col2")),((ETLFileToVenaTableStepDTO)fileToVenaTableFifthStep).getClearSlicesColumns());
+
+		ETLStepDTO sixthStep = metadata.getSteps().get(5);
+		assertEquals(ETLFileToVenaTableStepDTO.class, sixthStep.getClass());
+
+		ETLFileToVenaTableStepDTO fileToVenaTableSixthStep = (ETLFileToVenaTableStepDTO)sixthStep;
+		assertEquals(DataType.intersections, fileToVenaTableSixthStep.getDataType());
+		assertEquals("intersectionsFile.csv", fileToVenaTableSixthStep.getFileName());
+		assertEquals("venaTable_values_table2", fileToVenaTableSixthStep.getTableName());
+		assertEquals(FileFormat.CSV, fileToVenaTableSixthStep.getFileFormat());
 	}
 	
 	@Test

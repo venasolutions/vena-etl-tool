@@ -8,11 +8,7 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -496,7 +492,7 @@ public class Main {
 						.isRequired(false)
 						.hasArg()
 						.withArgName("columns")
-						.withDescription("A list of columns numbers separated by commas to be used to compute slices to clear.")
+						.withDescription("A list of columns names separated by commas to be used to compute slices to clear.")
 						.create();
 
 		options.addOption(clearSlicesByColumnsOption);
@@ -1431,7 +1427,6 @@ public class Main {
 				if (loadType != ETLLoadType.FILE_TO_CUBE) {
 					System.err.println("Error: the --file options clearSlices and clearSlicesByDimNums are only available for ETL File to Cube imports."
 							+"\n For Stage operations, use the stand alone --clearSlices and --clearSlicesByDimNums options instead.");
-					System.exit(1);
 				}
 			}
 			
@@ -1579,7 +1574,13 @@ public class Main {
 
 				case "clearSlicesByColumns":
 					if (value != null && !value.isEmpty()) {
-						etlFile.setClearSlicesColumns(Arrays.asList(value.split(",")));
+						// Allow users to escape their commas in the column names
+						List<String> colNames = Arrays.asList(value.split("(?<!\\\\),"));
+						List<String> escapedColNames = new ArrayList<>();
+						for (String colName : colNames){
+							escapedColNames.add(colName.replace("\\",""));
+						}
+						etlFile.setClearSlicesColumns(escapedColNames);
 					}
 					break;
 				case "encoding":
