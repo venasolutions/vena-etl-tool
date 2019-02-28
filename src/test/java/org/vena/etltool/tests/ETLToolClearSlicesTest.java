@@ -314,7 +314,7 @@ public class ETLToolClearSlicesTest extends ETLToolTest {
 	@Test
 	public void testFileToVenaTableWithClearSlicesByColumns() throws UnsupportedEncodingException {
 		ETLClient etlClient = mockETLClient();
-		String[] args = buildCommand(new String[] {"--jobName", "Loading intersections file", "--venaTable", "--file", "intersectionsFile.csv;format=CSV;clearSlicesByColumns=col1,col2,escape\\,dComma;table=tableName"});
+		String[] args = buildCommand(new String[] {"--jobName", "Loading intersections file", "--venaTable", "--file", "intersectionsFile.csv;format=CSV;clearSlicesByColumns=col1,\"col\"\"2\",\"escape,dComma\";table=tableName"});
 
 		ETLMetadataDTO metadata = Main.buildETLMetadata(args, etlClient);
 
@@ -330,6 +330,6 @@ public class ETLToolClearSlicesTest extends ETLToolTest {
 		assertEquals("intersectionsFile.csv", fileToVenaTableStep.getFileName());
 		assertEquals(FileFormat.CSV, fileToVenaTableStep.getFileFormat());
 		assertEquals("tableName", fileToVenaTableStep.getTableName());
-		assertEquals(new ArrayList<String>(Arrays.asList("col1","col2","escape,dComma")),((ETLFileToVenaTableStepDTO)step).getClearSlicesColumns());
+		assertEquals(new ArrayList<String>(Arrays.asList("col1","col\"2","escape,dComma")),((ETLFileToVenaTableStepDTO)step).getClearSlicesColumns());
 	}
 }

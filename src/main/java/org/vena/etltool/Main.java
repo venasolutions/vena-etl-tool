@@ -1,11 +1,6 @@
 package org.vena.etltool;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.*;
@@ -18,13 +13,15 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVRecord;
 import org.vena.etltool.entities.*;
 import org.vena.etltool.entities.ETLFileImportStepDTO.FileFormat;
 import org.vena.etltool.entities.ETLCubeToStageStepDTO.QueryType;
 import org.vena.etltool.entities.ETLMetadataDTO.ETLLoadType;
 import org.vena.etltool.entities.ETLStepDTO.DataType;
 import org.vena.etltool.entities.ETLStreamStepDTO.MockMode;
-
+import org.apache.commons.csv.CSVParser;
 
 public class Main {
 	
@@ -1576,13 +1573,24 @@ public class Main {
 
 				case "clearSlicesByColumns":
 					if (value != null && !value.isEmpty()) {
-						// Allow users to escape their commas in the column names
-						List<String> colNames = Arrays.asList(value.split("(?<!\\\\),"));
-						List<String> escapedColNames = new ArrayList<>();
-						for (String colName : colNames){
-							escapedColNames.add(colName.replace("\\",""));
+						// Allow users to use RFC-4180 for columns
+						try {
+							CSVParser parser = CSVParser.parse(value, CSVFormat.RFC4180);
+                            Iterator<CSVRecord> itr = parser.iterator();
+                            if (itr.hasNext()) {
+								CSVRecord record = itr.next();
+								List<String> columnNames = new ArrayList<>();
+								for (final String currentValue : record) {
+									columnNames.add(currentValue);
+								}
+								if (!columnNames.isEmpty()) {
+									etlFile.setClearSlicesColumns(columnNames);
+								}
+							}
+						} catch (IOException e) {
+							throw new IllegalArgumentException("Invalid input for clearSlicesByColumns: \"" + value + "\"", e);
 						}
-						etlFile.setClearSlicesColumns(escapedColNames);
+
 					}
 					break;
 				case "encoding":
