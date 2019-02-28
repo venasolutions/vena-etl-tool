@@ -230,10 +230,12 @@ public class Main {
 				.hasArg()
 				.withArgName("options")
 				.withDescription("A data file to import (multiple allowed)."
-						+ "\n -F \"[file=]<filename>; [type=]<filetype> [;[table=]<tableName>] [;format={CSV|PSV|TDF}] [;bulkInsert={true|false}] [;clearSlices=<expr>] [;clearSlicesByDimNums=<expr>] [;encoding=<fileEncoding>]\""
+						+ "\n -F \"[file=]<filename>; [type=]<filetype> [;[table=]<tableName>] [;format={CSV|PSV|TDF}] [;bulkInsert={true|false}] [;clearSlices=<expr>] "
+						+ "[;clearSlicesByDimNums=<expr>] [;encoding=<fileEncoding>] [;clearSlicesByColumns=<listOfColumnNames>] \""
 						+ "\n where <filetype> is one of {"+ETLFileOldDTO.SUPPORTED_FILETYPES_LIST+"}>."
 						+ "\n and <expr> is the expression specifying the slice of the cube to clear intersections from. Multiple expressions separated by a comma are supported."
 						+ "\n and <fileEncoding> is the type of encoding used by the file to be imported, e.g. UTF-16."
+						+ "\n and <listOfColumnNames> is a comma separated list of column names to clear on. A \\ before a comma can be used to include commas in the column names themselves."
 						+ "\n Example: -F model.csv;hierarchy"
 						+ "\n Example: -F file=values.tdf;format=TDF;type=intersections")
 				.create('F');
