@@ -487,12 +487,12 @@ public class Main {
 
 		Option clearSlicesByColumnsOption =
 				OptionBuilder
-						.withLongOpt("clearSlicesByColumns")
-						.isRequired(false)
-						.hasArg()
-						.withArgName("columns")
-						.withDescription("A list of columns names separated by commas to be used to compute slices to clear.")
-						.create();
+				.withLongOpt("clearSlicesByColumns")
+				.isRequired(false)
+				.hasArg()
+				.withArgName("columns")
+				.withDescription("A list of columns names separated by commas to be used to compute slices to clear.")
+				.create();
 
 		options.addOption(clearSlicesByColumnsOption);
 		
@@ -1142,64 +1142,64 @@ public class Main {
 		
 		try (BufferedReader br = new BufferedReader(new FileReader(new File(stepsFile).getPath()))) {
 				
-			    String line;
-			    while ((line = br.readLine()) != null) {
-			    	System.out.println(line);
-			    	String[] optionFields = line.trim().split(" ", 2);
-			    	String loadType = optionFields[0];
+				String line;
+				while ((line = br.readLine()) != null) {
+					System.out.println(line);
+					String[] optionFields = line.trim().split(" ", 2);
+					String loadType = optionFields[0];
 
-			    	ETLFileOldDTO etlFile = null;
+					ETLFileOldDTO etlFile = null;
 
-			    	switch (loadType.toUpperCase()) {
-			    	case "FILETOCUBE":
-			    	{
-			    		etlFile = prepareFilesToLoad(optionFields);
+					switch (loadType.toUpperCase()) {
+					case "FILETOCUBE":
+					{
+						etlFile = prepareFilesToLoad(optionFields);
 						validateNonEmptyFileType(etlFile);
 						metadata.addStep(new ETLFileToCubeStepDTO(etlFile));
-			    		break;
-			    	}
-			    	case "FILETOSTAGE":
-			    	{
-			    		etlFile = prepareFilesToLoad(optionFields);
+						break;
+					}
+					case "FILETOSTAGE":
+					{
+						etlFile = prepareFilesToLoad(optionFields);
 						validateNonEmptyFileType(etlFile);
 						metadata.addStep(new ETLFileToStageStepDTO(etlFile));
-			    		break;
-			    	}
-			    	case "SQLTRANSFORM":
-			    	{
+						break;
+					}
+					case "SQLTRANSFORM":
+					{
 						metadata.addStep(new ETLSQLTransformStepDTO());
-			    		break;
-			    	}
-			    	case "STAGETOCUBE":
-			    	{
-			    		if (optionFields.length == 1) {
+						break;
+					}
+					case "STAGETOCUBE":
+					{
+						if (optionFields.length == 1) {
 							metadata.addStep(new ETLStageToCubeStepDTO(DataType.hierarchy));
 							metadata.addStep(new ETLStageToCubeStepDTO(DataType.attributes));
 							metadata.addStep(new ETLStageToCubeStepDTO(DataType.intersections));
 							metadata.addStep(new ETLStageToCubeStepDTO(DataType.lids));
-			    		} else if (optionFields.length == 2) {
-			    			ETLStageToCubeStepDTO step = new ETLStageToCubeStepDTO();
+						} else if (optionFields.length == 2) {
+							ETLStageToCubeStepDTO step = new ETLStageToCubeStepDTO();
 
-			    			String[] subOptionFields = optionFields[1].split(";");
-			    			for (String field: subOptionFields) {
-			    				String[] parts = field.split("=", 2);
-				    			String key = parts[0].trim();
-				    			String value = parts[1].replaceAll("\"", "").trim();
-				    			if (key.equalsIgnoreCase("type")) {
-				    				try {
-				    					step.setDataType(DataType.valueOf(DataType.class, value));
-				    				} catch (IllegalArgumentException e) {
-				    					System.err.println( "Error: The ETL file type \""+value+"\" does not exist. The known filetypes are ["+ETLFileOldDTO.SUPPORTED_FILETYPES_LIST+"]");
-				    					System.exit(1);
-				    				}
-				    			} else if (key.equalsIgnoreCase("clearSlices")) {
-				    				if (step.getDataType() == DataType.intersections && value != null) {
-				    					step.setClearSlicesExpressions(Arrays.asList(value.split(",")));
-				    				} else {
-				    					System.err.println("Error: The clearSlices option can only be combined with the type: {intersections}. Please specify the type first.");
-				    					System.exit(1);
-				    				}
-				    			} else if (key.equalsIgnoreCase("clearSlicesByDimNums")) {
+							String[] subOptionFields = optionFields[1].split(";");
+							for (String field: subOptionFields) {
+								String[] parts = field.split("=", 2);
+								String key = parts[0].trim();
+								String value = parts[1].replaceAll("\"", "").trim();
+								if (key.equalsIgnoreCase("type")) {
+									try {
+										step.setDataType(DataType.valueOf(DataType.class, value));
+									} catch (IllegalArgumentException e) {
+										System.err.println( "Error: The ETL file type \""+value+"\" does not exist. The known filetypes are ["+ETLFileOldDTO.SUPPORTED_FILETYPES_LIST+"]");
+										System.exit(1);
+									}
+								} else if (key.equalsIgnoreCase("clearSlices")) {
+									if (step.getDataType() == DataType.intersections && value != null) {
+										step.setClearSlicesExpressions(Arrays.asList(value.split(",")));
+									} else {
+										System.err.println("Error: The clearSlices option can only be combined with the type: {intersections}. Please specify the type first.");
+										System.exit(1);
+									}
+								} else if (key.equalsIgnoreCase("clearSlicesByDimNums")) {
 									if (step.getDataType() == DataType.intersections && value != null) {
 										step.setClearSlicesDimensions(parseClearSlicesByDimNumsArgs(value));
 									} else {
@@ -1215,16 +1215,16 @@ public class Main {
 											+ "and dimensions is a list of dimension numbers separated by commas.");
 									System.exit(1);
 								}
-			    			}
-			    			metadata.addStep(step);
-			    		} else {
+							}
+							metadata.addStep(step);
+						} else {
 							System.err.println( "Error: stageToCube valid option is type=<type>. The known types are ["+ETLFileOldDTO.SUPPORTED_FILETYPES_LIST+"]");
 							System.exit(1);
-			    		}
-			    		break;
-			    	}
-			    	case "CUBETOSTAGE":
-			    	{
+						}
+						break;
+					}
+					case "CUBETOSTAGE":
+					{
 						ETLCubeToStageStepDTO step = new ETLCubeToStageStepDTO();
 
 						if (optionFields.length != 2)
@@ -1286,8 +1286,8 @@ public class Main {
 
 						metadata.addStep(step);
 						break;
-			    	}
-			    	case "INTEGRATIONCHANNEL": {
+					}
+					case "INTEGRATIONCHANNEL": {
 						if (optionFields.length != 2) {
 							System.err.println("Error: integrationChannel step requires channelId=<channelId>.");
 							System.exit(1);
@@ -1303,20 +1303,20 @@ public class Main {
 
 						break;
 					}
-			    	case "FILETOVENATABLE": {
+					case "FILETOVENATABLE": {
 						etlFile = prepareFilesToLoad(optionFields);
 						validateFileToVenaStep(etlFile);
 						metadata.addStep(new ETLFileToVenaTableStepDTO(etlFile));
 						break;
 					}
-			    	case "":
-			    		break;
-			    	default:
+					case "":
+						break;
+					default:
 						System.err.println("Error: loadType " + loadType + " not supported. "
 								+ "Supported options are { fileToCube, fileToStage, SQLTransform, stageToCube, cubeToStage, integrationChannel }.");
 						System.exit(1);
-			    	}
-			    }
+					}
+				}
 		} catch (IOException e) {
 			e.printStackTrace();
 			System.exit(1);
@@ -1576,8 +1576,8 @@ public class Main {
 						// Allow users to use RFC-4180 for columns
 						try {
 							CSVParser parser = CSVParser.parse(value, CSVFormat.RFC4180);
-                            Iterator<CSVRecord> itr = parser.iterator();
-                            if (itr.hasNext()) {
+							Iterator<CSVRecord> itr = parser.iterator();
+							if (itr.hasNext()) {
 								CSVRecord record = itr.next();
 								List<String> columnNames = new ArrayList<>();
 								for (final String currentValue : record) {
