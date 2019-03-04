@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -11,12 +12,7 @@ import java.util.List;
 import org.junit.Test;
 import org.vena.etltool.ETLClient;
 import org.vena.etltool.Main;
-import org.vena.etltool.entities.ETLFileToCubeStepDTO;
-import org.vena.etltool.entities.ETLFileToStageStepDTO;
-import org.vena.etltool.entities.ETLMetadataDTO;
-import org.vena.etltool.entities.ETLSQLTransformStepDTO;
-import org.vena.etltool.entities.ETLStageToCubeStepDTO;
-import org.vena.etltool.entities.ETLStepDTO;
+import org.vena.etltool.entities.*;
 import org.vena.etltool.entities.ETLFileImportStepDTO.FileFormat;
 import org.vena.etltool.entities.ETLStepDTO.DataType;
 
@@ -287,5 +283,53 @@ public class ETLToolClearSlicesTest extends ETLToolTest {
 				assertEquals(Arrays.asList("dimension('Accounts':'Expense')","dimension('Accounts':'Sale')"), ((ETLStageToCubeStepDTO)stageToCubeSteps.get(i)).getClearSlicesExpressions());
 			}
 		}
+	}
+
+	@Test
+	public void testFileToVenaTableIncorrectClearSlices() throws UnsupportedEncodingException {
+		ETLClient etlClient = mockETLClient();
+		String[] args = buildCommand(new String[] {"--jobName", "Loading intersections file", "--venaTable", "--file", "intersectionsFile.csv;format=CSV", "--clearSlicesByColumns", "col1,col2"});
+
+		try {
+			Main.buildETLMetadata(args, etlClient);
+		} catch (ExitException e) {
+			assertEquals(1, e.status);
+			assertEquals("Error: clearSlicesByColumns can only be used as a suboption to the --file option for ETL File to Vena Table imports.", err.toString().trim());
+		}
+	}
+
+	@Test
+	public void testFileToAnythingIncorrectClearSlices() throws UnsupportedEncodingException {
+		ETLClient etlClient = mockETLClient();
+		String[] args = buildCommand(new String[] {"--jobName", "Loading intersections file", "--file", "intersectionsFile.csv;format=CSV", "--clearSlicesByColumns", "col1,col2"});
+
+		try {
+			Main.buildETLMetadata(args, etlClient);
+		} catch (ExitException e) {
+			assertEquals(1, e.status);
+			assertEquals("Error: clearSlicesByColumns can only be used as a suboption to the --file option for ETL File to Vena Table imports.", err.toString().trim());
+		}
+	}
+
+	@Test
+	public void testFileToVenaTableWithClearSlicesByColumns() throws UnsupportedEncodingException {
+		ETLClient etlClient = mockETLClient();
+		String[] args = buildCommand(new String[] {"--jobName", "Loading intersections file", "--venaTable", "--file", "intersectionsFile.csv;format=CSV;clearSlicesByColumns=col1,\"col\"\"2\",\"escape,dComma\";table=tableName"});
+
+		ETLMetadataDTO metadata = Main.buildETLMetadata(args, etlClient);
+
+		assertEquals(modelId, metadata.getModelId());
+		assertEquals("Loading intersections file", metadata.getName());
+		assertEquals(1, metadata.getSteps().size());
+
+		ETLStepDTO step = metadata.getSteps().get(0);
+
+		assertEquals(ETLFileToVenaTableStepDTO.class, step.getClass());
+
+		ETLFileToVenaTableStepDTO fileToVenaTableStep = (ETLFileToVenaTableStepDTO)step;
+		assertEquals("intersectionsFile.csv", fileToVenaTableStep.getFileName());
+		assertEquals(FileFormat.CSV, fileToVenaTableStep.getFileFormat());
+		assertEquals("tableName", fileToVenaTableStep.getTableName());
+		assertEquals(new ArrayList<String>(Arrays.asList("col1","col\"2","escape,dComma")),((ETLFileToVenaTableStepDTO)step).getClearSlicesColumns());
 	}
 }

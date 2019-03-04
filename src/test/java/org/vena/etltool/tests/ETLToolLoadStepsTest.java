@@ -23,7 +23,7 @@ public class ETLToolLoadStepsTest extends ETLToolTest {
 		ETLClient etlClient = mockETLClient();
 		
 		ETLMetadataDTO metadata = Main.buildETLMetadata(args, etlClient);
-		assertEquals(5, metadata.getSteps().size());
+		assertEquals(6, metadata.getSteps().size());
 
 		ETLStepDTO firstStep = metadata.getSteps().get(0);
 		assertEquals(ETLFileToStageStepDTO.class, firstStep.getClass());
@@ -49,7 +49,7 @@ public class ETLToolLoadStepsTest extends ETLToolTest {
 
 		ETLStageToCubeStepDTO stageToCubeFourthStep = (ETLStageToCubeStepDTO)fourthStep;
 		assertEquals(DataType.intersections, stageToCubeFourthStep.getDataType());
-		assertEquals(new HashSet<Integer>(Arrays.asList(1, 3, 4)), stageToCubeFourthStep.getClearSlicesDimensions());
+		assertEquals(new HashSet<>(Arrays.asList(1, 3, 4)), stageToCubeFourthStep.getClearSlicesDimensions());
 
 		ETLStepDTO fifthStep = metadata.getSteps().get(4);
 		assertEquals(ETLFileToVenaTableStepDTO.class, fifthStep.getClass());
@@ -57,8 +57,23 @@ public class ETLToolLoadStepsTest extends ETLToolTest {
 		ETLFileToVenaTableStepDTO fileToVenaTableFifthStep = (ETLFileToVenaTableStepDTO)fifthStep;
 		assertEquals(DataType.intersections, fileToVenaTableFifthStep.getDataType());
 		assertEquals("intersectionsFile.csv", fileToVenaTableFifthStep.getFileName());
-		assertEquals("venaTable_values_table", fileToVenaTableFifthStep.getTableName());
+		assertEquals("venaTable_values_table1", fileToVenaTableFifthStep.getTableName());
 		assertEquals(FileFormat.CSV, fileToVenaTableFifthStep.getFileFormat());
+
+		// This is actually wrong!
+		// The file contains the line `clearSlicesByColumns="col1,col2"` 
+		// This should be treated as one column, but we strip out the quotes BEFORE parsing the columns
+		// TODO revisit this approach if/when it turns out customers actually have columns with commas (or semicolons!) in them 
+		assertEquals(Arrays.asList("col1","col2"),(fileToVenaTableFifthStep).getClearSlicesColumns());
+
+		ETLStepDTO sixthStep = metadata.getSteps().get(5);
+		assertEquals(ETLFileToVenaTableStepDTO.class, sixthStep.getClass());
+
+		ETLFileToVenaTableStepDTO fileToVenaTableSixthStep = (ETLFileToVenaTableStepDTO)sixthStep;
+		assertEquals(DataType.intersections, fileToVenaTableSixthStep.getDataType());
+		assertEquals("intersectionsFile.csv", fileToVenaTableSixthStep.getFileName());
+		assertEquals("venaTable_values_table2", fileToVenaTableSixthStep.getTableName());
+		assertEquals(FileFormat.CSV, fileToVenaTableSixthStep.getFileFormat());
 	}
 	
 	@Test

@@ -22,6 +22,11 @@ local.properties
 .loadpath
 org.eclipse.*.prefs
 
+## Intellij
+.idea/
+*.iml
+*.iws
+
 # External tool builders
 .externalToolBuilders/
  

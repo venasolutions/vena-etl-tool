@@ -2,4 +2,5 @@ fileToStage file=intersectionsFile.csv;type=intersections;format=CSV;table=value
 sqlTransform
 stageToCube type=intersections;clearSlices="dimension('Accounts':'Expense'),dimension('Accounts':'Sale')"
 stageToCube type=intersections;clearSlicesByDimNums="1,3,4"
-fileToVenaTable file=intersectionsFile.csv;type=intersections;format=CSV;table=venaTable_values_table
+fileToVenaTable file=intersectionsFile.csv;type=intersections;format=CSV;table=venaTable_values_table1;clearSlicesByColumns="col1,col2"
+fileToVenaTable file=intersectionsFile.csv;type=intersections;format=CSV;table=venaTable_values_table2
