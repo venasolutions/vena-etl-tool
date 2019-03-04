@@ -4,7 +4,6 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 
@@ -50,7 +49,7 @@ public class ETLToolLoadStepsTest extends ETLToolTest {
 
 		ETLStageToCubeStepDTO stageToCubeFourthStep = (ETLStageToCubeStepDTO)fourthStep;
 		assertEquals(DataType.intersections, stageToCubeFourthStep.getDataType());
-		assertEquals(new HashSet<Integer>(Arrays.asList(1, 3, 4)), stageToCubeFourthStep.getClearSlicesDimensions());
+		assertEquals(new HashSet<>(Arrays.asList(1, 3, 4)), stageToCubeFourthStep.getClearSlicesDimensions());
 
 		ETLStepDTO fifthStep = metadata.getSteps().get(4);
 		assertEquals(ETLFileToVenaTableStepDTO.class, fifthStep.getClass());
@@ -65,7 +64,7 @@ public class ETLToolLoadStepsTest extends ETLToolTest {
 		// The file contains the line `clearSlicesByColumns="col1,col2"` 
 		// This should be treated as one column, but we strip out the quotes BEFORE parsing the columns
 		// TODO revisit this approach if/when it turns out customers actually have columns with commas (or semicolons!) in them 
-		assertEquals(new ArrayList<>(Arrays.asList("col1","col2")),(fileToVenaTableFifthStep).getClearSlicesColumns());
+		assertEquals(Arrays.asList("col1","col2"),(fileToVenaTableFifthStep).getClearSlicesColumns());
 
 		ETLStepDTO sixthStep = metadata.getSteps().get(5);
 		assertEquals(ETLFileToVenaTableStepDTO.class, sixthStep.getClass());
