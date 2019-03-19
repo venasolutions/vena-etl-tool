@@ -11,15 +11,8 @@ import org.apache.commons.cli.CommandLine;
 import org.junit.Test;
 import org.vena.etltool.ETLClient;
 import org.vena.etltool.Main;
-import org.vena.etltool.entities.ETLDeleteDimensionStepDTO;
-import org.vena.etltool.entities.ETLFileToCubeStepDTO;
-import org.vena.etltool.entities.ETLFileToStageStepDTO;
-import org.vena.etltool.entities.ETLMetadataDTO;
-import org.vena.etltool.entities.ETLStepDTO;
+import org.vena.etltool.entities.*;
 import org.vena.etltool.entities.ETLStepDTO.DataType;
-import org.vena.etltool.entities.ETLTemplateDTO;
-import org.vena.etltool.entities.ETLVersioningClearStepDTO;
-import org.vena.etltool.entities.Id;
 
 public class ETLToolTemplateUploadTest extends ETLToolTest {
 
@@ -28,7 +21,7 @@ public class ETLToolTemplateUploadTest extends ETLToolTest {
 		ETLClient etlClient = mockETLClient();
 		when(etlClient.getETLTemplate()).thenReturn(produceFileTemplate());
 		CommandLine commandLine = Main.parseCommandLineArgs(buildCommand(new String[] { "--runTemplate=12345",
-				"--file=file1.csv;type=hierarchy", "--file=file2.csv;type=intersections" }));
+				"--file=file1.csv;type=hierarchy", "--file=file2.csv;type=intersections", "--file=file3.csv" }));
 		ETLMetadataDTO metadata = Main.produceETLMetadata(etlClient, commandLine);
 		validateFileTemplateMetadata(metadata);
 	}
@@ -54,7 +47,7 @@ public class ETLToolTemplateUploadTest extends ETLToolTest {
 		ETLClient etlClient = mockETLClient();
 		when(etlClient.getETLTemplate()).thenReturn(produceFileTemplate());
 		CommandLine commandLine = Main.parseCommandLineArgs(buildCommand(new String[] { "--runTemplate=12345",
-				"--file=file1.csv;type=hierarchy", "--file=file2.csv;type=intersections" }));
+				"--file=file1.csv;type=hierarchy", "--file=file2.csv;type=intersections", "--file=file3.csv" }));
 		ETLMetadataDTO metadata = Main.produceETLMetadata(etlClient, commandLine);
 		assertEquals(new Id(1L), etlClient.modelId);
 	}
@@ -65,7 +58,7 @@ public class ETLToolTemplateUploadTest extends ETLToolTest {
 		ETLClient etlClient = mockETLClient();
 		when(etlClient.getETLTemplate()).thenReturn(produceFileTemplate());
 		CommandLine commandLine = Main.parseCommandLineArgs(buildCommand(new String[] { "--runTemplate=12345",
-				"--file=file2.csv;type=intersections", "--file=file.csv;type=hierarchy" }));
+				"--file=file2.csv;type=intersections", "--file=file.csv;type=hierarchy", "--file=file3.csv" }));
 		try {
 			Main.produceETLMetadata(etlClient, commandLine);
 			fail();
@@ -81,7 +74,7 @@ public class ETLToolTemplateUploadTest extends ETLToolTest {
 		when(etlClient.getETLTemplate()).thenReturn(produceFileTemplate());
 		CommandLine commandLine = Main.parseCommandLineArgs(
 				buildCommand(new String[] { "--runTemplate=12345", "--file=file1.csv;type=hierarchy",
-						"--file=file2.csv;type=intersections", "--file=file3.csv;type=lids" }));
+						"--file=file2.csv;type=intersections", "--file=file3.csv", "--file=file4.csv;type=lids" }));
 		try {
 			Main.produceETLMetadata(etlClient, commandLine);
 			fail();
@@ -156,9 +149,11 @@ public class ETLToolTemplateUploadTest extends ETLToolTest {
 		step1.setDataType(DataType.hierarchy);
 		ETLFileToStageStepDTO step2 = new ETLFileToStageStepDTO();
 		step2.setDataType(DataType.intersections);
+		ETLFileToVenaTableStepDTO step3 = new ETLFileToVenaTableStepDTO();
 		List<ETLStepDTO> steps = new ArrayList<>();
 		steps.add(step1);
 		steps.add(step2);
+		steps.add(step3);
 		metadata.setSteps(steps);
 		metadata.setModelId(new Id(1L));
 		template.setMetadata(metadata);
