@@ -1680,10 +1680,14 @@ public class Main {
 		for(int i = 0; i < fileSteps.size(); i++) {
 			ETLFileImportStepDTO step = fileSteps.get(i);
 			ETLFileOldDTO file = files.get(i);
-			if(file.getFileType() == null || !step.getDataType().equals(file.getFileType())) {
-				System.err.println("Error: File step type must match input file type");
-				System.err.println("  step "+i+" type: "+step.getDataType()+", file type: "+file.getFileType());
-				System.exit(1);
+			// Check that the fileType is not empty and matches the template step file type except in the case
+			// of ETLFileToVenaTableSteps (in which the dataType and fileType are null)
+			if (!(step instanceof ETLFileToVenaTableStepDTO)) {
+				if (file.getFileType() == null || !step.getDataType().equals(file.getFileType())) {
+					System.err.println("Error: File step type must match input file type");
+					System.err.println("  step " + i + " type: " + step.getDataType() + ", file type: " + file.getFileType());
+					System.exit(1);
+				}
 			}
 			step.setCompressed(true); // ETL Tool compresses all file uploads.
 			step.setFileEncoding(file.getFileEncoding());
