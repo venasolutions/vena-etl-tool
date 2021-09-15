@@ -988,16 +988,11 @@ public class Main {
 			if (exportToFile != null) {
 				System.out.print("Running export (this might take a while)... ");
 				File outFile = new File(exportToFile);
-				InputStream in = etlClient.sendExport(type, exportFromTable, exportToTable, whereClause, queryExpr, !excludeHeaders, fileFormat);
-				try {
+
+				try (InputStream in = etlClient.sendExport(type, exportFromTable, exportToTable, whereClause, queryExpr, !excludeHeaders, fileFormat)) {
 					Files.copy(in, outFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 				} catch (IOException e) {
 					e.printStackTrace();
-					try {
-						in.close();
-					} catch (IOException e1) {
-						e1.printStackTrace();
-					}
 					System.exit(1);
 				}
 				System.out.println("OK.");
