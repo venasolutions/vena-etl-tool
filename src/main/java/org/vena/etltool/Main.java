@@ -1,6 +1,7 @@
 package org.vena.etltool;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.*;
@@ -779,7 +780,7 @@ public class Main {
 		prepareETLClient(etlClient, commandLine);
 		return buildETLMetadata(commandLine, etlClient);
 	}
-	
+
 	public static ETLMetadataDTO buildETLMetadata(CommandLine commandLine, ETLClient etlClient) throws UnsupportedEncodingException {
 
 		String modelIdStr = commandLine.getOptionValue("modelId");
@@ -986,9 +987,10 @@ public class Main {
 
 			if (exportToFile != null) {
 				System.out.print("Running export (this might take a while)... ");
+				File outFile = new File(exportToFile);
 				InputStream in = etlClient.sendExport(type, exportFromTable, exportToTable, whereClause, queryExpr, !excludeHeaders, fileFormat);
 				try {
-					Files.copy(in, new File(exportToFile).toPath(), StandardCopyOption.REPLACE_EXISTING);
+					Files.copy(in, outFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 				} catch (IOException e) {
 					e.printStackTrace();
 					try {
@@ -998,11 +1000,42 @@ public class Main {
 					}
 					System.exit(1);
 				}
+				System.out.println("OK.");
+
 				if (commandLine.hasOption("validateExport")) {
+					System.out.print("Validating export... ");
+					CSVFormat csvFormat = CSVHelper.getCSVFormat(fileFormat);
+					try (
+							Reader reader = new BufferedReader(new InputStreamReader(new FileInputStream(outFile), StandardCharsets.UTF_8));
+							CSVParser csvParser = new CSVParser(reader, csvFormat)) {
+
+						Iterator<CSVRecord> csvIterator = csvParser.iterator();
+						if (!csvIterator.hasNext()) {
+							System.out.println("FAILED.");
+							System.out.println("Exported file was empty!");
+							System.exit(1);
+						}
+						int expectedColumns = csvIterator.next().size();
+						int rowNum = 1;
+
+						while (csvIterator.hasNext()) {
+							rowNum++;
+							CSVRecord record = csvIterator.next();
+							if (record.size() != expectedColumns) {
+								System.out.println("FAILED.");
+								System.out.println("Record " + rowNum + " did not match expected number of columns; expected " + expectedColumns + ", actual: " + record.size());
+								System.exit(1);
+							}
+						}
+					} catch (RuntimeException | IOException e) {
+						System.out.println("FAILED.");
+						e.printStackTrace();
+						System.exit(1);
+					}
+					System.out.println("OK.");
 				}
-				System.out.print("OK.");
 				System.exit(0);
-				
+
 			} else {
 				System.out.println("Creating a new job.");
 				
