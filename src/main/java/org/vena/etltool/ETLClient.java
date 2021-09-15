@@ -72,7 +72,7 @@ public class ETLClient {
 	public boolean pollingRequested = false;
 	public boolean waitFully = false;
 	public boolean verbose;
-	
+
 	private String userAgent;
 
 	private JerseyClientFactory clientFactory;
@@ -103,7 +103,7 @@ public class ETLClient {
 		System.exit(1);
 		return null; // should never reach here
 	}
-	
+
 	public ETLJobDTO uploadETL(ETLMetadataDTO metadata)
 	{
 		try {
@@ -229,9 +229,9 @@ public class ETLClient {
 		} else {
 			urlBuf.append(protocol).append("://");
 			urlBuf.append(host);
-		}
-		if (port != null) {
-			urlBuf.append(":").append(port);
+			if (port != null) {
+				urlBuf.append(":").append(port);
+			}
 		}
 
 		urlBuf.append(path);
