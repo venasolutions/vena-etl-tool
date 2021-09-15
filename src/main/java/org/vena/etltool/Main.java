@@ -441,6 +441,15 @@ public class Main {
 
 		options.addOption(exportFormatOption);
 
+		Option validateExportOption = 
+				OptionBuilder
+				.withLongOpt("validateExport")
+				.isRequired(false)
+				.withDescription("Validate exported file is valid for the exportFormat (CSV, PSV, TDF)")
+				.create();
+
+		options.addOption(validateExportOption);
+
 		Option deleteOption = 
 				OptionBuilder
 				.withLongOpt("delete")
@@ -695,7 +704,7 @@ public class Main {
 		if(runTemplate) {
 			String[] incompatibleOptions = new String[]{"templateId", "clearSlices", "clearSlicesByDimNums",
 					"loadSteps", "runChannel", "export", "exportToTable", "exportFromTable",
-					"exportToFile", "exportWhere", "exportQuery", "delete", "deleteQuery",
+					"exportToFile", "exportWhere", "exportQuery", "validateExport", "delete", "deleteQuery",
 					"jobName", "jobId", "cancel", "loadFromStaging", "stage", "stageAndTransform",
 					"stageOnly", "transformComplete", "loadFromStaging", "venaTable"};
 			for(String option : incompatibleOptions) {
@@ -764,6 +773,7 @@ public class Main {
 		return metadata;
 	}
 
+	// FIXME: This is only used by unit tests, it does not belong in Main
 	public static ETLMetadataDTO buildETLMetadata(String[] args, ETLClient etlClient) throws UnsupportedEncodingException {
 		CommandLine commandLine = parseCommandLineArgs(args);
 		prepareETLClient(etlClient, commandLine);
@@ -987,6 +997,8 @@ public class Main {
 						e1.printStackTrace();
 					}
 					System.exit(1);
+				}
+				if (commandLine.hasOption("validateExport")) {
 				}
 				System.out.print("OK.");
 				System.exit(0);
