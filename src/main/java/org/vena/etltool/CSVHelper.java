@@ -13,9 +13,7 @@ public class CSVHelper {
             case CSV:
                 return CSVFormat.RFC4180;
             case PSV:
-                return CSVFormat
-                	.newFormat('|')
-                	.withRecordSeparator("\r\n");
+                return CSVFormat.Builder.create().setDelimiter('|').setRecordSeparator("\r\n").build();
             case TDF:
                 return CSVFormat.TDF;
             default:
