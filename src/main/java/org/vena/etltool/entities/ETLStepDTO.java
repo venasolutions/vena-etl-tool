@@ -1,10 +1,10 @@
 package org.vena.etltool.entities;
 
-import java.util.Date;
-
 import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+
+import java.util.Date;
 
 @JsonTypeInfo(use = com.fasterxml.jackson.annotation.JsonTypeInfo.Id.NAME, property = "stepType", defaultImpl = ETLDefaultStepDTO.class)
 @JsonSubTypes({
