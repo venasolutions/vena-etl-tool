@@ -5,9 +5,8 @@ import java.util.Date;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
-import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
 
-@JsonTypeInfo(use = com.fasterxml.jackson.annotation.JsonTypeInfo.Id.NAME, include = As.PROPERTY, property = "stepType", defaultImpl = ETLDefaultStepDTO.class)
+@JsonTypeInfo(use = com.fasterxml.jackson.annotation.JsonTypeInfo.Id.NAME, property = "stepType", defaultImpl = ETLDefaultStepDTO.class)
 @JsonSubTypes({
 		@Type(value = ETLFileToCubeStepDTO.class),
 		@Type(value = ETLFileToStageStepDTO.class),
@@ -31,7 +30,8 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
 		@Type(value = ETLCalculationDeployStepDTO.class),
 		@Type(value = ETLCalculationSyncStepDTO.class),
 		@Type(value = ETLSSPTemplateStepWrapperStepDTO.class),
-		@Type(value = ETLFileToVenaTableStepDTO.class)
+		@Type(value = ETLFileToVenaTableStepDTO.class),
+		@Type(value = ETLReportBookGenerationStepDTO.class)
 })
 
 public abstract class ETLStepDTO {
