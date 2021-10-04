@@ -986,6 +986,15 @@ public class Main {
 			}
 
 			if (exportToFile != null) {
+				CSVFormat validateCsvFormat = null;
+				if (commandLine.hasOption("validateExport")) {
+					try {
+						validateCsvFormat = CSVHelper.getCSVFormat(fileFormat);
+					} catch (IllegalArgumentException e) {
+						System.out.print("Validate Export not supported for the export file format " + fileFormat);
+						System.exit(1);
+					}
+				}
 				System.out.print("Running export (this might take a while)... ");
 				File outFile = new File(exportToFile);
 
@@ -997,12 +1006,11 @@ public class Main {
 				}
 				System.out.println("OK.");
 
-				if (commandLine.hasOption("validateExport")) {
+				if (validateCsvFormat != null) {
 					System.out.print("Validating export... ");
-					CSVFormat csvFormat = CSVHelper.getCSVFormat(fileFormat);
 					try (
 							Reader reader = new BufferedReader(new InputStreamReader(new FileInputStream(outFile), StandardCharsets.UTF_8));
-							CSVParser csvParser = new CSVParser(reader, csvFormat)) {
+							CSVParser csvParser = new CSVParser(reader, validateCsvFormat)) {
 
 						Iterator<CSVRecord> csvIterator = csvParser.iterator();
 						if (!csvIterator.hasNext()) {
