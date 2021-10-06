@@ -1,18 +1,29 @@
 package org.vena.etltool.tests;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import org.apache.commons.cli.CommandLine;
+import org.junit.Test;
+import org.vena.etltool.ETLClient;
+import org.vena.etltool.Main;
+import org.vena.etltool.entities.ETLDeleteDimensionStepDTO;
+import org.vena.etltool.entities.ETLFileToCubeStepDTO;
+import org.vena.etltool.entities.ETLFileToStageStepDTO;
+import org.vena.etltool.entities.ETLFileToVenaTableStepDTO;
+import org.vena.etltool.entities.ETLMetadataDTO;
+import org.vena.etltool.entities.ETLReportBookGenerationStepDTO;
+import org.vena.etltool.entities.ETLStepDTO;
+import org.vena.etltool.entities.ETLStepDTO.DataType;
+import org.vena.etltool.entities.ETLTemplateDTO;
+import org.vena.etltool.entities.ETLVersioningClearStepDTO;
+import org.vena.etltool.entities.Id;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.cli.CommandLine;
-import org.junit.Test;
-import org.vena.etltool.ETLClient;
-import org.vena.etltool.Main;
-import org.vena.etltool.entities.*;
-import org.vena.etltool.entities.ETLStepDTO.DataType;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.when;
 
 public class ETLToolTemplateUploadTest extends ETLToolTest {
 
@@ -132,9 +143,11 @@ public class ETLToolTemplateUploadTest extends ETLToolTest {
 		metadata.setName("ETL JOB");
 		ETLDeleteDimensionStepDTO step1 = new ETLDeleteDimensionStepDTO(2);
 		ETLVersioningClearStepDTO step2 = new ETLVersioningClearStepDTO();
+		ETLReportBookGenerationStepDTO step3 = new ETLReportBookGenerationStepDTO();
 		List<ETLStepDTO> steps = new ArrayList<>();
 		steps.add(step1);
 		steps.add(step2);
+		steps.add(step3);
 		metadata.setSteps(steps);
 		template.setMetadata(metadata);
 		return template;
