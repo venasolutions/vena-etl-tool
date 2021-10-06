@@ -1,6 +1,7 @@
 package org.vena.etltool;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.*;
@@ -441,6 +442,15 @@ public class Main {
 
 		options.addOption(exportFormatOption);
 
+		Option validateExportOption = 
+				OptionBuilder
+				.withLongOpt("validateExport")
+				.isRequired(false)
+				.withDescription("Validate exported file is valid for the exportFormat (CSV, PSV, TDF)")
+				.create();
+
+		options.addOption(validateExportOption);
+
 		Option deleteOption = 
 				OptionBuilder
 				.withLongOpt("delete")
@@ -695,7 +705,7 @@ public class Main {
 		if(runTemplate) {
 			String[] incompatibleOptions = new String[]{"templateId", "clearSlices", "clearSlicesByDimNums",
 					"loadSteps", "runChannel", "export", "exportToTable", "exportFromTable",
-					"exportToFile", "exportWhere", "exportQuery", "delete", "deleteQuery",
+					"exportToFile", "exportWhere", "exportQuery", "validateExport", "delete", "deleteQuery",
 					"jobName", "jobId", "cancel", "loadFromStaging", "stage", "stageAndTransform",
 					"stageOnly", "transformComplete", "loadFromStaging", "venaTable"};
 			for(String option : incompatibleOptions) {
@@ -764,12 +774,13 @@ public class Main {
 		return metadata;
 	}
 
+	// FIXME: This is only used by unit tests, it does not belong in Main
 	public static ETLMetadataDTO buildETLMetadata(String[] args, ETLClient etlClient) throws UnsupportedEncodingException {
 		CommandLine commandLine = parseCommandLineArgs(args);
 		prepareETLClient(etlClient, commandLine);
 		return buildETLMetadata(commandLine, etlClient);
 	}
-	
+
 	public static ETLMetadataDTO buildETLMetadata(CommandLine commandLine, ETLClient etlClient) throws UnsupportedEncodingException {
 
 		String modelIdStr = commandLine.getOptionValue("modelId");
@@ -975,22 +986,59 @@ public class Main {
 			}
 
 			if (exportToFile != null) {
+				CSVFormat validateCsvFormat = null;
+				if (commandLine.hasOption("validateExport")) {
+					try {
+						validateCsvFormat = CSVHelper.getCSVFormat(fileFormat);
+					} catch (IllegalArgumentException e) {
+						System.out.print("Validate Export not supported for the export file format " + fileFormat);
+						System.exit(1);
+					}
+				}
 				System.out.print("Running export (this might take a while)... ");
-				InputStream in = etlClient.sendExport(type, exportFromTable, exportToTable, whereClause, queryExpr, !excludeHeaders, fileFormat);
-				try {
-					Files.copy(in, new File(exportToFile).toPath(), StandardCopyOption.REPLACE_EXISTING);
+				File outFile = new File(exportToFile);
+
+				try (InputStream in = etlClient.sendExport(type, exportFromTable, exportToTable, whereClause, queryExpr, !excludeHeaders, fileFormat)) {
+					Files.copy(in, outFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 				} catch (IOException e) {
 					e.printStackTrace();
-					try {
-						in.close();
-					} catch (IOException e1) {
-						e1.printStackTrace();
-					}
 					System.exit(1);
 				}
-				System.out.print("OK.");
+				System.out.println("OK.");
+
+				if (validateCsvFormat != null) {
+					System.out.print("Validating export... ");
+					try (
+							Reader reader = new BufferedReader(new InputStreamReader(new FileInputStream(outFile), StandardCharsets.UTF_8));
+							CSVParser csvParser = new CSVParser(reader, validateCsvFormat)) {
+
+						Iterator<CSVRecord> csvIterator = csvParser.iterator();
+						if (!csvIterator.hasNext()) {
+							System.out.println("FAILED.");
+							System.out.println("Exported file was empty!");
+							System.exit(1);
+						}
+						int expectedColumns = csvIterator.next().size();
+						int rowNum = 1;
+
+						while (csvIterator.hasNext()) {
+							rowNum++;
+							CSVRecord record = csvIterator.next();
+							if (record.size() != expectedColumns) {
+								System.out.println("FAILED.");
+								System.out.println("Record " + rowNum + " did not match expected number of columns; expected " + expectedColumns + ", actual: " + record.size());
+								System.exit(1);
+							}
+						}
+					} catch (RuntimeException | IOException e) {
+						System.out.println("FAILED.");
+						e.printStackTrace();
+						System.exit(1);
+					}
+					System.out.println("OK.");
+				}
 				System.exit(0);
-				
+
 			} else {
 				System.out.println("Creating a new job.");
 				
