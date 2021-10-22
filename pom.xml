@@ -170,22 +170,6 @@
 			<url>http://${artifactory.host}:8081/artifactory/libs-snapshot</url>
 		</repository>
 	</repositories>
-	<pluginRepositories>
-		<pluginRepository>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-			<id>central</id>
-			<name>plugins-release</name>
-			<url>http://${artifactory.host}:8081/artifactory/plugins-release</url>
-		</pluginRepository>
-		<pluginRepository>
-			<snapshots />
-			<id>snapshots</id>
-			<name>plugins-snapshot</name>
-			<url>http://${artifactory.host}:8081/artifactory/plugins-snapshot</url>
-		</pluginRepository>
-	</pluginRepositories>
 	<scm>
 		<developerConnection>scm:git:http://github.vena.vpn/development/etl-console.git</developerConnection>
                 <tag>HEAD</tag>
