@@ -87,9 +87,6 @@
 	            <includes>
 	                <include>**/*</include>
 	            </includes>
-	            <excludes>
-	                <exclude />
-	            </excludes>
 	        </resource>
         </resources>
 		<plugins>
@@ -129,23 +126,28 @@
 					</execution>
 				</executions>
 			</plugin>
+			<!-- https://github.com/git-commit-id/git-commit-id-maven-plugin -->
 			<plugin>
-                <groupId>pl.project13.maven</groupId>
-                <artifactId>git-commit-id-plugin</artifactId>
-                <version>2.1.10</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>revision</goal>
-                         </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <gitDescribe>
-                        <dirty>git-repo-was-dirty</dirty>
-                    </gitDescribe>
-                </configuration>
-            </plugin>
+				<groupId>pl.project13.maven</groupId>
+				<artifactId>git-commit-id-plugin</artifactId>
+				<version>4.0.5</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>revision</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<dotGitDirectory>${project.basedir}/.git</dotGitDirectory>
+					<gitDescribe>
+						<skip>true</skip>
+					</gitDescribe>
+					<generateGitPropertiesFile>false</generateGitPropertiesFile>
+					<useNativeGit>false</useNativeGit>
+					<offline>true</offline>
+				</configuration>
+			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-release-plugin</artifactId>
