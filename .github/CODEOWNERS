@@ -1,0 +1,8 @@
+* @venasolutions/connections-team
+.azure-pipelines/ @venasolutions/tooling-team
+azure/ @venasolutions/tooling-team
+.github/workflows/ @venasolutions/tooling-team
+.cm/ @venasolutions/tooling-team
+*.groovy @venasolutions/tooling-team
+Jenkinsfile @venasolutions/tooling-team
+
