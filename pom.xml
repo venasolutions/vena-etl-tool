@@ -10,7 +10,7 @@
 	    <artifactory.host>artifactory.devops.vena.vpn</artifactory.host>
 		<maven.compiler.source>1.7</maven.compiler.source>
 		<maven.compiler.target>1.7</maven.compiler.target>
-		<jackson.version>2.12.4</jackson.version>
+		<jackson.version>2.13.4</jackson.version>
 		<jersey.version>1.19</jersey.version>
 	</properties>
 
